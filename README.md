@@ -31,9 +31,9 @@ alt="Skyspire animated description"
 
 Navigate an endlessly rising tower, control your trajectory in mid-air, survive unstable platforms and environmental hazards, collect crystals, complete missions, unlock cosmetics, and climb as high as possible.
 
-[Play the game](https://OWNER.github.io/REPOSITORY/) ·
-[Report a bug](https://github.com/OWNER/REPOSITORY/issues) ·
-[Request a feature](https://github.com/OWNER/REPOSITORY/issues)
+[Play the game](https://thiepn.github.io/skyspire/) ·
+[Report a bug](https://github.com/thiepn/skyspire/issues) ·
+[Request a feature](https://github.com/thiepn/skyspire/issues)
 
 </div>
 
