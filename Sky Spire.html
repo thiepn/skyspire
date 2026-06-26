@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Skyspire Complete</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --panel: rgba(8, 17, 31, 0.86);
+      --panel-soft: rgba(15, 29, 48, 0.70);
+      --line: rgba(210, 234, 255, 0.18);
+      --text: #f5f9ff;
+      --muted: #b9c9dd;
+      --accent: #83dcff;
+      --gold: #ffd887;
+      --danger: #ff8b83;
+      --good: #9ef0bd;
+    }
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #87c8e7; }
+    body { user-select: none; }
+    #game-root, canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+    .overlay {
+      position: fixed; inset: 0; z-index: 20; display: grid; place-items: center;
+      padding: 18px; overflow: auto; background: rgba(3, 9, 18, 0.42);
+      opacity: 0; visibility: hidden; transition: opacity .16s ease, visibility .16s ease;
+      backdrop-filter: blur(7px);
+    }
+    .overlay.visible { opacity: 1; visibility: visible; }
+    .panel {
+      width: min(760px, 100%); max-height: calc(100vh - 30px); overflow: auto;
+      padding: clamp(20px, 4vw, 38px); border: 1px solid var(--line); border-radius: 24px;
+      background: linear-gradient(180deg, rgba(14, 29, 49, .94), rgba(6, 13, 24, .95));
+      box-shadow: 0 28px 90px rgba(0,0,0,.4), inset 0 1px rgba(255,255,255,.07);
+    }
+    .panel.small { width: min(520px, 100%); text-align: center; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { margin-bottom: 8px; font-size: clamp(3rem, 10vw, 6rem); line-height: .92; letter-spacing: .08em; text-transform: uppercase; }
+    h2 { margin-bottom: 10px; font-size: clamp(2rem, 7vw, 3.2rem); text-transform: uppercase; letter-spacing: .07em; }
+    h3 { margin: 22px 0 10px; font-size: .8rem; letter-spacing: .15em; text-transform: uppercase; color: var(--accent); }
+    .eyebrow { margin-bottom: 8px; color: var(--accent); font-size: .75rem; letter-spacing: .18em; text-transform: uppercase; }
+    .subtitle { color: var(--muted); line-height: 1.55; }
+    .grid { display: grid; gap: 10px; }
+    .grid.two { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .grid.three { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    .card, .select-card {
+      padding: 13px 14px; border: 1px solid rgba(255,255,255,.1); border-radius: 14px;
+      background: rgba(255,255,255,.045); color: var(--muted);
+    }
+    .select-card { cursor: pointer; transition: border-color .12s, background .12s, transform .12s; }
+    .select-card:hover { transform: translateY(-1px); border-color: rgba(131,220,255,.4); }
+    .select-card.selected { border-color: var(--accent); background: rgba(83,185,231,.14); color: var(--text); }
+    .select-card strong { display: block; margin-bottom: 4px; color: var(--text); }
+    .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .spread { justify-content: space-between; }
+    button, select, input { font: inherit; }
+    button {
+      border: 1px solid rgba(167,225,255,.4); border-radius: 999px; padding: 12px 22px;
+      background: linear-gradient(#a8e9ff,#68c6ef); color: #06131f; font-weight: 800; cursor: pointer;
+      box-shadow: 0 10px 28px rgba(64,174,224,.2); transition: transform .12s, filter .12s;
+    }
+    button:hover { transform: translateY(-1px); filter: brightness(1.05); }
+    button.secondary { background: rgba(255,255,255,.07); color: var(--text); border-color: rgba(255,255,255,.14); box-shadow: none; }
+    button.danger { background: rgba(255,110,102,.16); color: #ffd8d5; border-color: rgba(255,120,112,.35); box-shadow: none; }
+    button:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+    label.setting { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid rgba(255,255,255,.07); }
+    label.setting:last-child { border-bottom: 0; }
+    select, input[type="range"], input[type="color"] { accent-color: #7bd7ff; }
+    select { padding: 7px 10px; border-radius: 9px; color: var(--text); background: #15273b; border: 1px solid var(--line); }
+    input[type="color"] { width: 45px; height: 30px; border: 0; background: transparent; }
+    kbd { display: inline-grid; place-items: center; min-width: 28px; height: 25px; padding: 0 6px; margin-right: 5px; border: 1px solid rgba(255,255,255,.2); border-radius: 6px; background: rgba(255,255,255,.08); color: var(--text); }
+    #hud { position: fixed; inset: 0; z-index: 10; pointer-events: none; opacity: 0; visibility: hidden; transition: opacity .15s; }
+    #hud.visible { opacity: 1; visibility: visible; }
+    .hud-bar { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); display: grid; grid-template-columns: repeat(6,minmax(72px,1fr)); width: min(900px,calc(100% - 24px)); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; background: rgba(8,18,31,.72); backdrop-filter: blur(12px); }
+    .hud-item { padding: 9px 8px; text-align: center; border-right: 1px solid rgba(255,255,255,.07); }
+    .hud-item:last-child { border-right: 0; }
+    .hud-item span { display: block; color: var(--muted); font-size: .6rem; letter-spacing: .1em; text-transform: uppercase; }
+    .hud-item strong { display: block; margin-top: 2px; font-size: .92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #power-strip { position: absolute; top: 72px; left: 50%; transform: translateX(-50%); display: flex; gap: 7px; flex-wrap: wrap; justify-content: center; }
+    .power-pill { display: none; padding: 6px 10px; border: 1px solid rgba(255,255,255,.14); border-radius: 999px; background: rgba(8,18,31,.7); color: var(--text); font-size: .72rem; }
+    .power-pill.visible { display: block; }
+    #message { position: fixed; left: 50%; top: 24%; z-index: 12; transform: translate(-50%,-8px); padding: 9px 16px; border: 1px solid rgba(255,255,255,.15); border-radius: 999px; background: rgba(5,13,24,.72); font-weight: 800; letter-spacing: .07em; text-transform: uppercase; opacity: 0; transition: .14s; pointer-events: none; }
+    #message.visible { opacity: 1; transform: translate(-50%,0); }
+    #objective { position: absolute; left: 16px; bottom: 16px; max-width: 330px; padding: 10px 13px; border: 1px solid var(--line); border-radius: 12px; background: rgba(8,18,31,.68); color: var(--muted); font-size: .76rem; }
+    #tutorial { position: absolute; right: 16px; bottom: 16px; max-width: 330px; padding: 10px 13px; border: 1px solid var(--line); border-radius: 12px; background: rgba(8,18,31,.68); color: var(--muted); font-size: .76rem; }
+    .stat { text-align: center; }
+    .stat span { display:block; color:var(--muted); font-size:.65rem; text-transform:uppercase; letter-spacing:.1em; }
+    .stat strong { display:block; margin-top:4px; font-size:1.18rem; color:var(--text); }
+    .mission.done { border-color: rgba(117,239,167,.35); color: var(--good); }
+    .shop-item { display:grid; grid-template-columns: 1fr auto; align-items:center; gap:10px; }
+    .tiny { font-size: .75rem; color: var(--muted); }
+    .danger-text { color: var(--danger); }
+    @media(max-width:720px){
+      .grid.two,.grid.three{grid-template-columns:1fr}.hud-bar{grid-template-columns:repeat(3,1fr)}.hud-item:nth-child(n+4){display:none}#objective,#tutorial{display:none}.panel{padding:20px;border-radius:18px}
+    }
+  </style>
+</head>
+<body>
+  <div id="game-root"></div>
+
+  <div id="hud">
+    <div class="hud-bar">
+      <div class="hud-item"><span>Height</span><strong id="hud-height">0 m</strong></div>
+      <div class="hud-item"><span>Score</span><strong id="hud-score">0</strong></div>
+      <div class="hud-item"><span>Crystals</span><strong id="hud-crystals">0</strong></div>
+      <div class="hud-item"><span>Combo</span><strong id="hud-combo">x0</strong></div>
+      <div class="hud-item"><span>Time</span><strong id="hud-time">0:00</strong></div>
+      <div class="hud-item"><span>Best</span><strong id="hud-best">0 m</strong></div>
+    </div>
+    <div id="power-strip">
+      <div id="power-shield" class="power-pill">Shield</div>
+      <div id="power-slow" class="power-pill">Slow time</div>
+      <div id="power-magnet" class="power-pill">Magnet</div>
+      <div id="power-bounce" class="power-pill">High bounce</div>
+      <div id="power-feather" class="power-pill">Feather</div>
+      <div id="power-double" class="power-pill">Double jump: Space</div>
+    </div>
+    <div id="objective"></div>
+    <div id="tutorial">A/D steer · W/S adjust radius · Space uses double jump · P/Esc pause</div>
+  </div>
+
+  <div id="message">Perfect landing</div>
+
+  <div id="start-overlay" class="overlay visible">
+    <div class="panel">
+      <p class="eyebrow">Expanded complete edition</p>
+      <h1>Skyspire</h1>
+      <p class="subtitle">Climb a procedural tower with branching routes, hazards, enemies, power-ups, checkpoints, upgrades, themes, missions, cosmetics, and seven game modes.</p>
+      <div class="row spread"><strong>Permanent crystals: <span id="wallet">0</span></strong><strong>Best: <span id="start-best">0 m</span></strong></div>
+      <h3>Game mode</h3>
+      <div id="mode-grid" class="grid three"></div>
+      <h3>Character and effects</h3>
+      <div class="grid three">
+        <label class="card">Skin<br><select id="skin-select"></select></label>
+        <label class="card">Trail<br><select id="trail-select"></select></label>
+        <label class="card">Landing effect<br><select id="landing-select"></select></label>
+      </div>
+      <div class="grid three" style="margin-top:10px">
+        <label class="card">Tower style<br><select id="tower-select"></select></label>
+        <label class="card">Platform skin<br><select id="platform-select"></select></label>
+        <label class="card">Start effect<br><select id="start-effect-select"></select></label>
+      </div>
+      <div class="grid two" style="margin-top:10px">
+        <label class="card">Body color <input id="body-color" type="color" value="#64d7ff"></label>
+        <label class="card">Glow color <input id="glow-color" type="color" value="#b7f3ff"></label>
+      </div>
+      <h3>Permanent unlocks</h3>
+      <div id="shop-grid" class="grid two"></div>
+      <h3>Missions</h3>
+      <div id="mission-grid" class="grid two"></div>
+      <div class="row" style="justify-content:center;margin-top:24px">
+        <button id="start-button">Start climbing</button>
+        <button id="settings-button" class="secondary">Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="checkpoint-overlay" class="overlay">
+    <div class="panel small">
+      <p class="eyebrow">Checkpoint reached</p><h2>Choose an upgrade</h2>
+      <p class="subtitle">Upgrades last for the current run.</p>
+      <div id="upgrade-grid" class="grid"></div>
+    </div>
+  </div>
+
+  <div id="pause-overlay" class="overlay">
+    <div class="panel small">
+      <p class="eyebrow">Run suspended</p><h2>Paused</h2>
+      <div class="grid" style="margin-top:20px">
+        <button id="resume-button">Resume</button>
+        <button id="pause-settings" class="secondary">Settings</button>
+        <button id="pause-restart" class="secondary">Restart run</button>
+        <button id="pause-quit" class="danger">Quit to menu</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="settings-overlay" class="overlay">
+    <div class="panel small">
+      <p class="eyebrow">Display and control</p><h2>Settings</h2>
+      <label class="setting"><span>Graphics quality</span><select id="set-quality"><option>Low</option><option selected>Medium</option><option>High</option></select></label>
+      <label class="setting"><span>Shadows</span><input id="set-shadows" type="checkbox" checked></label>
+      <label class="setting"><span>Particle intensity</span><select id="set-particles"><option value="0.35">Low</option><option value="0.7">Medium</option><option value="1" selected>High</option></select></label>
+      <label class="setting"><span>Camera shake</span><input id="set-shake" type="checkbox" checked></label>
+      <label class="setting"><span>Control sensitivity</span><input id="set-sensitivity" type="range" min="0.7" max="1.5" step="0.05" value="1"></label>
+      <label class="setting"><span>Field of view</span><input id="set-fov" type="range" min="48" max="78" step="1" value="60"></label>
+      <label class="setting"><span>Reduced motion</span><input id="set-reduced" type="checkbox"></label>
+      <button id="settings-close" style="margin-top:18px">Apply and close</button>
+    </div>
+  </div>
+
+  <div id="gameover-overlay" class="overlay">
+    <div class="panel">
+      <p class="eyebrow">The tower continues</p><h2 id="gameover-title">Run over</h2>
+      <p id="new-record" style="display:none;color:var(--gold);font-weight:800;text-align:center">New height record</p>
+      <div class="grid three" id="result-grid"></div>
+      <h3>Platform breakdown</h3>
+      <div id="breakdown" class="tiny"></div>
+      <h3>Mission progress</h3>
+      <div id="result-missions" class="grid two"></div>
+      <div class="row" style="justify-content:center;margin-top:22px">
+        <button id="restart-button">Climb again</button>
+        <button id="menu-button" class="secondary">Main menu</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+  <script>
+  "use strict";
+  (() => {
+    const TAU=Math.PI*2, TOWER_RADIUS=5, PATH_RADIUS=7.35, PLAYER_RADIUS=.36, PLAYER_HEIGHT=1.05, BASE_GRAVITY=22, MAX_DT=1/30;
+    const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)), lerp=(a,b,t)=>a+(b-a)*t, smooth=(s,dt)=>1-Math.exp(-s*dt), wrap=a=>Math.atan2(Math.sin(a),Math.cos(a)), angleDelta=(a,b)=>wrap(b-a);
+    const fmtTime=s=>`${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,"0")}`;
+
+    class RNG { constructor(seed=Date.now()){this.s=(seed>>>0)||1;} next(){this.s=(this.s*1664525+1013904223)>>>0;return this.s/4294967296;} range(a,b){return a+(b-a)*this.next();} pick(a){return a[Math.floor(this.next()*a.length)];} }
+
+    const MODES={
+      endless:{name:"Endless",desc:"Standard climb until failure."},
+      time:{name:"Time Trial",desc:"Reach 200 m as quickly as possible."},
+      daily:{name:"Daily Tower",desc:"Fixed tower seed for the current day."},
+      precision:{name:"Precision",desc:"Smaller platforms, slower camera, stronger perfect bonuses."},
+      rush:{name:"Rush",desc:"Faster bounce and camera pressure."},
+      norecovery:{name:"No Recovery",desc:"No rescue platforms or automatic rescues."},
+      crystal:{name:"Crystal Run",desc:"Collect 30 crystals before 180 m."}
+    };
+    const THEMES=[
+      {name:"Ancient",at:0,bg:0x89cbea,fog:0xa8d9ec,tower:0x65717d,stone:0x8b9298,accent:0xffd284},
+      {name:"Mechanical",at:50,bg:0x8fa8b7,fog:0x9eafb8,tower:0x454f59,stone:0x66727b,accent:0xffaa55},
+      {name:"Crystal",at:100,bg:0x746fc4,fog:0x918ed1,tower:0x56528a,stone:0x837fd0,accent:0x74f4ff},
+      {name:"Sky Temple",at:150,bg:0xb2d9f2,fog:0xcce7f6,tower:0xd7d3c8,stone:0xe3ded0,accent:0xffdc78},
+      {name:"Void",at:200,bg:0x100d24,fog:0x1b1733,tower:0x27223d,stone:0x453c69,accent:0xe66cff}
+    ];
+    const SHOP=[
+      {kind:"skin",id:"knight",name:"Sky Knight",cost:100},{kind:"skin",id:"robot",name:"Climber Bot",cost:250},{kind:"skin",id:"crystal",name:"Crystal Being",cost:500},
+      {kind:"trail",id:"light",name:"Light Trail",cost:80},{kind:"trail",id:"fire",name:"Fire Trail",cost:180},{kind:"trail",id:"crystal",name:"Crystal Trail",cost:300},{kind:"trail",id:"cloud",name:"Cloud Trail",cost:420},
+      {kind:"landing",id:"ring",name:"Landing Ring",cost:120},{kind:"landing",id:"burst",name:"Star Burst",cost:260},
+      {kind:"tower",id:"moss",name:"Moss Tower",cost:160},{kind:"tower",id:"gold",name:"Golden Tower",cost:360},{kind:"tower",id:"neon",name:"Neon Tower",cost:520},
+      {kind:"platform",id:"rune",name:"Rune Platforms",cost:190},{kind:"platform",id:"glass",name:"Glass Platforms",cost:410},
+      {kind:"startEffect",id:"pulse",name:"Start Pulse",cost:90},{kind:"startEffect",id:"starfall",name:"Starfall Start",cost:280}
+    ];
+    const MISSIONS=[
+      {id:"height100",name:"Reach 100 m",reward:40,test:s=>s.maxHeight>=100,progress:s=>`${Math.min(100,Math.floor(s.maxHeight))}/100 m`},
+      {id:"crystal20",name:"Collect 20 crystals in one run",reward:50,test:s=>s.crystals>=20,progress:s=>`${Math.min(20,s.crystals)}/20`},
+      {id:"moving10",name:"Land on 10 moving platforms",reward:45,test:s=>s.stats.types.moving>=10,progress:s=>`${Math.min(10,s.stats.types.moving)}/10`},
+      {id:"combo15",name:"Reach a 15 landing combo",reward:60,test:s=>s.stats.longestCombo>=15,progress:s=>`${Math.min(15,s.stats.longestCombo)}/15`},
+      {id:"cleanCheckpoint",name:"Reach a checkpoint without recovery",reward:55,test:s=>!!s.stats.cleanCheckpointReached,progress:s=>s.stats.cleanCheckpointReached?"Completed":"Not yet"}
+    ];
+
+    class ParticleSystem{
+      constructor(game){this.game=game;this.items=[];this.geo=new THREE.SphereGeometry(1,5,4);}
+      burst(pos,kind="land",base=10){const multiplier=this.game.settings.particles;const count=Math.floor(base*multiplier);const colors={land:0xd8f5ff,bounce:0xffd66f,crystal:0x78f1ff,debris:0xa49b8e,fire:0xff7d42,void:0xe566ff};for(let i=0;i<count&&this.items.length<180;i++){const mat=new THREE.MeshBasicMaterial({color:colors[kind]||colors.land,transparent:true,opacity:.9,depthWrite:false});const m=new THREE.Mesh(this.geo,mat);m.position.copy(pos);m.scale.setScalar(kind==="debris"?.09:.055);this.game.scene.add(m);this.items.push({m,v:new THREE.Vector3((Math.random()-.5)*2.8,1+Math.random()*3,(Math.random()-.5)*2.8),life:.35+Math.random()*.45,max:.8});}}
+      trail(pos,kind){if(kind==="none"||this.items.length>170)return;const map={light:"land",fire:"fire",crystal:"crystal",cloud:"debris"};this.burst(pos,map[kind]||"land",1);}
+      update(dt){for(let i=this.items.length-1;i>=0;i--){const p=this.items[i];p.life-=dt;p.v.y-=4*dt;p.m.position.addScaledVector(p.v,dt);p.m.material.opacity=clamp(p.life/p.max,0,1);p.m.scale.multiplyScalar(.985);if(p.life<=0){this.game.scene.remove(p.m);p.m.material.dispose();this.items.splice(i,1);}}}
+      clear(){for(const p of this.items){this.game.scene.remove(p.m);p.m.material.dispose();}this.items=[];}
+    }
+
+    class Crystal{
+      constructor(game,platform,risky=false){this.game=game;this.platform=platform;this.collected=false;this.risky=risky;this.mesh=new THREE.Mesh(new THREE.OctahedronGeometry(.25),new THREE.MeshStandardMaterial({color:0x7cecff,emissive:0x28bddd,emissiveIntensity:1.8,roughness:.2}));this.game.dynamic.add(this.mesh);this.update(0,0);}
+      update(dt,time){if(this.collected)return;const p=this.platform;this.mesh.position.set(Math.cos(p.angle)*p.radius,p.topY+.75+Math.sin(time*3+this.mesh.id)*.08,Math.sin(p.angle)*p.radius);this.mesh.rotation.y+=dt*2.7;const magnet=this.game.power.magnet>0;if(magnet){const d=this.mesh.position.distanceTo(this.game.player.mesh.position);if(d<4){this.mesh.position.lerp(this.game.player.mesh.position,smooth(5,dt));}}}
+      tryCollect(player){if(this.collected||this.mesh.position.distanceTo(player.mesh.position)>.7)return;this.collected=true;this.mesh.visible=false;this.game.crystals++;const value=10*(1+this.game.upgrades.crystalValue)+ (this.risky?10:0);this.game.crystalScore+=value;this.game.wallet++;this.game.saveProfile();this.game.particles.burst(this.mesh.position,"crystal",14);this.game.flash(`Crystal +${value}`);}
+      destroy(){this.game.dynamic.remove(this.mesh);this.mesh.geometry.dispose();this.mesh.material.dispose();}
+    }
+
+    class PowerUp{
+      constructor(game,platform,type){this.game=game;this.platform=platform;this.type=type;this.collected=false;const colors={doubleJump:0x8df0ff,shield:0x80aaff,slow:0xd18cff,magnet:0xff7fca,highBounce:0xffd65c,feather:0xe8f6ff};this.mesh=new THREE.Mesh(new THREE.IcosahedronGeometry(.3,0),new THREE.MeshStandardMaterial({color:colors[type],emissive:colors[type],emissiveIntensity:1.4,roughness:.25}));game.dynamic.add(this.mesh);}
+      update(dt,time){if(this.collected)return;const p=this.platform;this.mesh.position.set(Math.cos(p.angle)*p.radius,p.topY+1.05+Math.sin(time*3+this.mesh.id)*.12,Math.sin(p.angle)*p.radius);this.mesh.rotation.x+=dt;this.mesh.rotation.y+=dt*1.8;if(this.mesh.position.distanceTo(this.game.player.mesh.position)<.75)this.collect();}
+      collect(){this.collected=true;this.mesh.visible=false;const g=this.game;if(this.type==="shield")g.power.shield=1;else if(this.type==="doubleJump")g.power.doubleJump=1;else g.power[this.type]=this.type==="slow"?8:10;g.particles.burst(this.mesh.position,"bounce",18);g.flash(this.type.replace(/([A-Z])/g," $1")+" acquired");}
+      destroy(){this.game.dynamic.remove(this.mesh);this.mesh.geometry.dispose();this.mesh.material.dispose();}
+    }
+
+    class Hazard{
+      constructor(game,platform,type,phase=0){this.game=game;this.platform=platform;this.type=type;this.phase=phase;this.active=true;this.cooldown=0;this.group=new THREE.Group();this.game.dynamic.add(this.group);this.build();}
+      build(){const red=new THREE.MeshStandardMaterial({color:0xf26458,emissive:0x8a1915,emissiveIntensity:.8,roughness:.5});if(this.type==="spikes"){for(let i=-1;i<=1;i++){const m=new THREE.Mesh(new THREE.ConeGeometry(.18,.55,5),red);m.position.set(i*.38,.27,0);this.group.add(m);}}else if(this.type==="fire"){const base=new THREE.Mesh(new THREE.CylinderGeometry(.24,.3,.12,8),red);this.group.add(base);this.flame=new THREE.Mesh(new THREE.ConeGeometry(.25,1.2,7),new THREE.MeshBasicMaterial({color:0xff8a42,transparent:true,opacity:.85}));this.flame.position.y=.65;this.group.add(this.flame);}else if(this.type==="laser"){this.beam=new THREE.Mesh(new THREE.BoxGeometry(2.8,.08,.08),new THREE.MeshBasicMaterial({color:0xff446e,transparent:true,opacity:.85}));this.beam.position.y=.7;this.group.add(this.beam);}else if(this.type==="wind"){for(let i=0;i<4;i++){const m=new THREE.Mesh(new THREE.BoxGeometry(.6,.03,.03),new THREE.MeshBasicMaterial({color:0xd9f8ff,transparent:true,opacity:.5}));m.position.set((i-1.5)*.5,.3+i*.12,0);this.group.add(m);}}}
+      update(dt,time){const p=this.platform;if(!p.active){this.group.visible=false;return;}this.group.visible=true;this.group.position.set(Math.cos(p.angle)*p.radius,p.topY,Math.sin(p.angle)*p.radius);this.group.rotation.y=-p.angle;this.cooldown=Math.max(0,this.cooldown-dt);if(this.type==="fire"){this.active=Math.sin(time*2.2+this.phase)>.15;this.flame.visible=this.active;this.flame.scale.y=.75+Math.sin(time*11)*.18;}else if(this.type==="laser"){this.active=Math.sin(time*1.8+this.phase)>.05;this.beam.visible=this.active;this.beam.rotation.y=time*1.5;}else if(this.type==="wind"){this.active=true;for(const c of this.group.children)c.position.x-=dt*1.8;if(this.group.children[0].position.x<-1.2)for(let i=0;i<this.group.children.length;i++)this.group.children[i].position.x=(i-1.5)*.5;}
+        if(!this.active||this.cooldown>0)return;const pl=this.game.player;const dy=Math.abs(pl.footY-(p.topY+.35));if(dy<1.2&&p.containsPolar(pl.angle,pl.radiusFromCenter,.4)){if(this.type==="wind"){pl.angularVelocity+=.8*dt;return;}this.cooldown=1;this.game.hitHazard(this.type);}}
+      destroy(){this.game.dynamic.remove(this.group);this.group.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose();});}
+    }
+
+    class Enemy{
+      constructor(game,spec,chunkId){this.game=game;this.type=spec.type;this.chunkId=chunkId;this.baseAngle=spec.angle;this.angle=spec.angle;this.radius=spec.radius||PATH_RADIUS;this.y=spec.y;this.phase=spec.phase||0;this.timer=0;this.group=new THREE.Group();game.dynamic.add(this.group);this.projectiles=[];this.build();}
+      build(){const mat=new THREE.MeshStandardMaterial({color:0x713f8e,emissive:0x32164b,emissiveIntensity:.7,roughness:.45});if(this.type==="drone"){this.group.add(new THREE.Mesh(new THREE.OctahedronGeometry(.45),mat));}else if(this.type==="guardian"){this.group.add(new THREE.Mesh(new THREE.TorusGeometry(.5,.12,6,14),mat));}else if(this.type==="turret"){this.group.add(new THREE.Mesh(new THREE.CylinderGeometry(.25,.38,.65,8),mat));}else{this.group.add(new THREE.Mesh(new THREE.BoxGeometry(.8,.8,.8),mat));}}
+      update(dt,time){this.timer+=dt;if(this.type==="drone")this.angle=this.baseAngle+Math.sin(time*1.3+this.phase)*.8;else if(this.type==="guardian")this.angle=this.baseAngle+time*.7;this.group.position.set(Math.cos(this.angle)*this.radius,this.y+Math.sin(time*2+this.phase)*.15,Math.sin(this.angle)*this.radius);this.group.rotation.y=-this.angle+time;const pl=this.game.player;if(this.group.position.distanceTo(pl.mesh.position)<.72)this.game.hitHazard(this.type);if(this.type==="turret"&&this.timer>2.4){this.timer=0;this.fire();}for(let i=this.projectiles.length-1;i>=0;i--){const q=this.projectiles[i];q.life-=dt;q.mesh.position.addScaledVector(q.v,dt);if(q.mesh.position.distanceTo(pl.mesh.position)<.5){this.game.hitHazard("projectile");q.life=0;}if(q.life<=0){this.game.dynamic.remove(q.mesh);q.mesh.geometry.dispose();q.mesh.material.dispose();this.projectiles.splice(i,1);}}}
+      fire(){const m=new THREE.Mesh(new THREE.SphereGeometry(.12,6,5),new THREE.MeshBasicMaterial({color:0xff6d9c}));m.position.copy(this.group.position);const v=this.game.player.mesh.position.clone().sub(m.position).normalize().multiplyScalar(4.2);this.game.dynamic.add(m);this.projectiles.push({mesh:m,v,life:4});}
+      destroy(){for(const q of this.projectiles){this.game.dynamic.remove(q.mesh);q.mesh.geometry.dispose();q.mesh.material.dispose();}this.projectiles=[];this.game.dynamic.remove(this.group);this.group.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose();});}
+    }
+
+    class FallingRock{
+      constructor(game){this.game=game;const a=game.player.angle+game.rng.range(-.6,.6),r=PATH_RADIUS+game.rng.range(-1.3,1.3);this.mesh=new THREE.Mesh(new THREE.DodecahedronGeometry(.35+game.rng.next()*.35),new THREE.MeshStandardMaterial({color:0x6f6257,roughness:1}));this.mesh.position.set(Math.cos(a)*r,game.player.footY+12+game.rng.range(0,5),Math.sin(a)*r);this.v=-7-game.rng.range(0,3);this.life=4;game.dynamic.add(this.mesh);}
+      update(dt){this.life-=dt;this.v-=4*dt;this.mesh.position.y+=this.v*dt;this.mesh.rotation.x+=dt*2;this.mesh.rotation.z+=dt*1.4;if(this.mesh.position.distanceTo(this.game.player.mesh.position)<.65){this.game.hitHazard("rock");this.life=0;}return this.life>0&&this.mesh.position.y>this.game.player.footY-8;}
+      destroy(){this.game.dynamic.remove(this.mesh);this.mesh.geometry.dispose();this.mesh.material.dispose();}
+    }
+
+    class Platform{
+      constructor(game,spec,chunkId){this.game=game;this.chunkId=chunkId;this.type=spec.type||"static";this.baseAngle=spec.angle;this.angle=spec.angle;this.baseRadius=spec.radius||PATH_RADIUS;this.radius=this.baseRadius;this.baseTopY=spec.topY;this.topY=spec.topY;this.width=spec.width||2.7;this.depth=spec.depth||2.1;this.thickness=.46;this.active=true;this.triggered=false;this.timer=0;this.fallV=0;this.phase=spec.phase||0;this.speed=spec.speed||1;this.amp=spec.amplitude||0;this.motionAxis=spec.motionAxis||"angle";this.previousTopY=this.topY;this.lastAngle=this.angle;this.lastRadius=this.radius;this.deltaAngle=0;this.deltaRadius=0;this.deltaTopY=0;this.recovery=!!spec.recovery;this.checkpoint=!!spec.checkpoint;this.visited=false;this.risk=spec.risk||1;this.hazard=null;this.splitMeshes=[];this.mesh=new THREE.Mesh(new THREE.BoxGeometry(1,1,1),game.getPlatformMaterial(this.type,this.topY));this.mesh.scale.set(this.width,this.thickness,this.depth);this.mesh.castShadow=true;this.mesh.receiveShadow=true;game.dynamic.add(this.mesh);this.updateVisual(0);}
+      get centerY(){return this.topY-this.thickness/2;}
+      update(dt,time,worldScale=1){this.previousTopY=this.topY;this.lastAngle=this.angle;this.lastRadius=this.radius;const d=dt*worldScale;if(this.type==="moving"){if(this.motionAxis==="radial")this.radius=this.baseRadius+Math.sin(time*this.speed+this.phase)*this.amp;else this.angle=this.baseAngle+Math.sin(time*this.speed+this.phase)*this.amp;}else if(this.type==="rotating")this.angle=this.baseAngle+Math.sin(time*this.speed+this.phase)*this.amp;else if(this.type==="oneway")this.angle=this.baseAngle+time*this.speed;else if(this.type==="elevator")this.topY=this.baseTopY+Math.sin(time*this.speed+this.phase)*this.amp;else if(this.type==="disappear"){this.active=Math.sin(time*this.speed+this.phase)>-.15;this.mesh.visible=this.active;}if((this.type==="collapse"||this.type==="fake")&&this.triggered){this.timer+=d;if(this.timer>(this.type==="fake"?.38:.72)){this.fallV-=18*d;this.topY+=this.fallV*d;this.mesh.rotation.z+=d*1.4;if(this.topY<this.baseTopY-3)this.active=false;}}if(this.type==="splitting"&&this.triggered){this.timer+=d;if(this.timer>.6){this.active=false;this.mesh.visible=false;for(const s of this.splitMeshes){s.visible=true;s.position.y-=d*(3+this.timer*4);s.rotation.z+=d*(s.userData.side*1.7);}}}if(this.type==="tilting"){const target=this.triggered?.16:0;this.mesh.rotation.z=lerp(this.mesh.rotation.z,target,smooth(3,d));}this.deltaAngle=angleDelta(this.lastAngle,this.angle);this.deltaRadius=this.radius-this.lastRadius;this.deltaTopY=this.topY-this.previousTopY;this.updateVisual(time);}
+      updateVisual(time){const shake=(this.triggered&&(this.type==="collapse"||this.type==="fake")&&this.timer<.75)?Math.sin(time*55)*.035:0;this.mesh.position.set(Math.cos(this.angle)*this.radius,this.centerY+shake,Math.sin(this.angle)*this.radius);this.mesh.rotation.y=-this.angle;if(this.type==="bounce")this.mesh.scale.y=this.thickness*(1+Math.sin(time*5+this.phase)*.06);if(this.type==="fake")this.mesh.material.emissiveIntensity=.08+Math.sin(time*5)*.08;}
+      containsPolar(angle,radius,pad=0){const px=Math.cos(angle)*radius,pz=Math.sin(angle)*radius,cx=Math.cos(this.angle)*this.radius,cz=Math.sin(this.angle)*this.radius,dx=px-cx,dz=pz-cz,tx=-Math.sin(this.angle),tz=Math.cos(this.angle),rx=Math.cos(this.angle),rz=Math.sin(this.angle);return Math.abs(dx*tx+dz*tz)<=this.width/2+pad&&Math.abs(dx*rx+dz*rz)<=this.depth/2+pad;}
+      containsSwept(player){const da=angleDelta(player.previousAngle,player.angle),dr=player.radiusFromCenter-player.previousRadius;for(let i=0;i<=10;i++){const t=i/10;if(this.containsPolar(player.previousAngle+da*t,player.previousRadius+dr*t,PLAYER_RADIUS*.75))return true;}return false;}
+      land(){if(this.triggered)return;this.triggered=true;if(this.type==="splitting"){for(const side of [-1,1]){const half=new THREE.Mesh(new THREE.BoxGeometry(1,1,1),this.mesh.material);half.scale.set(this.width*.48,this.thickness,this.depth);half.position.copy(this.mesh.position);half.rotation.copy(this.mesh.rotation);half.translateX(side*this.width*.26);half.visible=false;half.userData.side=side;this.game.dynamic.add(half);this.splitMeshes.push(half);}}}
+      destroy(){if(this.hazard)this.hazard.destroy();this.game.dynamic.remove(this.mesh);this.mesh.geometry.dispose();if(this.mesh.material)this.mesh.material.dispose();for(const s of this.splitMeshes){this.game.dynamic.remove(s);s.geometry.dispose();}this.splitMeshes=[];}
+    }
+
+    class Player{
+      constructor(game){this.game=game;this.group=new THREE.Group();this.mesh=this.group;this.game.scene.add(this.group);this.body=null;this.core=null;this.shadow=new THREE.Mesh(new THREE.CircleGeometry(.48,24),new THREE.MeshBasicMaterial({color:0x142131,transparent:true,opacity:.28,depthWrite:false}));this.shadow.rotation.x=-Math.PI/2;this.game.scene.add(this.shadow);this.marker=new THREE.Mesh(new THREE.RingGeometry(.3,.46,28),new THREE.MeshBasicMaterial({color:0x9ce7ff,transparent:true,opacity:.65,side:THREE.DoubleSide,depthWrite:false}));this.marker.rotation.x=-Math.PI/2;this.game.scene.add(this.marker);this.rebuild();this.reset();}
+      rebuild(){while(this.group.children.length){const c=this.group.children[0];this.group.remove(c);if(c.geometry)c.geometry.dispose();if(c.material)c.material.dispose();}const c=new THREE.Color(this.game.profile.bodyColor),g=new THREE.Color(this.game.profile.glowColor);const bodyMat=new THREE.MeshStandardMaterial({color:c,roughness:.35,metalness:.08});const glow=new THREE.MeshStandardMaterial({color:g,emissive:g,emissiveIntensity:1.8,roughness:.2});const skin=this.game.profile.skin;if(skin==="knight"){this.body=new THREE.Mesh(new THREE.CylinderGeometry(.28,.34,.75,8),bodyMat);this.body.position.y=.45;const head=new THREE.Mesh(new THREE.SphereGeometry(.3,10,8),bodyMat);head.position.y=.95;this.group.add(this.body,head);const horn=new THREE.Mesh(new THREE.ConeGeometry(.13,.38,5),glow);horn.position.y=1.25;this.group.add(horn);}else if(skin==="robot"){this.body=new THREE.Mesh(new THREE.BoxGeometry(.56,.7,.48),bodyMat);this.body.position.y=.48;const head=new THREE.Mesh(new THREE.BoxGeometry(.48,.38,.42),glow);head.position.y=.98;this.group.add(this.body,head);}else if(skin==="crystal"){this.body=new THREE.Mesh(new THREE.OctahedronGeometry(.48),glow);this.body.position.y=.58;const shard=new THREE.Mesh(new THREE.ConeGeometry(.25,.65,5),bodyMat);shard.position.y=1.02;this.group.add(this.body,shard);}else{this.body=new THREE.Mesh(new THREE.CapsuleGeometry(.3,.48,5,10),bodyMat);this.body.position.y=.55;this.group.add(this.body);this.core=new THREE.Mesh(new THREE.SphereGeometry(.19,10,8),glow);this.core.position.y=.62;this.group.add(this.core);}this.group.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});}
+      reset(){this.angle=0;this.previousAngle=0;this.radiusFromCenter=PATH_RADIUS;this.previousRadius=PATH_RADIUS;this.footY=.48;this.previousFootY=.48;this.verticalVelocity=0;this.angularVelocity=0;this.radialVelocity=0;this.maxHeight=0;this.squash=0;this.lastPlatform=null;this.alive=true;this.updateVisual(0);}
+      update(dt){this.previousAngle=this.angle;this.previousRadius=this.radiusFromCenter;this.previousFootY=this.footY;const left=this.game.keys.has("KeyA")||this.game.keys.has("ArrowLeft"),right=this.game.keys.has("KeyD")||this.game.keys.has("ArrowRight"),inward=this.game.keys.has("KeyW")||this.game.keys.has("ArrowUp"),outward=this.game.keys.has("KeyS")||this.game.keys.has("ArrowDown");const ai=(left?1:0)-(right?1:0),ri=(outward?1:0)-(inward?1:0);const sens=this.game.settings.sensitivity,air=this.game.upgrades.airControl;this.angularVelocity+=ai*5.0*sens*(1+air*.18)*dt;const maxA=1.08*sens*(1+air*.12);this.angularVelocity=clamp(this.angularVelocity,-maxA,maxA);const slippery=this.lastPlatform&&this.lastPlatform.type==="slippery";if(!ai)this.angularVelocity*=Math.exp(-(slippery?1.2:4.2)*dt);this.radialVelocity+=ri*11.5*sens*dt;this.radialVelocity=clamp(this.radialVelocity,-3.4,3.4);if(!ri)this.radialVelocity*=Math.exp(-(slippery?1.1:4.8)*dt);if(this.lastPlatform&&this.lastPlatform.type==="conveyor")this.angularVelocity+=.45*dt;if(this.lastPlatform&&this.lastPlatform.type==="tilting")this.radialVelocity+=.7*dt;this.angle=wrap(this.angle+this.angularVelocity*dt);this.radiusFromCenter=clamp(this.radiusFromCenter+this.radialVelocity*dt,TOWER_RADIUS+.75,PATH_RADIUS+2.0);const gravity=BASE_GRAVITY*(this.game.power.feather>0?.55:1);this.verticalVelocity-=gravity*dt;this.footY+=this.verticalVelocity*dt;this.maxHeight=Math.max(this.maxHeight,this.footY-.48);this.game.checkLanding(this);this.updateVisual(dt);}
+      useDoubleJump(){if(this.game.state!=="playing"||this.game.power.doubleJump<=0||this.verticalVelocity>-1)return;this.game.power.doubleJump=0;this.verticalVelocity=10.8;this.game.particles.burst(this.group.position,"bounce",14);this.game.flash("Double jump");}
+      updateVisual(dt){const x=Math.cos(this.angle)*this.radiusFromCenter,z=Math.sin(this.angle)*this.radiusFromCenter;this.group.position.set(x,this.footY,z);this.group.rotation.y=-this.angle;this.squash=Math.max(0,this.squash-dt*4);const q=Math.sin(this.squash*Math.PI)*.11;this.group.scale.set(1+q,1-q,1+q);this.game.particles.trail(new THREE.Vector3(x,this.footY+.5,z),this.game.profile.trail);this.updateLandingAid();}
+      updateLandingAid(){let best=null;for(const chunk of this.game.generator.chunks)for(const p of chunk.platforms){if(!p.active||p.topY>this.footY+.15||this.footY-p.topY>9)continue;if(p.containsPolar(this.angle,this.radiusFromCenter,.05)&&(!best||p.topY>best.topY))best=p;}if(best){const y=best.topY+.025,x=Math.cos(this.angle)*this.radiusFromCenter,z=Math.sin(this.angle)*this.radiusFromCenter;this.shadow.visible=true;this.marker.visible=this.verticalVelocity<0;this.shadow.position.set(x,y,z);this.marker.position.set(x,y+.01,z);const d=clamp((this.footY-y)/8,0,1);this.shadow.scale.setScalar(1-d*.5);this.shadow.material.opacity=.34*(1-d*.65);}else{this.shadow.visible=false;this.marker.visible=false;}}
+    }
+
+    class ChunkGenerator{
+      constructor(game){this.game=game;this.chunks=[];this.nextId=1;this.highest=0;this.lastAngle=0;this.recent=[];this.nextCheckpoint=50;this.templates=["spiral","alternate","stairs","moving","rotating","fork","shaft","bridge"];}
+      clear(){for(const c of this.chunks){for(const p of c.platforms)p.destroy();for(const x of c.crystals)x.destroy();for(const u of c.powerups)u.destroy();for(const e of c.enemies)e.destroy();}this.chunks=[];this.highest=0;this.lastAngle=0;this.nextId=1;this.nextCheckpoint=50;}
+      intro(){const c=this.makeChunk("tutorial");const steps=[{a:0,y:.48,w:4.2,t:"static"},{a:.15,y:2.35,w:3.6,t:"static"},{a:.34,y:4.2,w:3.35,t:"static"},{a:.58,y:6.1,w:3.1,t:"moving"},{a:.83,y:8.05,w:3,t:"collapse"},{a:1.04,y:10.15,w:3,t:"bounce"}];for(const s of steps)this.addPlatform(c,{angle:s.a,topY:s.y,width:s.w,depth:2.4,type:s.t,amplitude:s.t==="moving"?.2:0,speed:.8});this.highest=10.15;this.lastAngle=1.04;this.chunks.push(c);}
+      makeChunk(name){return{id:this.nextId++,name,platforms:[],crystals:[],powerups:[],enemies:[],topY:this.highest};}
+      difficulty(){let d=Math.floor(this.highest/28);if(this.game.mode==="precision")d+=2;if(this.game.mode==="rush")d+=1;return d;}
+      addPlatform(c,spec){const p=new Platform(this.game,{radius:PATH_RADIUS,phase:this.game.rng.range(0,TAU),...spec},c.id);c.platforms.push(p);return p;}
+      maybeDecorate(c,p,d,risky=false){const r=this.game.rng.next();if(r<.44){const crystal=new Crystal(this.game,p,risky);c.crystals.push(crystal);}if(this.game.mode!=="precision"&&this.game.rng.next()<.09&&this.game.mode!=="norecovery"){const type=this.game.rng.pick(["doubleJump","shield","slow","magnet","highBounce","feather"]);c.powerups.push(new PowerUp(this.game,p,type));}if(d>=2&&this.game.rng.next()<.16){const type=this.game.rng.pick(["spikes","fire","laser","wind"]);p.hazard=new Hazard(this.game,p,type,this.game.rng.range(0,TAU));}if(d>=3&&this.game.rng.next()<.08){const type=this.game.rng.pick(["drone","guardian","turret","blocker"]);c.enemies.push(new Enemy(this.game,{type,angle:p.angle+.45,y:p.topY+1.3,radius:p.radius,phase:this.game.rng.range(0,TAU)},c.id));}}
+      chooseType(d){if(this.game.mode==="rush")return this.game.rng.pick(["moving","collapse","rotating","oneway","bounce"]);const pool=["static","static","moving","collapse","bounce","rotating"];if(d>=2)pool.push("disappear","conveyor","slippery","elevator");if(d>=3)pool.push("tilting","splitting","oneway","fake");return this.game.rng.pick(pool);}
+      spawnCheckpoint(){const c=this.makeChunk("checkpoint");const y=Math.max(this.highest+2.1,this.nextCheckpoint);const p=this.addPlatform(c,{angle:this.lastAngle+.25,topY:y,width:5.2,depth:3.2,type:"static",checkpoint:true});c.crystals.push(new Crystal(this.game,p,false));this.highest=y;this.lastAngle=p.angle;this.nextCheckpoint+=50;this.chunks.push(c);}
+      spawn(){if(this.highest+5>=this.nextCheckpoint){this.spawnCheckpoint();return;}const d=this.difficulty();let choices=this.templates.filter(t=>!(this.recent.slice(-2).every(x=>x===t)));let name=this.game.rng.pick(choices);this.recent.push(name);if(this.recent.length>5)this.recent.shift();const c=this.makeChunk(name),dir=this.game.rng.next()<.5?-1:1;let a=this.lastAngle,y=this.highest;const stepCount=5+Math.floor(this.game.rng.next()*3);const precision=this.game.mode==="precision"?.45:0;for(let i=0;i<stepCount;i++){const dy=this.game.rng.range(1.7,2.15);y+=dy;let da;
+        if(name==="alternate")da=dir*(i%2===0?.42:-.42);else if(name==="stairs")da=dir*.2;else if(name==="bridge")da=dir*.12;else da=dir*this.game.rng.range(.22,.42);a+=da;let type=this.chooseType(d);if(name==="moving")type=i%2?"moving":"elevator";if(name==="rotating")type=i%2?"rotating":"oneway";if(this.game.mode==="rush"&&type==="static")type="collapse";let width=clamp(3.15-d*.08-precision+this.game.rng.range(-.2,.2),1.9,3.2);if(type==="bounce")width=Math.max(width,2.5);const p=this.addPlatform(c,{angle:a,topY:y,width,depth:2.15,type,speed:.75+d*.045,amplitude:type==="elevator"?.65:type==="moving"?.28:type==="rotating"?.45:type==="oneway"?.12:0,motionAxis:this.game.rng.next()<.35?"radial":"angle",risk:1+(type==="static"?0:.2)});this.maybeDecorate(c,p,d,false);
+        if((name==="fork"||name==="shaft")&&i===2){const riskyA=a-dir*.72;const riskyType=this.game.rng.pick(["collapse","disappear","splitting","fake"]);const rp=this.addPlatform(c,{angle:riskyA,topY:y+.25,width:2.05,depth:1.8,type:riskyType,risk:1.8});this.maybeDecorate(c,rp,d,true);c.crystals.push(new Crystal(this.game,rp,true));}
+        const recoveryAllowed=this.game.mode!=="norecovery"&&this.game.rng.next()<Math.max(.08,.32-d*.025);if(recoveryAllowed&&i>0){const rp=this.addPlatform(c,{angle:a-dir*.16,topY:y-1.25,width:2.65,depth:2.25,type:"static",recovery:true,risk:.7});if(this.game.rng.next()<.25)c.crystals.push(new Crystal(this.game,rp,false));}
+      }
+      this.highest=y;this.lastAngle=a;this.chunks.push(c);}
+      ensureAhead(h){while(this.highest<h+34)this.spawn();}
+      cleanup(minY){for(let i=this.chunks.length-1;i>=0;i--){const c=this.chunks[i];if(c.platforms.every(p=>p.topY<minY)){for(const p of c.platforms)p.destroy();for(const x of c.crystals)x.destroy();for(const u of c.powerups)u.destroy();for(const e of c.enemies)e.destroy();this.chunks.splice(i,1);}}}
+    }
+
+    class Game{
+      constructor(){this.root=document.getElementById("game-root");this.scene=new THREE.Scene();this.camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,.1,700);this.renderer=new THREE.WebGLRenderer({antialias:true});this.renderer.setSize(innerWidth,innerHeight);this.renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));this.renderer.shadowMap.enabled=true;this.renderer.shadowMap.type=THREE.PCFSoftShadowMap;this.root.appendChild(this.renderer.domElement);this.dynamic=new THREE.Group();this.scene.add(this.dynamic);this.clock=new THREE.Clock();this.keys=new Set();this.state="start";this.mode="endless";this.ui=this.bindUI();this.settings=this.loadSettings();this.profile=this.loadProfile();this.wallet=this.profile.wallet||0;this.bestHeight=Number(localStorage.getItem("skyspireBestHeight"))||0;this.rng=new RNG();this.particles=new ParticleSystem(this);this.generator=new ChunkGenerator(this);this.player=new Player(this);this.rocks=[];this.setupScene();this.setupUI();this.resetRun(false);this.animate=this.animate.bind(this);requestAnimationFrame(this.animate);}
+      bindUI(){const id=x=>document.getElementById(x);return{start:id("start-overlay"),pause:id("pause-overlay"),checkpoint:id("checkpoint-overlay"),settings:id("settings-overlay"),gameover:id("gameover-overlay"),hud:id("hud"),message:id("message"),modeGrid:id("mode-grid"),shopGrid:id("shop-grid"),missionGrid:id("mission-grid"),upgradeGrid:id("upgrade-grid"),resultGrid:id("result-grid"),breakdown:id("breakdown"),resultMissions:id("result-missions"),wallet:id("wallet"),startBest:id("start-best"),objective:id("objective"),newRecord:id("new-record"),gameoverTitle:id("gameover-title"),skin:id("skin-select"),trail:id("trail-select"),landing:id("landing-select"),towerStyle:id("tower-select"),platformSkin:id("platform-select"),startEffect:id("start-effect-select"),bodyColor:id("body-color"),glowColor:id("glow-color"),hudHeight:id("hud-height"),hudScore:id("hud-score"),hudCrystals:id("hud-crystals"),hudCombo:id("hud-combo"),hudTime:id("hud-time"),hudBest:id("hud-best")};}
+      loadSettings(){try{return Object.assign({quality:"Medium",shadows:true,particles:1,shake:true,sensitivity:1,fov:60,reduced:false},JSON.parse(localStorage.getItem("skyspireSettings")||"{}"));}catch{return{quality:"Medium",shadows:true,particles:1,shake:true,sensitivity:1,fov:60,reduced:false};}}
+      loadProfile(){const base={wallet:0,unlocked:{skin:["orb"],trail:["none"],landing:["basic"],tower:["classic"],platform:["classic"],startEffect:["none"]},skin:"orb",trail:"none",landing:"basic",towerStyle:"classic",platformSkin:"classic",startEffect:"none",bodyColor:"#64d7ff",glowColor:"#b7f3ff",missions:{}};try{const raw=JSON.parse(localStorage.getItem("skyspireProfile")||"{}");const out=Object.assign({},base,raw);out.unlocked=Object.assign({},base.unlocked,raw.unlocked||{});for(const k of Object.keys(base.unlocked)){if(!Array.isArray(out.unlocked[k])||!out.unlocked[k].length)out.unlocked[k]=[...base.unlocked[k]];}out.missions=Object.assign({},raw.missions||{});return out;}catch{return base;}}
+      saveProfile(){this.profile.wallet=this.wallet;localStorage.setItem("skyspireProfile",JSON.stringify(this.profile));this.ui.wallet.textContent=this.wallet;}
+      setupScene(){this.hemi=new THREE.HemisphereLight(0xdaf5ff,0x344052,2.2);this.scene.add(this.hemi);this.sun=new THREE.DirectionalLight(0xffedc9,3);this.sun.position.set(12,22,9);this.sun.castShadow=true;this.sun.shadow.mapSize.set(1024,1024);this.scene.add(this.sun);this.towerMat=new THREE.MeshStandardMaterial({color:0x65717d,roughness:.97});this.tower=new THREE.Mesh(new THREE.CylinderGeometry(TOWER_RADIUS,TOWER_RADIUS*1.03,700,28),this.towerMat);this.tower.position.y=330;this.tower.receiveShadow=true;this.scene.add(this.tower);this.decor=new THREE.Group();this.scene.add(this.decor);for(let i=0;i<42;i++){const m=new THREE.Mesh(new THREE.SphereGeometry(1,8,6),new THREE.MeshBasicMaterial({color:0xeaf7fb,transparent:true,opacity:.2,depthWrite:false}));const a=Math.random()*TAU,r=20+Math.random()*40;m.position.set(Math.cos(a)*r,Math.random()*260,Math.sin(a)*r);m.scale.set(2+Math.random()*5,.5+Math.random()*1.2,1.5+Math.random()*4);this.decor.add(m);}for(let i=0;i<14;i++){const island=new THREE.Group(),rock=new THREE.Mesh(new THREE.ConeGeometry(2+Math.random()*2,3+Math.random()*4,7),new THREE.MeshStandardMaterial({color:0x6e716f,roughness:1})),ruin=new THREE.Mesh(new THREE.BoxGeometry(.7,2+Math.random()*3,.7),new THREE.MeshStandardMaterial({color:0xaaa99f,roughness:.9}));rock.rotation.z=Math.PI;ruin.position.y=1.2;island.add(rock,ruin);const a=Math.random()*TAU,r=26+Math.random()*34;island.position.set(Math.cos(a)*r,20+Math.random()*230,Math.sin(a)*r);island.rotation.y=Math.random()*TAU;this.decor.add(island);}this.themeIndex=-1;this.applyTheme(0);}
+      getPlatformMaterial(type,y){const theme=this.themeFor(y),base=theme.stone,colors={static:base,moving:0x66a3b4,collapse:0x9b6d5c,bounce:theme.accent,rotating:0x8370a8,disappear:0x72c5d0,conveyor:0x5d8fa7,slippery:0xb5ddeb,tilting:0x9c8f72,elevator:0x6f8798,splitting:0x9d776a,oneway:0x8169a4,fake:base};let c=colors[type]||base,emissive=type==="bounce"?c:type==="fake"?0x312010:0x000000,emissiveIntensity=type==="bounce"?.6:.05,roughness=type==="slippery"?.2:.75,transparent=type==="disappear",opacity=type==="disappear"?.8:1;if(this.profile.platformSkin==="rune"){emissive=theme.accent;emissiveIntensity=Math.max(emissiveIntensity,.18);}else if(this.profile.platformSkin==="glass"){transparent=true;opacity=Math.min(opacity,.72);roughness=.18;c=0x8ed4df;}return new THREE.MeshStandardMaterial({color:c,emissive,emissiveIntensity,roughness,transparent,opacity});}
+      themeFor(y){let t=THEMES[0];for(const x of THEMES)if(y>=x.at)t=x;return t;}
+      applyTheme(y){const idx=THEMES.findIndex((t,i)=>i===THEMES.length-1||y<THEMES[i+1].at);if(idx===this.themeIndex)return;this.themeIndex=idx;const t=THEMES[idx];this.scene.background=new THREE.Color(t.bg);this.scene.fog=new THREE.Fog(t.fog,25,86);let towerColor=t.tower;if(this.profile.towerStyle==="moss")towerColor=0x526d58;else if(this.profile.towerStyle==="gold")towerColor=0xa98a43;else if(this.profile.towerStyle==="neon")towerColor=0x29214c;this.towerMat.color.setHex(towerColor);this.towerMat.emissive.setHex(this.profile.towerStyle==="neon"?0x28135f:0x000000);this.towerMat.emissiveIntensity=this.profile.towerStyle==="neon"?.45:0;if(this.state==="playing"&&y>1)this.flash(`${t.name} theme`);}
+      setupUI(){for(const [id,m] of Object.entries(MODES)){const d=document.createElement("div");d.className="select-card";d.dataset.mode=id;d.innerHTML=`<strong>${m.name}</strong><span class="tiny">${m.desc}</span>`;d.onclick=()=>{this.mode=id;this.renderModes();};this.ui.modeGrid.appendChild(d);}this.renderModes();this.renderShop();this.renderMissions(this.ui.missionGrid,{maxHeight:0,crystals:0,stats:{types:{moving:0},longestCombo:0}});this.refreshCosmetics();this.ui.skin.onchange=()=>{this.profile.skin=this.ui.skin.value;this.player.rebuild();this.saveProfile();};this.ui.trail.onchange=()=>{this.profile.trail=this.ui.trail.value;this.saveProfile();};this.ui.landing.onchange=()=>{this.profile.landing=this.ui.landing.value;this.saveProfile();};this.ui.towerStyle.onchange=()=>{this.profile.towerStyle=this.ui.towerStyle.value;this.themeIndex=-1;this.applyTheme(this.player.maxHeight);this.saveProfile();};this.ui.platformSkin.onchange=()=>{this.profile.platformSkin=this.ui.platformSkin.value;this.saveProfile();};this.ui.startEffect.onchange=()=>{this.profile.startEffect=this.ui.startEffect.value;this.saveProfile();};this.ui.bodyColor.oninput=()=>{this.profile.bodyColor=this.ui.bodyColor.value;this.player.rebuild();this.saveProfile();};this.ui.glowColor.oninput=()=>{this.profile.glowColor=this.ui.glowColor.value;this.player.rebuild();this.saveProfile();};
+        document.getElementById("start-button").onclick=()=>this.startRun();document.getElementById("resume-button").onclick=()=>this.resume();document.getElementById("restart-button").onclick=()=>this.startRun();document.getElementById("menu-button").onclick=()=>this.toMenu();document.getElementById("pause-restart").onclick=()=>this.startRun();document.getElementById("pause-quit").onclick=()=>this.toMenu();document.getElementById("settings-button").onclick=()=>this.openSettings();document.getElementById("pause-settings").onclick=()=>this.openSettings();document.getElementById("settings-close").onclick=()=>this.closeSettings();
+        this.syncSettingsUI();window.addEventListener("keydown",e=>{if(["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Space"].includes(e.code))e.preventDefault();if(this.state==="playing"&&e.code==="Space"){this.player.useDoubleJump();return;}if((e.code==="KeyP"||e.code==="Escape")&&this.state==="playing")this.pause();else if((e.code==="KeyP"||e.code==="Escape")&&this.state==="paused")this.resume();else if((e.code==="Enter"||e.code==="Space")&&this.state==="start")this.startRun();else if((e.code==="Enter"||e.code==="Space"||e.code==="KeyR")&&this.state==="gameover")this.startRun();this.keys.add(e.code);},{passive:false});window.addEventListener("keyup",e=>this.keys.delete(e.code));window.addEventListener("blur",()=>{this.keys.clear();if(this.state==="playing")this.pause();});window.addEventListener("resize",()=>this.resize());this.resize();}
+      renderModes(){for(const c of this.ui.modeGrid.children)c.classList.toggle("selected",c.dataset.mode===this.mode);}
+      renderShop(){this.ui.shopGrid.innerHTML="";for(const item of SHOP){const owned=(this.profile.unlocked[item.kind]||[]).includes(item.id);const d=document.createElement("div");d.className="card shop-item";d.innerHTML=`<div><strong>${item.name}</strong><div class="tiny">${item.kind} · ${owned?"Owned":item.cost+" crystals"}</div></div>`;const b=document.createElement("button");b.className="secondary";b.textContent=owned?"Owned":"Unlock";b.disabled=owned||this.wallet<item.cost;b.onclick=()=>this.buy(item);d.appendChild(b);this.ui.shopGrid.appendChild(d);}}
+      buy(item){if(this.wallet<item.cost)return;this.wallet-=item.cost;this.profile.unlocked[item.kind].push(item.id);this.saveProfile();this.renderShop();this.refreshCosmetics();}
+      refreshCosmetics(){const names={orb:"Glowing Orb",knight:"Sky Knight",robot:"Climber Bot",crystal:"Crystal Being",none:"None",light:"Light",fire:"Fire",cloud:"Cloud",basic:"Basic",ring:"Ring",burst:"Star Burst",classic:"Classic",moss:"Moss",gold:"Gold",neon:"Neon",rune:"Rune",glass:"Glass",pulse:"Pulse",starfall:"Starfall"};const fill=(el,kind,current)=>{el.innerHTML="";for(const id of this.profile.unlocked[kind]){const o=document.createElement("option");o.value=id;o.textContent=names[id]||id;el.appendChild(o);}el.value=current;};fill(this.ui.skin,"skin",this.profile.skin);fill(this.ui.trail,"trail",this.profile.trail);fill(this.ui.landing,"landing",this.profile.landing);fill(this.ui.towerStyle,"tower",this.profile.towerStyle);fill(this.ui.platformSkin,"platform",this.profile.platformSkin);fill(this.ui.startEffect,"startEffect",this.profile.startEffect);this.ui.bodyColor.value=this.profile.bodyColor;this.ui.glowColor.value=this.profile.glowColor;this.ui.wallet.textContent=this.wallet;this.ui.startBest.textContent=`${Math.floor(this.bestHeight)} m`;}
+      renderMissions(target,snapshot){target.innerHTML="";for(const m of MISSIONS){const done=!!this.profile.missions[m.id];const d=document.createElement("div");d.className=`card mission ${done?"done":""}`;d.innerHTML=`<strong>${m.name}</strong><div class="tiny">${done?"Completed":m.progress(snapshot)} · Reward ${m.reward}</div>`;target.appendChild(d);}}
+      syncSettingsUI(){document.getElementById("set-quality").value=this.settings.quality;document.getElementById("set-shadows").checked=this.settings.shadows;document.getElementById("set-particles").value=String(this.settings.particles);document.getElementById("set-shake").checked=this.settings.shake;document.getElementById("set-sensitivity").value=this.settings.sensitivity;document.getElementById("set-fov").value=this.settings.fov;document.getElementById("set-reduced").checked=this.settings.reduced;}
+      openSettings(){this.preSettingsState=this.state;if(this.state==="playing")this.pause();this.ui.settings.classList.add("visible");}
+      closeSettings(){this.settings={quality:document.getElementById("set-quality").value,shadows:document.getElementById("set-shadows").checked,particles:Number(document.getElementById("set-particles").value),shake:document.getElementById("set-shake").checked,sensitivity:Number(document.getElementById("set-sensitivity").value),fov:Number(document.getElementById("set-fov").value),reduced:document.getElementById("set-reduced").checked};localStorage.setItem("skyspireSettings",JSON.stringify(this.settings));this.renderer.shadowMap.enabled=this.settings.shadows;this.camera.fov=this.settings.fov;this.camera.updateProjectionMatrix();this.resize();this.ui.settings.classList.remove("visible");}
+      resize(){this.camera.aspect=innerWidth/innerHeight;this.camera.fov=this.settings.fov;this.camera.updateProjectionMatrix();this.renderer.setSize(innerWidth,innerHeight);const cap=this.settings.quality==="Low"?1:this.settings.quality==="High"?1.8:1.4;this.renderer.setPixelRatio(Math.min(devicePixelRatio||1,cap));}
+      resetRun(showScene=true){this.keys.clear();this.generator.clear();this.particles.clear();for(const r of this.rocks)r.destroy();this.rocks=[];this.rng=new RNG(this.mode==="daily"?Number(new Date().toISOString().slice(0,10).replaceAll("-","")):Date.now());this.power={shield:0,slow:0,magnet:0,highBounce:0,feather:0,doubleJump:0};this.upgrades={airControl:0,bounce:0,rescue:0,shieldDuration:0,crystalValue:0,cameraSlow:0};this.stats={platforms:0,longestCombo:0,perfect:0,risky:0,recoveries:0,cleanCheckpointReached:false,types:{}};this.crystals=0;this.crystalScore=0;this.combo=0;this.comboScore=0;this.lastLandingMax=.48;this.runTime=0;this.cameraPressureY=0;this.cameraAngle=0;this.cameraY=6;this.cameraLook=new THREE.Vector3();this.cameraShake=0;this.cameraPulse=0;this.messageTimer=0;this.deathTimer=0;this.checkpointLock=false;this.nextRock=6;this.player.reset();this.generator.intro();this.generator.ensureAhead(0);this.applyTheme(0);this.updateHUD();this.updateCamera(0,true);if(showScene)this.player.updateVisual(0);}
+      startRun(){this.hideAll();this.resetRun();this.state="playing";this.ui.hud.classList.add("visible");this.player.verticalVelocity=this.mode==="rush"?11.4:10.4;const startPos=this.player.mesh.position.clone();if(this.profile.startEffect==="pulse")this.particles.burst(startPos,"bounce",24);else if(this.profile.startEffect==="starfall"){for(let i=0;i<4;i++){const q=startPos.clone();q.y+=i*.35;this.particles.burst(q,i%2?"crystal":"bounce",16);}}this.clock.getDelta();this.flash(MODES[this.mode].name);}
+      toMenu(){this.hideAll();this.state="start";this.ui.start.classList.add("visible");this.refreshCosmetics();this.renderShop();this.renderMissions(this.ui.missionGrid,{maxHeight:0,crystals:0,stats:{types:{moving:0},longestCombo:0}});}
+      hideAll(){for(const x of [this.ui.start,this.ui.pause,this.ui.checkpoint,this.ui.settings,this.ui.gameover])x.classList.remove("visible");this.ui.hud.classList.remove("visible");}
+      pause(){if(this.state!=="playing")return;this.state="paused";this.ui.pause.classList.add("visible");this.keys.clear();}
+      resume(){if(this.state!=="paused")return;this.ui.pause.classList.remove("visible");this.state="playing";this.clock.getDelta();}
+      flash(text){this.ui.message.textContent=text;this.ui.message.classList.add("visible");this.messageTimer=1.05;}
+      updateMessage(dt){if(this.messageTimer>0){this.messageTimer-=dt;if(this.messageTimer<=0)this.ui.message.classList.remove("visible");}}
+      checkLanding(pl){if(pl.verticalVelocity>0)return;let best=null;for(const c of this.generator.chunks)for(const p of c.platforms){if(!p.active)continue;const prevTop=p.previousTopY??p.topY,prevRel=pl.previousFootY-prevTop,currRel=pl.footY-p.topY;if(prevRel>=-.12&&currRel<=.15&&p.containsSwept(pl)&&(!best||p.topY>best.topY))best=p;}if(!best)return;pl.footY=best.topY;pl.lastPlatform=best;best.land();if(best.type==="moving"||best.type==="rotating"||best.type==="oneway")pl.angularVelocity+=clamp(best.deltaAngle/Math.max(this.lastDt||.016,.008),-.7,.7);if(best.type==="elevator")pl.verticalVelocity=Math.max(pl.verticalVelocity,best.deltaTopY/Math.max(this.lastDt||.016,.008));const upward=best.topY>this.lastLandingMax+.3;if(upward){this.combo=Math.min(99,this.combo+1);this.lastLandingMax=best.topY;}else{this.combo=0;if(best.recovery)this.stats.recoveries++;}this.stats.longestCombo=Math.max(this.stats.longestCombo,this.combo);this.stats.platforms++;this.stats.types[best.type]=(this.stats.types[best.type]||0)+1;const q=this.landingQuality(pl,best);let bonus=0;if(q>.78){bonus=10*(this.mode==="precision"?2:1);this.stats.perfect++;this.flash(`Perfect +${bonus}`);}else if(q<.2){bonus=15;this.stats.risky++;this.flash("Risky landing +15");}const mult={static:1,moving:1.2,collapse:1.4,rotating:1.5,oneway:1.5,disappear:1.4,splitting:1.45,fake:1.5}[best.type]||1.1;this.comboScore+=Math.floor((4+this.combo*2+bonus)*mult);let bounce=(this.mode==="rush"?11.4:10.4)*(1+this.upgrades.bounce*.05);if(best.type==="bounce"||this.power.highBounce>0)bounce+=2.4;pl.verticalVelocity=bounce;pl.squash=1;const pos=new THREE.Vector3(pl.mesh.position.x,best.topY+.08,pl.mesh.position.z);const effect=this.profile.landing==="burst"?22:this.profile.landing==="ring"?14:8;this.particles.burst(pos,best.type==="bounce"?"bounce":"land",effect);if(this.settings.shake&&!this.settings.reduced&&(best.type==="bounce"||this.profile.landing!=="basic"))this.cameraShake=.16;if(best.checkpoint&&!best.visited){best.visited=true;this.openCheckpoint();}if(this.combo===15)this.flash("15 combo");for(const mark of [50,100,150,200,250,300])if(Math.floor(pl.maxHeight)<mark&&Math.floor(best.topY)>=mark){this.cameraPulse=1;this.flash(`${mark} m milestone`);}}
+      landingQuality(pl,p){const px=Math.cos(pl.angle)*pl.radiusFromCenter,pz=Math.sin(pl.angle)*pl.radiusFromCenter,cx=Math.cos(p.angle)*p.radius,cz=Math.sin(p.angle)*p.radius;return clamp(1-Math.hypot(px-cx,pz-cz)/Math.max(.8,Math.min(p.width,p.depth)*.58),0,1);}
+      openCheckpoint(){if(this.stats.recoveries===0)this.stats.cleanCheckpointReached=true;this.state="checkpoint";this.keys.clear();this.ui.checkpoint.classList.add("visible");const choices=[{id:"airControl",name:"Air control",text:"18% stronger steering"},{id:"bounce",name:"Bounce power",text:"5% higher bounce"},{id:"rescue",name:"Rescue",text:"Recover from one fall"},{id:"shieldDuration",name:"Shield charge",text:"Gain one shield"},{id:"crystalValue",name:"Crystal value",text:"Crystals score +10"},{id:"cameraSlow",name:"Calmer sky",text:"Camera pressure -10%"}];const shuffled=choices.sort(()=>this.rng.next()-.5).slice(0,3);this.ui.upgradeGrid.innerHTML="";for(const u of shuffled){const b=document.createElement("button");b.className="secondary";b.innerHTML=`<strong>${u.name}</strong><br><span class="tiny">${u.text}</span>`;b.onclick=()=>{if(u.id==="shieldDuration")this.power.shield=1;else this.upgrades[u.id]++;this.ui.checkpoint.classList.remove("visible");this.state="playing";this.clock.getDelta();this.flash(u.name);};this.ui.upgradeGrid.appendChild(b);}}
+      hitHazard(source){if(this.state!=="playing")return;if(this.power.shield>0){this.power.shield=0;this.flash("Shield absorbed hit");this.cameraShake=.2;return;}this.triggerDeath(source);}
+      rescue(){let best=null;for(const c of this.generator.chunks)for(const p of c.platforms)if(p.active&&p.topY<this.player.maxHeight&&p.topY>this.player.maxHeight-12&&(!best||p.topY>best.topY))best=p;if(!best)return false;this.player.angle=best.angle;this.player.radiusFromCenter=best.radius;this.player.footY=best.topY+.05;this.player.verticalVelocity=10.2;this.stats.recoveries++;this.flash("Rescued");return true;}
+      triggerDeath(reason="fall"){if(this.state!=="playing")return;if((this.upgrades.rescue>0||this.power.shield>0)&&this.mode!=="norecovery"){if(this.upgrades.rescue>0)this.upgrades.rescue--;else this.power.shield=0;if(this.rescue())return;}this.state="dying";this.deathTimer=.7;this.keys.clear();this.combo=0;this.cameraShake=.22;this.deathReason=reason;}
+      finishRun(success=false){const height=Math.max(0,Math.floor(this.player.maxHeight)),score=this.score(),old=this.bestHeight;if(height>this.bestHeight){this.bestHeight=height;localStorage.setItem("skyspireBestHeight",String(height));}const snap={maxHeight:height,crystals:this.crystals,stats:this.stats};for(const m of MISSIONS)if(!this.profile.missions[m.id]&&m.test(snap)){this.profile.missions[m.id]=true;this.wallet+=m.reward;}this.saveProfile();this.ui.gameoverTitle.textContent=success?"Challenge complete":"Run over";this.ui.newRecord.style.display=height>old?"block":"none";const stats=[['Height',height+' m'],['Score',score.toLocaleString()],['Crystals',this.crystals],['Time',fmtTime(this.runTime)],['Platforms',this.stats.platforms],['Longest combo','x'+this.stats.longestCombo],['Perfect',this.stats.perfect],['Risky',this.stats.risky],['Recoveries',this.stats.recoveries]];this.ui.resultGrid.innerHTML=stats.map(([a,b])=>`<div class="card stat"><span>${a}</span><strong>${b}</strong></div>`).join("");this.ui.breakdown.textContent=Object.entries(this.stats.types).map(([k,v])=>`${k}: ${v}`).join(" · ")||"No landings";this.renderMissions(this.ui.resultMissions,snap);this.hideAll();this.ui.gameover.classList.add("visible");this.state="gameover";}
+      score(){return Math.floor(this.player.maxHeight*10+this.crystalScore+this.comboScore);}
+      updatePower(dt){for(const k of ["slow","magnet","highBounce","feather"])this.power[k]=Math.max(0,this.power[k]-dt);}
+      updateObjective(){let text="Climb as high as possible.";if(this.mode==="time")text=`Goal: 200 m · ${fmtTime(this.runTime)}`;else if(this.mode==="daily")text="Daily seed: same tower for everyone today.";else if(this.mode==="precision")text="Perfect landings score double.";else if(this.mode==="rush")text="Faster camera and bounce.";else if(this.mode==="norecovery")text="No recovery platforms or rescue.";else if(this.mode==="crystal")text=`Goal: ${this.crystals}/30 crystals before 180 m.`;this.ui.objective.textContent=text;}
+      updateHUD(){this.ui.hudHeight.textContent=`${Math.floor(Math.max(0,this.player.maxHeight))} m`;this.ui.hudScore.textContent=this.score().toLocaleString();this.ui.hudCrystals.textContent=String(this.crystals);this.ui.hudCombo.textContent=`x${this.combo}`;this.ui.hudTime.textContent=fmtTime(this.runTime);this.ui.hudBest.textContent=`${Math.floor(this.bestHeight)} m`;for(const [id,key] of [["power-shield","shield"],["power-slow","slow"],["power-magnet","magnet"],["power-bounce","highBounce"],["power-feather","feather"],["power-double","doubleJump"]]){const e=document.getElementById(id);e.classList.toggle("visible",this.power[key]>0);if(typeof this.power[key]==="number"&&this.power[key]>1)e.textContent=e.textContent.split(':')[0].split(' · ')[0]+` · ${Math.ceil(this.power[key])}s`;}this.updateObjective();}
+      updatePlaying(dt){this.runTime+=dt;this.updatePower(dt);const worldScale=this.power.slow>0?.45:1;const cameraMod=(1-this.upgrades.cameraSlow*.1);this.cameraPressureY+=dt*cameraMod*(this.mode==="rush"?.34:Math.min(.5,.1+this.player.maxHeight*.0028));for(const c of this.generator.chunks){for(const p of c.platforms){p.update(dt,this.runTime,worldScale);if(p.hazard)p.hazard.update(dt*worldScale,this.runTime);}for(const x of c.crystals){x.update(dt,this.runTime);x.tryCollect(this.player);}for(const u of c.powerups)u.update(dt,this.runTime);for(const e of c.enemies)e.update(dt*worldScale,this.runTime);}this.player.update(dt);this.generator.ensureAhead(this.player.maxHeight);this.generator.cleanup(this.player.maxHeight-38);if(this.player.maxHeight>65&&this.runTime>this.nextRock){this.nextRock=this.runTime+Math.max(2.5,7-this.player.maxHeight*.012);this.rocks.push(new FallingRock(this));}for(let i=this.rocks.length-1;i>=0;i--)if(!this.rocks[i].update(dt*worldScale)){this.rocks[i].destroy();this.rocks.splice(i,1);}this.particles.update(dt);this.applyTheme(this.player.maxHeight);this.updateCamera(dt,false);this.updateHUD();this.updateMessage(dt);const cameraDeath=this.cameraY-12,hard=this.player.maxHeight-18;if(this.player.footY<cameraDeath||this.player.footY<hard)this.triggerDeath("fall");if(this.mode==="time"&&this.player.maxHeight>=200)this.finishRun(true);if(this.mode==="crystal"){if(this.crystals>=30)this.finishRun(true);else if(this.player.maxHeight>=180)this.triggerDeath("crystal goal missed");}}
+      updateDying(dt){this.deathTimer-=dt;const d=dt*.35;this.player.previousFootY=this.player.footY;this.player.verticalVelocity-=BASE_GRAVITY*d;this.player.footY+=this.player.verticalVelocity*d;this.player.updateVisual(d);this.particles.update(d);this.updateCamera(d,false);if(this.deathTimer<=0)this.finishRun(false);}
+      updateTitle(dt){this.cameraAngle+=dt*.05;this.camera.position.set(Math.cos(this.cameraAngle)*16.5,7,Math.sin(this.cameraAngle)*16.5);this.camera.lookAt(0,4,0);for(const c of this.generator.chunks){for(const p of c.platforms)p.updateVisual(this.runTime);for(const x of c.crystals)x.update(dt,this.runTime);}this.runTime+=dt*.2;}
+      updateCamera(dt,immediate){const f=immediate?1:smooth(5,dt);this.cameraAngle+=angleDelta(this.cameraAngle,this.player.angle)*f;const desiredY=Math.max(5.6,this.player.maxHeight+5.1,this.cameraPressureY+5);this.cameraY=immediate?desiredY:lerp(this.cameraY,desiredY,smooth(3.8,dt));const px=Math.cos(this.player.angle)*this.player.radiusFromCenter,pz=Math.sin(this.player.angle)*this.player.radiusFromCenter,lookY=this.player.footY+.95;this.cameraLook.x=immediate?px*.84:lerp(this.cameraLook.x,px*.84,smooth(this.player.verticalVelocity<0?9:6.5,dt));this.cameraLook.y=immediate?lookY:lerp(this.cameraLook.y,lookY,smooth(this.player.verticalVelocity<0?10:7,dt));this.cameraLook.z=immediate?pz*.84:lerp(this.cameraLook.z,pz*.84,smooth(this.player.verticalVelocity<0?9:6.5,dt));const radius=15.5+this.cameraPulse*1.8,shake=this.settings.shake&&!this.settings.reduced?this.cameraShake*.14:0;this.camera.position.set(Math.cos(this.cameraAngle)*radius+(Math.random()-.5)*shake,this.cameraY+(Math.random()-.5)*shake,Math.sin(this.cameraAngle)*radius+(Math.random()-.5)*shake);this.camera.lookAt(this.cameraLook);const motionFov=this.settings.reduced?0:clamp(Math.abs(Math.min(0,this.player.verticalVelocity))*.28,0,4)+this.cameraPulse*2;const desiredFov=this.settings.fov+motionFov;if(Math.abs(this.camera.fov-desiredFov)>.05){this.camera.fov=lerp(this.camera.fov,desiredFov,smooth(5,dt));this.camera.updateProjectionMatrix();}this.cameraShake=Math.max(0,this.cameraShake-dt*.9);this.cameraPulse=Math.max(0,this.cameraPulse-dt*.8);}
+      animate(){requestAnimationFrame(this.animate);const dt=Math.min(MAX_DT,this.clock.getDelta()||.016);this.lastDt=dt;if(this.state==="playing")this.updatePlaying(dt);else if(this.state==="dying")this.updateDying(dt);else if(this.state==="start")this.updateTitle(dt);else if(this.state==="gameover")this.particles.update(dt);this.renderer.render(this.scene,this.camera);}
+    }
+
+    window.addEventListener("DOMContentLoaded",()=>{if(!window.THREE){document.body.innerHTML="<h1 style='color:white;padding:40px'>Three.js failed to load.</h1>";return;}try{new Game();}catch(e){console.error(e);document.body.innerHTML=`<pre style="white-space:pre-wrap;color:white;padding:24px">Skyspire failed to start\n${e.stack||e}</pre>`;}});
+  })();
+  </script>
+</body>
+</html>
