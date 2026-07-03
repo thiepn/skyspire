@@ -1,0 +1,4037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#081523">
+  <title>Skyspire</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --bg: #081523;
+      --panel: rgba(7, 17, 30, .91);
+      --panel-2: rgba(15, 31, 50, .86);
+      --line: rgba(205, 235, 255, .18);
+      --line-strong: rgba(143, 224, 255, .46);
+      --text: #f4f9ff;
+      --muted: #b7c8dc;
+      --accent: #83dcff;
+      --gold: #ffd887;
+      --danger: #ff8b83;
+      --good: #9ef0bd;
+      --shadow: 0 30px 90px rgba(0, 0, 0, .46);
+    }
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: var(--bg); }
+    body { user-select: none; overscroll-behavior: none; }
+    button, select, input { font: inherit; }
+    button, select, input[type="range"], input[type="color"] { touch-action: manipulation; }
+    button:focus-visible, select:focus-visible, input:focus-visible, .mode-card:focus-visible {
+      outline: 3px solid rgba(131, 220, 255, .75);
+      outline-offset: 3px;
+    }
+    #game-root, #game-root canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+    #game-root canvas { touch-action: none; }
+    .overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: grid;
+      place-items: center;
+      padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+      overflow: auto;
+      background: radial-gradient(circle at 50% 35%, rgba(19, 43, 67, .42), rgba(2, 7, 14, .68));
+      backdrop-filter: blur(9px);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .18s ease, visibility .18s ease;
+    }
+    .overlay.visible { opacity: 1; visibility: visible; }
+    .panel {
+      width: min(820px, 100%);
+      max-height: calc(100dvh - 28px);
+      overflow: auto;
+      scrollbar-width: thin;
+      padding: clamp(20px, 4vw, 38px);
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      background:
+        linear-gradient(180deg, rgba(18, 38, 62, .96), rgba(5, 13, 24, .97)),
+        radial-gradient(circle at 20% 0%, rgba(131, 220, 255, .12), transparent 35%);
+      box-shadow: var(--shadow), inset 0 1px rgba(255, 255, 255, .07);
+    }
+    .panel.small { width: min(540px, 100%); text-align: center; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 {
+      margin-bottom: 8px;
+      font-size: clamp(3.1rem, 10vw, 6.7rem);
+      line-height: .9;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      text-shadow: 0 10px 40px rgba(89, 200, 255, .18);
+    }
+    h2 { margin-bottom: 10px; font-size: clamp(2rem, 7vw, 3.2rem); text-transform: uppercase; letter-spacing: .07em; }
+    h3 { margin: 23px 0 10px; font-size: .78rem; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); }
+    .eyebrow { margin-bottom: 8px; color: var(--accent); font-size: .74rem; letter-spacing: .19em; text-transform: uppercase; }
+    .subtitle { color: var(--muted); line-height: 1.58; }
+    .tiny { font-size: .76rem; line-height: 1.45; color: var(--muted); }
+    .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .spread { justify-content: space-between; }
+    .grid { display: grid; gap: 10px; }
+    .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .card, .mode-card {
+      padding: 13px 14px;
+      border: 1px solid rgba(255, 255, 255, .1);
+      border-radius: 15px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, .055), rgba(255, 255, 255, .025));
+      color: var(--muted);
+    }
+    .mode-card {
+      width: 100%;
+      min-height: 85px;
+      text-align: left;
+      cursor: pointer;
+      transition: transform .12s ease, border-color .12s ease, background .12s ease;
+    }
+    .mode-card:hover { transform: translateY(-2px); border-color: rgba(131, 220, 255, .42); }
+    .mode-card.selected { border-color: var(--accent); background: rgba(83, 185, 231, .15); box-shadow: inset 0 0 24px rgba(90, 205, 255, .06); }
+    .mode-card strong, .card strong { display: block; margin-bottom: 4px; color: var(--text); }
+    button {
+      min-height: 44px;
+      border: 1px solid rgba(167, 225, 255, .42);
+      border-radius: 999px;
+      padding: 11px 21px;
+      background: linear-gradient(180deg, #b7efff, #64c5ed);
+      color: #06131f;
+      font-weight: 850;
+      cursor: pointer;
+      box-shadow: 0 10px 28px rgba(64, 174, 224, .2);
+      transition: transform .12s ease, filter .12s ease, border-color .12s ease;
+    }
+    button:hover { transform: translateY(-1px); filter: brightness(1.06); }
+    button.secondary { background: rgba(255, 255, 255, .07); color: var(--text); border-color: rgba(255, 255, 255, .15); box-shadow: none; }
+    button.danger { background: rgba(255, 110, 102, .14); color: #ffd9d6; border-color: rgba(255, 120, 112, .36); box-shadow: none; }
+    button:disabled { opacity: .42; cursor: not-allowed; transform: none; filter: none; }
+    label.card { display: grid; gap: 8px; }
+    label.setting {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 14px;
+      padding: 11px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, .07);
+      text-align: left;
+    }
+    label.setting:last-of-type { border-bottom: 0; }
+    select {
+      max-width: 210px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #15283c;
+      color: var(--text);
+    }
+    input[type="range"] { width: min(210px, 42vw); accent-color: var(--accent); }
+    input[type="color"] { width: 48px; height: 34px; border: 0; padding: 0; background: transparent; }
+    input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--accent); }
+    .shop-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; }
+    .mission.done { border-color: rgba(117, 239, 167, .36); background: rgba(90, 203, 133, .08); }
+    .mission.done strong { color: var(--good); }
+    .stat { text-align: center; }
+    .stat span { display: block; color: var(--muted); font-size: .64rem; text-transform: uppercase; letter-spacing: .1em; }
+    .stat strong { display: block; margin-top: 4px; font-size: 1.16rem; color: var(--text); }
+    .danger-text { color: var(--danger); }
+    .good-text { color: var(--good); }
+
+    #hud {
+      position: fixed;
+      inset: 0;
+      z-index: 12;
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .15s ease;
+    }
+    #hud.visible { opacity: 1; visibility: visible; }
+    .hud-bar {
+      position: absolute;
+      top: max(12px, env(safe-area-inset-top));
+      left: 50%;
+      transform: translateX(-50%);
+      display: grid;
+      grid-template-columns: repeat(6, minmax(68px, 1fr));
+      width: min(920px, calc(100% - 24px));
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      background: rgba(7, 17, 30, .76);
+      backdrop-filter: blur(13px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, .18);
+    }
+    .hud-item { padding: 8px 7px; text-align: center; border-right: 1px solid rgba(255, 255, 255, .07); }
+    .hud-item:last-child { border-right: 0; }
+    .hud-item span { display: block; color: var(--muted); font-size: .58rem; letter-spacing: .11em; text-transform: uppercase; }
+    .hud-item strong { display: block; margin-top: 2px; font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #power-strip {
+      position: absolute;
+      top: max(70px, calc(env(safe-area-inset-top) + 58px));
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      max-width: calc(100% - 28px);
+      gap: 7px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .power-pill {
+      display: none;
+      padding: 6px 10px;
+      border: 1px solid rgba(255, 255, 255, .15);
+      border-radius: 999px;
+      background: rgba(7, 17, 30, .76);
+      color: var(--text);
+      font-size: .7rem;
+      backdrop-filter: blur(8px);
+    }
+    .power-pill.visible { display: block; }
+    #objective, #tutorial {
+      position: absolute;
+      bottom: max(14px, env(safe-area-inset-bottom));
+      max-width: 350px;
+      padding: 10px 13px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: rgba(7, 17, 30, .72);
+      color: var(--muted);
+      font-size: .75rem;
+      backdrop-filter: blur(9px);
+    }
+    #objective { left: max(14px, env(safe-area-inset-left)); }
+    #tutorial { right: max(14px, env(safe-area-inset-right)); }
+    #message {
+      position: fixed;
+      left: 50%;
+      top: 23%;
+      z-index: 18;
+      transform: translate(-50%, -8px);
+      max-width: calc(100% - 32px);
+      padding: 9px 16px;
+      border: 1px solid rgba(255, 255, 255, .16);
+      border-radius: 999px;
+      background: rgba(5, 13, 24, .78);
+      color: var(--text);
+      font-weight: 850;
+      letter-spacing: .07em;
+      text-align: center;
+      text-transform: uppercase;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .14s ease, transform .14s ease;
+    }
+    #message.visible { opacity: 1; transform: translate(-50%, 0); }
+
+    #touch-controls {
+      position: fixed;
+      inset: 0;
+      z-index: 16;
+      display: none;
+      pointer-events: none;
+    }
+    #touch-controls.visible { display: block; }
+    .touch-pad {
+      position: absolute;
+      left: max(14px, env(safe-area-inset-left));
+      bottom: max(18px, env(safe-area-inset-bottom));
+      display: grid;
+      grid-template-columns: repeat(3, 58px);
+      grid-template-rows: repeat(2, 58px);
+      gap: 7px;
+      pointer-events: auto;
+    }
+    .touch-button {
+      width: 58px;
+      height: 58px;
+      min-height: 58px;
+      padding: 0;
+      border-radius: 18px;
+      background: rgba(8, 22, 37, .7);
+      color: var(--text);
+      border-color: rgba(201, 235, 255, .24);
+      box-shadow: none;
+      backdrop-filter: blur(8px);
+      font-size: 1.25rem;
+      touch-action: none;
+    }
+    .touch-button.active { background: rgba(102, 205, 246, .3); border-color: rgba(151, 229, 255, .7); transform: scale(.96); }
+    .touch-in { grid-column: 2; grid-row: 1; }
+    .touch-left { grid-column: 1; grid-row: 2; }
+    .touch-out { grid-column: 2; grid-row: 2; }
+    .touch-right { grid-column: 3; grid-row: 2; }
+    #touch-pause {
+      position: absolute;
+      right: max(18px, env(safe-area-inset-right));
+      top: max(78px, calc(env(safe-area-inset-top) + 66px));
+      width: 48px;
+      height: 48px;
+      min-height: 48px;
+      padding: 0;
+      border-radius: 15px;
+      pointer-events: auto;
+      background: rgba(8, 22, 37, .72);
+      color: var(--text);
+      border-color: rgba(201, 235, 255, .24);
+      box-shadow: none;
+      touch-action: none;
+    }
+    #touch-jump {
+      position: absolute;
+      right: max(18px, env(safe-area-inset-right));
+      bottom: max(26px, env(safe-area-inset-bottom));
+      width: 76px;
+      height: 76px;
+      min-height: 76px;
+      padding: 0;
+      border-radius: 50%;
+      pointer-events: auto;
+      background: radial-gradient(circle at 35% 30%, #d7f8ff, #57bee8 65%, #2f87b2);
+      color: #05131e;
+      box-shadow: 0 12px 35px rgba(53, 170, 220, .3);
+      touch-action: none;
+    }
+    #debug-panel {
+      position: fixed;
+      right: 8px;
+      top: 8px;
+      z-index: 100;
+      display: none;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, .72);
+      color: #bfffc7;
+      font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+      white-space: pre;
+      pointer-events: none;
+    }
+
+    @media (max-width: 760px) {
+      .grid.two, .grid.three { grid-template-columns: 1fr; }
+      .panel { padding: 20px; border-radius: 20px; }
+      .hud-bar { grid-template-columns: repeat(3, 1fr); }
+      .hud-item:nth-child(n + 4) { display: none; }
+      #objective, #tutorial { display: none; }
+      #power-strip { top: max(68px, calc(env(safe-area-inset-top) + 56px)); }
+    }
+    @media (pointer: coarse), (max-width: 900px) {
+      #tutorial { display: none; }
+    }
+    @media (max-height: 620px) and (orientation: landscape) {
+      .touch-pad { grid-template-columns: repeat(3, 48px); grid-template-rows: repeat(2, 48px); }
+      .touch-button { width: 48px; height: 48px; min-height: 48px; border-radius: 15px; }
+      #touch-jump { width: 64px; height: 64px; min-height: 64px; }
+      .hud-bar { top: 7px; }
+      #power-strip { top: 57px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main id="game-root" aria-label="Skyspire game canvas"></main>
+
+  <section id="hud" aria-label="Game status">
+    <div class="hud-bar">
+      <div class="hud-item"><span>Height</span><strong id="hud-height">0 m</strong></div>
+      <div class="hud-item"><span>Score</span><strong id="hud-score">0</strong></div>
+      <div class="hud-item"><span>Run crystals</span><strong id="hud-crystals">0</strong></div>
+      <div class="hud-item"><span>Combo</span><strong id="hud-combo">x0</strong></div>
+      <div class="hud-item"><span>Time</span><strong id="hud-time">0:00</strong></div>
+      <div class="hud-item"><span>Record</span><strong id="hud-best">0 m</strong></div>
+    </div>
+    <div id="power-strip" aria-label="Active powers">
+      <div id="power-shield" class="power-pill">Shield</div>
+      <div id="power-rescue" class="power-pill">Rescue</div>
+      <div id="power-slow" class="power-pill">Slow time</div>
+      <div id="power-magnet" class="power-pill">Magnet</div>
+      <div id="power-bounce" class="power-pill">High bounce</div>
+      <div id="power-feather" class="power-pill">Feather</div>
+      <div id="power-double" class="power-pill">Double jump</div>
+    </div>
+    <div id="objective"></div>
+    <div id="tutorial">A/D steer · W/S adjust radius · Space double-jumps · P/Esc pauses</div>
+  </section>
+
+  <div id="message" role="status" aria-live="polite">Ready</div>
+
+  <section id="touch-controls" aria-label="Touch controls">
+    <div class="touch-pad">
+      <button class="touch-button touch-in" data-touch="in" aria-label="Move inward">↑</button>
+      <button class="touch-button touch-left" data-touch="left" aria-label="Move left">←</button>
+      <button class="touch-button touch-out" data-touch="out" aria-label="Move outward">↓</button>
+      <button class="touch-button touch-right" data-touch="right" aria-label="Move right">→</button>
+    </div>
+    <button id="touch-pause" aria-label="Pause game">Ⅱ</button>
+    <button id="touch-jump" aria-label="Use double jump">Jump</button>
+  </section>
+
+  <section id="menu-overlay" class="overlay visible" aria-labelledby="game-title">
+    <div class="panel">
+      <p class="eyebrow">Procedural sky-climbing adventure</p>
+      <h1 id="game-title">Skyspire</h1>
+      <p class="subtitle">Bounce upward around a living tower. Read the hazards, choose safer or richer routes, and keep ahead of the rising sky.</p>
+      <div class="row spread">
+        <strong>Permanent shards: <span id="wallet">0</span></strong>
+        <strong>Best height: <span id="menu-best">0 m</span></strong>
+      </div>
+
+      <h3>Game mode</h3>
+      <div id="mode-grid" class="grid three"></div>
+
+      <h3>Character and effects</h3>
+      <div class="grid three">
+        <label class="card">Skin<select id="skin-select" aria-label="Player skin"></select></label>
+        <label class="card">Trail<select id="trail-select" aria-label="Player trail"></select></label>
+        <label class="card">Landing effect<select id="landing-select" aria-label="Landing effect"></select></label>
+      </div>
+      <div class="grid three" style="margin-top:10px">
+        <label class="card">Tower style<select id="tower-select" aria-label="Tower style"></select></label>
+        <label class="card">Platform style<select id="platform-select" aria-label="Platform style"></select></label>
+        <label class="card">Start effect<select id="start-effect-select" aria-label="Start effect"></select></label>
+      </div>
+      <div class="grid two" style="margin-top:10px">
+        <label class="card">Body color<input id="body-color" type="color" value="#64d7ff" aria-label="Body color"></label>
+        <label class="card">Glow color<input id="glow-color" type="color" value="#b7f3ff" aria-label="Glow color"></label>
+      </div>
+
+      <h3>Permanent unlocks</h3>
+      <div id="shop-grid" class="grid two"></div>
+
+      <h3>Missions</h3>
+      <div id="mission-grid" class="grid two"></div>
+
+      <div class="row" style="justify-content:center;margin-top:24px">
+        <button id="start-button">Start climbing</button>
+        <button id="menu-settings-button" class="secondary">Settings</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="checkpoint-overlay" class="overlay" aria-labelledby="checkpoint-title">
+    <div class="panel small">
+      <p class="eyebrow">Checkpoint reached</p>
+      <h2 id="checkpoint-title">Choose an upgrade</h2>
+      <p class="subtitle">Run upgrades stack within their limits and last until this climb ends.</p>
+      <div id="upgrade-grid" class="grid"></div>
+    </div>
+  </section>
+
+  <section id="pause-overlay" class="overlay" aria-labelledby="pause-title">
+    <div class="panel small">
+      <p class="eyebrow">Run suspended</p>
+      <h2 id="pause-title">Paused</h2>
+      <div class="grid" style="margin-top:20px">
+        <button id="resume-button">Resume</button>
+        <button id="pause-settings-button" class="secondary">Settings</button>
+        <button id="pause-restart-button" class="secondary">Restart run</button>
+        <button id="pause-menu-button" class="danger">Quit to menu</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="settings-overlay" class="overlay" aria-labelledby="settings-title">
+    <div class="panel small">
+      <p class="eyebrow">Display, sound, and controls</p>
+      <h2 id="settings-title">Settings</h2>
+      <label class="setting"><span>Graphics quality</span><select id="set-quality"><option>Low</option><option>Medium</option><option>High</option></select></label>
+      <label class="setting"><span>Shadows</span><input id="set-shadows" type="checkbox"></label>
+      <label class="setting"><span>Particle intensity</span><select id="set-particles"><option value="0.35">Low</option><option value="0.7">Medium</option><option value="1">High</option></select></label>
+      <label class="setting"><span>Camera shake</span><input id="set-shake" type="checkbox"></label>
+      <label class="setting"><span>Control sensitivity</span><input id="set-sensitivity" type="range" min="0.7" max="1.5" step="0.05"></label>
+      <label class="setting"><span>Field of view</span><input id="set-fov" type="range" min="48" max="78" step="1"></label>
+      <label class="setting"><span>Reduced motion</span><input id="set-reduced" type="checkbox"></label>
+      <label class="setting"><span>Mute all audio</span><input id="set-muted" type="checkbox"></label>
+      <label class="setting"><span>Master volume</span><input id="set-master" type="range" min="0" max="1" step="0.05"></label>
+      <label class="setting"><span>Effects volume</span><input id="set-sfx" type="range" min="0" max="1" step="0.05"></label>
+      <label class="setting"><span>Ambience volume</span><input id="set-ambience" type="range" min="0" max="1" step="0.05"></label>
+      <div class="row" style="justify-content:center;margin-top:18px">
+        <button id="settings-close-button">Apply and close</button>
+      </div>
+      <h3>Data controls</h3>
+      <div class="grid two">
+        <button id="reset-records-button" class="secondary">Reset records</button>
+        <button id="reset-progress-button" class="danger">Reset progression</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="gameover-overlay" class="overlay" aria-labelledby="gameover-title">
+    <div class="panel">
+      <p class="eyebrow">The spire remains</p>
+      <h2 id="gameover-title">Run over</h2>
+      <p id="new-record" style="display:none;color:var(--gold);font-weight:850;text-align:center">New record</p>
+      <div id="result-grid" class="grid three"></div>
+      <h3>Platform breakdown</h3>
+      <div id="breakdown" class="tiny"></div>
+      <h3>Mission progress</h3>
+      <div id="result-missions" class="grid two"></div>
+      <div class="row" style="justify-content:center;margin-top:22px">
+        <button id="restart-button">Climb again</button>
+        <button id="gameover-menu-button" class="secondary">Main menu</button>
+      </div>
+    </div>
+  </section>
+
+  <div id="debug-panel"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js" crossorigin="anonymous"></script>
+  <script>
+  "use strict";
+  (() => {
+    const DEBUG = false;
+    const TAU = Math.PI * 2;
+    const FIXED_STEP = 1 / 120;
+    const MAX_FRAME_DT = 0.1;
+
+    const CONFIG = Object.freeze({
+      towerRadius: 5,
+      pathRadius: 7.35,
+      minRadius: 5.72,
+      maxRadius: 9.25,
+      playerRadius: 0.36,
+      playerHeight: 1.08,
+      gravity: 22,
+      featherGravityScale: 0.58,
+      baseBounce: 10.4,
+      rushBounce: 11.45,
+      bounceBonus: 2.05,
+      highBounceBonus: 1.65,
+      maxBounce: 14.2,
+      angularAcceleration: 5.2,
+      radialAcceleration: 11.8,
+      maxAngularSpeed: 1.12,
+      maxRadialSpeed: 3.45,
+      airDragAngular: 4.15,
+      airDragRadial: 4.7,
+      cameraDistance: 15.7,
+      checkpointEvery: 50,
+      generationAhead: 40,
+      cleanupDistance: 44,
+      invulnerabilityAfterHit: 0.68,
+      invulnerabilityAfterRescue: 1.15,
+      worldSlowScale: 0.45,
+      maxParticles: 620,
+      maxProjectiles: 28,
+      maxRocks: 10,
+      towerSegmentHeight: 72,
+      towerSegmentCount: 7
+    });
+
+    const MODE_CONFIG = Object.freeze({
+      endless: { name: "Endless", description: "Balanced climb until failure.", scoreMultiplier: 1, platformScale: 1, cameraStart: .11, cameraGrowth: .0027, cameraMax: .48 },
+      time: { name: "Time Trial", description: "Reach 200 m on a fixed fair tower as quickly as possible.", scoreMultiplier: 1, platformScale: 1, cameraStart: .1, cameraGrowth: .0025, cameraMax: .44, fixedSeed: 534221 },
+      daily: { name: "Daily Tower", description: "The same UTC-seeded tower for every player today.", scoreMultiplier: 1.05, platformScale: 1, cameraStart: .11, cameraGrowth: .0027, cameraMax: .48 },
+      precision: { name: "Precision", description: "Smaller platforms, calmer sky, stricter perfects, double perfect bonuses.", scoreMultiplier: 1.2, platformScale: .87, cameraStart: .095, cameraGrowth: .00235, cameraMax: .42, perfectThreshold: .84 },
+      rush: { name: "Rush", description: "Higher bounce, faster sky pressure, and a stronger score multiplier.", scoreMultiplier: 1.35, platformScale: 1, cameraStart: .31, cameraGrowth: .0032, cameraMax: .68 },
+      norecovery: { name: "No Recovery", description: "No recovery platforms, rescue upgrades, or automatic rescues.", scoreMultiplier: 1.3, platformScale: 1, cameraStart: .115, cameraGrowth: .0028, cameraMax: .5, noRecovery: true },
+      crystal: { name: "Crystal Run", description: "Collect 30 run crystals before reaching 180 m.", scoreMultiplier: 1.15, platformScale: 1, cameraStart: .105, cameraGrowth: .0025, cameraMax: .45, crystalGoal: 30, heightLimit: 180 }
+    });
+
+    const THEMES = Object.freeze([
+      { name: "Ancient", at: 0, background: 0x87c9e8, fog: 0xaddceb, tower: 0x626f7a, detail: 0x87939b, stone: 0x92999f, top: 0xb3babd, accent: 0xffd483, ambient: 174 },
+      { name: "Mechanical", at: 50, background: 0x8ea8b6, fog: 0xa6b8c0, tower: 0x424d56, detail: 0x75818a, stone: 0x66727b, top: 0x89949b, accent: 0xffa953, ambient: 116 },
+      { name: "Crystal", at: 100, background: 0x746fc2, fog: 0x9692cf, tower: 0x514e83, detail: 0x7f78b8, stone: 0x817dcc, top: 0xa8a2eb, accent: 0x75f5ff, ambient: 220 },
+      { name: "Sky Temple", at: 150, background: 0xb0d7ef, fog: 0xcce6f4, tower: 0xd1cec4, detail: 0xb2aa96, stone: 0xded9cc, top: 0xf0ebdf, accent: 0xffdc77, ambient: 196 },
+      { name: "Void", at: 200, background: 0x100d23, fog: 0x1d1835, tower: 0x27223c, detail: 0x594b7d, stone: 0x463d69, top: 0x66568f, accent: 0xe66cff, ambient: 82 }
+    ]);
+
+    const COSMETICS = Object.freeze({
+      skin: {
+        orb: { name: "Aether Orb" },
+        knight: { name: "Sky Knight" },
+        robot: { name: "Climber Bot" },
+        crystal: { name: "Crystal Being" }
+      },
+      trail: {
+        none: { name: "None" },
+        light: { name: "Light Trail" },
+        fire: { name: "Ember Trail" },
+        crystal: { name: "Crystal Trail" },
+        cloud: { name: "Cloud Trail" }
+      },
+      landing: {
+        basic: { name: "Basic" },
+        ring: { name: "Rune Ring" },
+        burst: { name: "Star Burst" }
+      },
+      tower: {
+        classic: { name: "Classic Stone" },
+        moss: { name: "Mossbound" },
+        gold: { name: "Sun-Gilded" },
+        neon: { name: "Void Neon" }
+      },
+      platform: {
+        classic: { name: "Classic" },
+        rune: { name: "Runic" },
+        glass: { name: "Aether Glass" }
+      },
+      startEffect: {
+        none: { name: "None" },
+        pulse: { name: "Aether Pulse" },
+        starfall: { name: "Starfall" }
+      }
+    });
+
+    const SHOP = Object.freeze([
+      { kind: "skin", id: "knight", cost: 100 }, { kind: "skin", id: "robot", cost: 250 }, { kind: "skin", id: "crystal", cost: 500 },
+      { kind: "trail", id: "light", cost: 80 }, { kind: "trail", id: "fire", cost: 180 }, { kind: "trail", id: "crystal", cost: 300 }, { kind: "trail", id: "cloud", cost: 420 },
+      { kind: "landing", id: "ring", cost: 120 }, { kind: "landing", id: "burst", cost: 260 },
+      { kind: "tower", id: "moss", cost: 160 }, { kind: "tower", id: "gold", cost: 360 }, { kind: "tower", id: "neon", cost: 520 },
+      { kind: "platform", id: "rune", cost: 190 }, { kind: "platform", id: "glass", cost: 410 },
+      { kind: "startEffect", id: "pulse", cost: 90 }, { kind: "startEffect", id: "starfall", cost: 280 }
+    ]);
+
+    const MISSIONS = Object.freeze([
+      { id: "height100", name: "Reach 100 m", reward: 40, test: s => s.maxHeight >= 100, progress: s => `${Math.min(100, Math.floor(s.maxHeight || 0))}/100 m` },
+      { id: "crystal20", name: "Collect 20 run crystals", reward: 50, test: s => s.runCrystals >= 20, progress: s => `${Math.min(20, s.runCrystals || 0)}/20` },
+      { id: "moving10", name: "Land on 10 moving platforms", reward: 45, test: s => (s.stats.types.moving || 0) >= 10, progress: s => `${Math.min(10, s.stats.types.moving || 0)}/10` },
+      { id: "combo15", name: "Reach a 15 landing combo", reward: 60, test: s => s.stats.longestCombo >= 15, progress: s => `${Math.min(15, s.stats.longestCombo || 0)}/15` },
+      { id: "cleanCheckpoint", name: "Reach a checkpoint cleanly", reward: 55, test: s => Boolean(s.stats.cleanCheckpointReached), progress: s => s.stats.cleanCheckpointReached ? "Completed" : "No rescue or shield hit before checkpoint" }
+    ]);
+
+    const UPGRADE_DEFS = Object.freeze([
+      { id: "airControl", name: "Air Control", cap: 4, text: level => `Steering strength +${18 * (level + 1)}% total` },
+      { id: "bounce", name: "Bounce Power", cap: 4, text: level => `Base bounce +${5 * (level + 1)}% total` },
+      { id: "rescue", name: "Rescue Charge", cap: 2, text: level => `Recover from ${level + 1} fall${level ? "s" : ""}` },
+      { id: "shield", name: "Shield Charge", cap: 3, text: level => `Store up to ${level + 1} shield charge${level ? "s" : ""}` },
+      { id: "crystalValue", name: "Crystal Value", cap: 4, text: level => `Crystal score +${10 * (level + 1)}` },
+      { id: "cameraSlow", name: "Calmer Sky", cap: 3, text: level => `Sky pressure -${10 * (level + 1)}%` }
+    ]);
+
+    const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+    const lerp = (a, b, t) => a + (b - a) * t;
+    const damp = (speed, dt) => 1 - Math.exp(-speed * dt);
+    const wrapAngle = angle => Math.atan2(Math.sin(angle), Math.cos(angle));
+    const angleDelta = (from, to) => wrapAngle(to - from);
+    const fmtTime = seconds => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`;
+    const safeNumber = (value, fallback, min = -Infinity, max = Infinity) => Number.isFinite(Number(value)) ? clamp(Number(value), min, max) : fallback;
+    const isInteractiveTarget = target => target instanceof HTMLElement && Boolean(target.closest("button, input, select, textarea, [contenteditable='true']"));
+
+    function hashString(text) {
+      let hash = 2166136261;
+      for (let i = 0; i < text.length; i += 1) {
+        hash ^= text.charCodeAt(i);
+        hash = Math.imul(hash, 16777619);
+      }
+      return hash >>> 0;
+    }
+
+    function utcDateKey() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function distancePointToSegment2D(px, pz, ax, az, bx, bz) {
+      const abx = bx - ax;
+      const abz = bz - az;
+      const lengthSquared = abx * abx + abz * abz;
+      const t = lengthSquared > 0 ? clamp(((px - ax) * abx + (pz - az) * abz) / lengthSquared, 0, 1) : 0;
+      const dx = px - (ax + abx * t);
+      const dz = pz - (az + abz * t);
+      return Math.hypot(dx, dz);
+    }
+
+    class RNG {
+      constructor(seed = Date.now()) {
+        this.state = (seed >>> 0) || 1;
+      }
+      next() {
+        this.state = (Math.imul(this.state, 1664525) + 1013904223) >>> 0;
+        return this.state / 4294967296;
+      }
+      range(min, max) { return min + (max - min) * this.next(); }
+      int(min, maxInclusive) { return Math.floor(this.range(min, maxInclusive + 1)); }
+      chance(probability) { return this.next() < probability; }
+      pick(array, fallback = null) {
+        if (!Array.isArray(array) || array.length === 0) return fallback;
+        return array[Math.floor(this.next() * array.length)];
+      }
+      shuffle(array) {
+        const out = array.slice();
+        for (let i = out.length - 1; i > 0; i -= 1) {
+          const j = Math.floor(this.next() * (i + 1));
+          [out[i], out[j]] = [out[j], out[i]];
+        }
+        return out;
+      }
+    }
+
+    class SaveManager {
+      constructor() {
+        this.profileKey = "skyspireProfileV2";
+        this.settingsKey = "skyspireSettingsV2";
+        this.saveTimer = 0;
+        this.profile = this.loadProfile();
+        this.settings = this.loadSettings();
+      }
+
+      defaultProfile() {
+        return {
+          version: 2,
+          wallet: 0,
+          unlocked: {
+            skin: ["orb"],
+            trail: ["none"],
+            landing: ["basic"],
+            tower: ["classic"],
+            platform: ["classic"],
+            startEffect: ["none"]
+          },
+          selected: {
+            skin: "orb",
+            trail: "none",
+            landing: "basic",
+            tower: "classic",
+            platform: "classic",
+            startEffect: "none"
+          },
+          colors: { body: "#64d7ff", glow: "#b7f3ff" },
+          missions: {},
+          records: {
+            bestHeight: 0,
+            endlessScore: 0,
+            timeBest: null,
+            daily: {},
+            precisionScore: 0,
+            rushScore: 0,
+            norecoveryScore: 0,
+            crystalBestTime: null
+          }
+        };
+      }
+
+      defaultSettings() {
+        return {
+          version: 2,
+          quality: "Medium",
+          shadows: true,
+          particles: 0.7,
+          shake: true,
+          sensitivity: 1,
+          fov: 60,
+          reducedMotion: window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches || false,
+          muted: false,
+          masterVolume: 0.72,
+          sfxVolume: 0.8,
+          ambienceVolume: 0.34
+        };
+      }
+
+      loadJSON(key) {
+        try {
+          return JSON.parse(localStorage.getItem(key) || "null");
+        } catch {
+          return null;
+        }
+      }
+
+      loadProfile() {
+        const base = this.defaultProfile();
+        const stored = this.loadJSON(this.profileKey);
+        let source = stored;
+        if (!source) {
+          const old = this.loadJSON("skyspireProfile");
+          if (old) {
+            source = {
+              wallet: old.wallet,
+              unlocked: old.unlocked,
+              selected: {
+                skin: old.skin,
+                trail: old.trail,
+                landing: old.landing,
+                tower: old.towerStyle,
+                platform: old.platformSkin,
+                startEffect: old.startEffect
+              },
+              colors: { body: old.bodyColor, glow: old.glowColor },
+              missions: old.missions,
+              records: { bestHeight: safeNumber(localStorage.getItem("skyspireBestHeight"), 0, 0) }
+            };
+          }
+        }
+        if (!source || typeof source !== "object") return base;
+        const output = JSON.parse(JSON.stringify(base));
+        output.wallet = Math.floor(safeNumber(source.wallet, 0, 0, 999999999));
+        for (const kind of Object.keys(output.unlocked)) {
+          const validIds = new Set(Object.keys(COSMETICS[kind]));
+          const incoming = Array.isArray(source.unlocked?.[kind]) ? source.unlocked[kind] : [];
+          output.unlocked[kind] = [...new Set([...output.unlocked[kind], ...incoming.filter(id => validIds.has(id))])];
+          const wanted = source.selected?.[kind];
+          output.selected[kind] = output.unlocked[kind].includes(wanted) ? wanted : output.unlocked[kind][0];
+        }
+        const body = source.colors?.body;
+        const glow = source.colors?.glow;
+        if (/^#[0-9a-f]{6}$/i.test(body || "")) output.colors.body = body;
+        if (/^#[0-9a-f]{6}$/i.test(glow || "")) output.colors.glow = glow;
+        if (source.missions && typeof source.missions === "object") {
+          for (const mission of MISSIONS) output.missions[mission.id] = Boolean(source.missions[mission.id]);
+        }
+        const records = source.records || {};
+        output.records.bestHeight = Math.floor(safeNumber(records.bestHeight, 0, 0));
+        output.records.endlessScore = Math.floor(safeNumber(records.endlessScore, 0, 0));
+        output.records.timeBest = Number.isFinite(records.timeBest) ? Math.max(0, records.timeBest) : null;
+        output.records.precisionScore = Math.floor(safeNumber(records.precisionScore, 0, 0));
+        output.records.rushScore = Math.floor(safeNumber(records.rushScore, 0, 0));
+        output.records.norecoveryScore = Math.floor(safeNumber(records.norecoveryScore, 0, 0));
+        output.records.crystalBestTime = Number.isFinite(records.crystalBestTime) ? Math.max(0, records.crystalBestTime) : null;
+        output.records.daily = records.daily && typeof records.daily === "object" ? records.daily : {};
+        return output;
+      }
+
+      loadSettings() {
+        const base = this.defaultSettings();
+        const source = this.loadJSON(this.settingsKey) || this.loadJSON("skyspireSettings") || {};
+        const quality = ["Low", "Medium", "High"].includes(source.quality) ? source.quality : base.quality;
+        return {
+          version: 2,
+          quality,
+          shadows: typeof source.shadows === "boolean" ? source.shadows : base.shadows,
+          particles: safeNumber(source.particles, base.particles, 0.2, 1),
+          shake: typeof source.shake === "boolean" ? source.shake : base.shake,
+          sensitivity: safeNumber(source.sensitivity, base.sensitivity, 0.7, 1.5),
+          fov: safeNumber(source.fov, base.fov, 48, 78),
+          reducedMotion: typeof source.reducedMotion === "boolean" ? source.reducedMotion : Boolean(source.reduced ?? base.reducedMotion),
+          muted: Boolean(source.muted ?? base.muted),
+          masterVolume: safeNumber(source.masterVolume, base.masterVolume, 0, 1),
+          sfxVolume: safeNumber(source.sfxVolume, base.sfxVolume, 0, 1),
+          ambienceVolume: safeNumber(source.ambienceVolume, base.ambienceVolume, 0, 1)
+        };
+      }
+
+      saveProfile(immediate = false) {
+        clearTimeout(this.saveTimer);
+        const write = () => localStorage.setItem(this.profileKey, JSON.stringify(this.profile));
+        if (immediate) write();
+        else this.saveTimer = window.setTimeout(write, 350);
+      }
+
+      saveSettings() {
+        localStorage.setItem(this.settingsKey, JSON.stringify(this.settings));
+      }
+
+      resetRecords() {
+        this.profile.records = this.defaultProfile().records;
+        this.saveProfile(true);
+      }
+
+      resetProgression() {
+        const records = this.profile.records;
+        this.profile = this.defaultProfile();
+        this.profile.records = records;
+        this.saveProfile(true);
+      }
+    }
+
+    class AudioManager {
+      constructor(settings) {
+        this.settings = settings;
+        this.context = null;
+        this.master = null;
+        this.sfxGain = null;
+        this.ambientGain = null;
+        this.windSource = null;
+        this.windFilter = null;
+        this.themeOscillator = null;
+        this.themeGain = null;
+        this.activeVoices = 0;
+        this.maxVoices = 18;
+      }
+
+      ensure() {
+        if (this.context) {
+          if (this.context.state === "suspended") this.context.resume().catch(() => {});
+          return;
+        }
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+        this.context = new AudioContextClass();
+        this.master = this.context.createGain();
+        this.sfxGain = this.context.createGain();
+        this.ambientGain = this.context.createGain();
+        this.sfxGain.connect(this.master);
+        this.ambientGain.connect(this.master);
+        this.master.connect(this.context.destination);
+        this.buildAmbient();
+        this.applySettings();
+      }
+
+      buildAmbient() {
+        if (!this.context) return;
+        const length = this.context.sampleRate * 2;
+        const buffer = this.context.createBuffer(1, length, this.context.sampleRate);
+        const data = buffer.getChannelData(0);
+        let last = 0;
+        for (let i = 0; i < length; i += 1) {
+          const white = Math.random() * 2 - 1;
+          last = last * .985 + white * .015;
+          data[i] = last * .7;
+        }
+        this.windSource = this.context.createBufferSource();
+        this.windSource.buffer = buffer;
+        this.windSource.loop = true;
+        this.windFilter = this.context.createBiquadFilter();
+        this.windFilter.type = "bandpass";
+        this.windFilter.frequency.value = 640;
+        this.windFilter.Q.value = .42;
+        const windGain = this.context.createGain();
+        windGain.gain.value = .32;
+        this.windSource.connect(this.windFilter);
+        this.windFilter.connect(windGain);
+        windGain.connect(this.ambientGain);
+        this.windSource.start();
+
+        this.themeOscillator = this.context.createOscillator();
+        this.themeOscillator.type = "sine";
+        this.themeGain = this.context.createGain();
+        this.themeGain.gain.value = .018;
+        this.themeOscillator.connect(this.themeGain);
+        this.themeGain.connect(this.ambientGain);
+        this.themeOscillator.start();
+      }
+
+      applySettings() {
+        if (!this.context) return;
+        const now = this.context.currentTime;
+        const masterValue = this.settings.muted ? 0 : this.settings.masterVolume;
+        this.master.gain.setTargetAtTime(masterValue, now, .03);
+        this.sfxGain.gain.setTargetAtTime(this.settings.sfxVolume, now, .03);
+        this.ambientGain.gain.setTargetAtTime(this.settings.ambienceVolume, now, .08);
+      }
+
+      setPaused(paused) {
+        if (!this.context || !this.ambientGain) return;
+        const target = paused ? this.settings.ambienceVolume * .18 : this.settings.ambienceVolume;
+        this.ambientGain.gain.setTargetAtTime(target, this.context.currentTime, .12);
+      }
+
+      setTheme(theme) {
+        if (!this.context || !this.themeOscillator) return;
+        this.themeOscillator.frequency.setTargetAtTime(theme.ambient, this.context.currentTime, .5);
+        this.windFilter.frequency.setTargetAtTime(theme.name === "Void" ? 280 : theme.name === "Mechanical" ? 460 : 650, this.context.currentTime, .5);
+      }
+
+      tone(frequency, duration = .12, options = {}) {
+        this.ensure();
+        if (!this.context || this.activeVoices >= this.maxVoices || this.settings.muted) return;
+        const now = this.context.currentTime;
+        const oscillator = this.context.createOscillator();
+        const gain = this.context.createGain();
+        oscillator.type = options.type || "sine";
+        oscillator.frequency.setValueAtTime(frequency, now);
+        if (options.endFrequency) oscillator.frequency.exponentialRampToValueAtTime(Math.max(20, options.endFrequency), now + duration);
+        const volume = (options.volume ?? .11);
+        gain.gain.setValueAtTime(.0001, now);
+        gain.gain.exponentialRampToValueAtTime(Math.max(.0002, volume), now + .008);
+        gain.gain.exponentialRampToValueAtTime(.0001, now + duration);
+        oscillator.connect(gain);
+        gain.connect(this.sfxGain);
+        oscillator.start(now);
+        oscillator.stop(now + duration + .02);
+        this.activeVoices += 1;
+        oscillator.onended = () => {
+          oscillator.disconnect();
+          gain.disconnect();
+          this.activeVoices = Math.max(0, this.activeVoices - 1);
+        };
+      }
+
+      noise(duration = .12, volume = .08, highpass = 450) {
+        this.ensure();
+        if (!this.context || this.activeVoices >= this.maxVoices || this.settings.muted) return;
+        const length = Math.max(1, Math.floor(this.context.sampleRate * duration));
+        const buffer = this.context.createBuffer(1, length, this.context.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < length; i += 1) data[i] = (Math.random() * 2 - 1) * (1 - i / length);
+        const source = this.context.createBufferSource();
+        const filter = this.context.createBiquadFilter();
+        const gain = this.context.createGain();
+        filter.type = "highpass";
+        filter.frequency.value = highpass;
+        gain.gain.value = volume;
+        source.buffer = buffer;
+        source.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.sfxGain);
+        this.activeVoices += 1;
+        source.onended = () => {
+          source.disconnect();
+          filter.disconnect();
+          gain.disconnect();
+          this.activeVoices = Math.max(0, this.activeVoices - 1);
+        };
+        source.start();
+      }
+
+      play(name) {
+        const sounds = {
+          select: () => this.tone(520, .055, { volume: .045, endFrequency: 610 }),
+          start: () => { this.tone(220, .18, { volume: .09, endFrequency: 440 }); setTimeout(() => this.tone(660, .16, { volume: .065 }), 90); },
+          land: () => { this.tone(130, .07, { type: "triangle", volume: .045, endFrequency: 95 }); this.noise(.05, .025, 650); },
+          perfect: () => { this.tone(660, .12, { volume: .08, endFrequency: 880 }); setTimeout(() => this.tone(1100, .12, { volume: .055 }), 55); },
+          bounce: () => this.tone(180, .16, { type: "triangle", volume: .09, endFrequency: 520 }),
+          crystal: () => this.tone(930, .1, { volume: .075, endFrequency: 1320 }),
+          power: () => { this.tone(330, .16, { volume: .075, endFrequency: 760 }); this.tone(660, .18, { volume: .045, endFrequency: 990 }); },
+          jump: () => this.tone(280, .12, { type: "triangle", volume: .08, endFrequency: 640 }),
+          shield: () => this.tone(260, .2, { type: "sine", volume: .09, endFrequency: 120 }),
+          shieldBreak: () => { this.tone(190, .18, { type: "sawtooth", volume: .075, endFrequency: 70 }); this.noise(.14, .055, 900); },
+          hit: () => { this.tone(110, .23, { type: "sawtooth", volume: .095, endFrequency: 45 }); this.noise(.18, .07, 300); },
+          rescue: () => { this.tone(250, .25, { volume: .08, endFrequency: 700 }); setTimeout(() => this.tone(880, .18, { volume: .06 }), 100); },
+          checkpoint: () => { [440, 660, 880].forEach((f, i) => setTimeout(() => this.tone(f, .17, { volume: .06 }), i * 70)); },
+          upgrade: () => this.tone(760, .16, { volume: .075, endFrequency: 1080 }),
+          milestone: () => { this.tone(420, .18, { volume: .07, endFrequency: 840 }); setTimeout(() => this.tone(980, .18, { volume: .055 }), 95); },
+          mission: () => { [660, 830, 990].forEach((f, i) => setTimeout(() => this.tone(f, .2, { volume: .055 }), i * 80)); },
+          gameover: () => this.tone(220, .55, { type: "triangle", volume: .08, endFrequency: 70 }),
+          success: () => { [440, 554, 660, 880].forEach((f, i) => setTimeout(() => this.tone(f, .25, { volume: .06 }), i * 80)); },
+          turret: () => { this.tone(720, .08, { type: "square", volume: .04, endFrequency: 280 }); this.noise(.05, .03, 1200); },
+          warning: () => this.tone(330, .08, { type: "square", volume: .035 }),
+          collapse: () => this.noise(.2, .06, 260)
+        };
+        sounds[name]?.();
+      }
+    }
+
+    class InputManager {
+      constructor(game) {
+        this.game = game;
+        this.keys = new Set();
+        this.touch = { left: false, right: false, in: false, out: false };
+        this.bindKeyboard();
+        this.bindTouch();
+      }
+
+      bindKeyboard() {
+        window.addEventListener("keydown", event => {
+          if (isInteractiveTarget(event.target)) return;
+          if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Space"].includes(event.code)) event.preventDefault();
+          if (event.code === "Escape" || event.code === "KeyP") {
+            if (!event.repeat) this.game.handleEscape();
+            return;
+          }
+          if (event.code === "Space") {
+            if (!event.repeat && this.game.state === "playing") this.game.player.useDoubleJump();
+            return;
+          }
+          this.keys.add(event.code);
+        }, { passive: false });
+        window.addEventListener("keyup", event => this.keys.delete(event.code));
+        window.addEventListener("blur", () => {
+          this.clear();
+          if (this.game.state === "playing") this.game.pause();
+        });
+        document.addEventListener("visibilitychange", () => {
+          if (document.hidden) {
+            this.clear();
+            if (this.game.state === "playing") this.game.pause();
+          }
+        });
+      }
+
+      bindTouch() {
+        const buttons = document.querySelectorAll("[data-touch]");
+        const release = button => {
+          const key = button.dataset.touch;
+          this.touch[key] = false;
+          button.classList.remove("active");
+        };
+        for (const button of buttons) {
+          button.addEventListener("pointerdown", event => {
+            event.preventDefault();
+            button.setPointerCapture(event.pointerId);
+            const key = button.dataset.touch;
+            this.touch[key] = true;
+            button.classList.add("active");
+          });
+          button.addEventListener("pointerup", () => release(button));
+          button.addEventListener("pointercancel", () => release(button));
+          button.addEventListener("lostpointercapture", () => release(button));
+        }
+        const pause = document.getElementById("touch-pause");
+        pause.addEventListener("pointerdown", event => {
+          event.preventDefault();
+          this.game.pause();
+        });
+        const jump = document.getElementById("touch-jump");
+        jump.addEventListener("pointerdown", event => {
+          event.preventDefault();
+          this.game.player.useDoubleJump();
+          jump.classList.add("active");
+        });
+        const releaseJump = () => jump.classList.remove("active");
+        jump.addEventListener("pointerup", releaseJump);
+        jump.addEventListener("pointercancel", releaseJump);
+        jump.addEventListener("lostpointercapture", releaseJump);
+      }
+
+      clear() {
+        this.keys.clear();
+        for (const key of Object.keys(this.touch)) this.touch[key] = false;
+        document.querySelectorAll(".touch-button.active, #touch-jump.active").forEach(element => element.classList.remove("active"));
+      }
+
+      get angularAxis() {
+        const left = this.keys.has("KeyA") || this.keys.has("ArrowLeft") || this.touch.left;
+        const right = this.keys.has("KeyD") || this.keys.has("ArrowRight") || this.touch.right;
+        return (left ? 1 : 0) - (right ? 1 : 0);
+      }
+
+      get radialAxis() {
+        const inward = this.keys.has("KeyW") || this.keys.has("ArrowUp") || this.touch.in;
+        const outward = this.keys.has("KeyS") || this.keys.has("ArrowDown") || this.touch.out;
+        return (outward ? 1 : 0) - (inward ? 1 : 0);
+      }
+    }
+
+    class ResourceCache {
+      constructor() {
+        this.geometries = {
+          platformBase: new THREE.CylinderGeometry(.78, .84, 1, 10, 1, false),
+          platformTop: new THREE.CylinderGeometry(.72, .76, 1, 10, 1, false),
+          platformRim: new THREE.TorusGeometry(.72, .045, 5, 24),
+          rune: new THREE.RingGeometry(.2, .42, 20),
+          support: new THREE.BoxGeometry(1, 1, 1),
+          crystal: new THREE.OctahedronGeometry(.25, 0),
+          power: new THREE.IcosahedronGeometry(.3, 0),
+          projectile: new THREE.SphereGeometry(.12, 7, 5),
+          rock: new THREE.DodecahedronGeometry(.5, 0),
+          spike: new THREE.ConeGeometry(.17, .56, 6),
+          vent: new THREE.CylinderGeometry(.24, .3, .13, 10),
+          flame: new THREE.ConeGeometry(.25, 1.15, 8),
+          beam: new THREE.BoxGeometry(2.8, .075, .075),
+          emitter: new THREE.CylinderGeometry(.11, .15, .34, 8),
+          windLine: new THREE.BoxGeometry(.7, .025, .025),
+          drone: new THREE.OctahedronGeometry(.43, 0),
+          guardian: new THREE.TorusGeometry(.48, .12, 7, 18),
+          turret: new THREE.CylinderGeometry(.23, .36, .62, 9),
+          blocker: new THREE.CapsuleGeometry(.28, .4, 4, 8),
+          playerCapsule: new THREE.CapsuleGeometry(.3, .5, 5, 10),
+          sphere: new THREE.SphereGeometry(1, 12, 8),
+          box: new THREE.BoxGeometry(1, 1, 1),
+          cylinder: new THREE.CylinderGeometry(1, 1, 1, 12),
+          ring: new THREE.RingGeometry(.32, .48, 28),
+          circle: new THREE.CircleGeometry(.48, 28)
+        };
+        this.materials = new Map();
+      }
+
+      material(key, factory) {
+        if (!this.materials.has(key)) this.materials.set(key, factory());
+        return this.materials.get(key);
+      }
+
+      standard(key, options) {
+        return this.material(key, () => new THREE.MeshStandardMaterial(options));
+      }
+
+      basic(key, options) {
+        return this.material(key, () => new THREE.MeshBasicMaterial(options));
+      }
+
+      platformMaterials(themeIndex, type, skin) {
+        const theme = THEMES[themeIndex];
+        const typeColors = {
+          static: theme.stone,
+          moving: 0x65a2b5,
+          rotating: 0x8270aa,
+          oneway: 0x7f68a3,
+          elevator: 0x71899b,
+          collapse: 0x9a6c5a,
+          fake: 0x8b6859,
+          disappear: 0x71c4d0,
+          bounce: theme.accent,
+          conveyor: 0x5e91a8,
+          slippery: 0xb8e0ec,
+          tilting: 0x9c9072,
+          splitting: 0x9d7869,
+          recovery: 0x6a9b78,
+          checkpoint: 0xe6c66d
+        };
+        let baseColor = typeColors[type] || theme.stone;
+        let topColor = theme.top;
+        let roughness = type === "slippery" ? .18 : .72;
+        let metalness = type === "moving" || type === "elevator" || type === "conveyor" ? .28 : .06;
+        let transparent = false;
+        let opacity = 1;
+        if (skin === "glass") {
+          baseColor = 0x69aebb;
+          topColor = 0xa9edf2;
+          roughness = .14;
+          metalness = .2;
+          transparent = true;
+          opacity = .74;
+        }
+        const baseKey = `platform-base-${themeIndex}-${type}-${skin}`;
+        const topKey = `platform-top-${themeIndex}-${type}-${skin}`;
+        const accentKey = `platform-accent-${themeIndex}-${type}-${skin}`;
+        const base = this.standard(baseKey, { color: baseColor, roughness, metalness, transparent, opacity });
+        const top = this.standard(topKey, {
+          color: topColor,
+          roughness: Math.max(.12, roughness - .08),
+          metalness,
+          transparent,
+          opacity,
+          emissive: type === "bounce" || type === "checkpoint" ? theme.accent : 0x000000,
+          emissiveIntensity: type === "bounce" ? .45 : type === "checkpoint" ? .24 : 0
+        });
+        const accent = this.basic(accentKey, {
+          color: skin === "rune" ? theme.accent : type === "collapse" || type === "fake" ? 0xffa27a : theme.accent,
+          transparent: true,
+          opacity: skin === "rune" ? .62 : .32,
+          side: THREE.DoubleSide,
+          depthWrite: false
+        });
+        return { base, top, accent };
+      }
+    }
+
+    class ParticleSystem {
+      constructor(game) {
+        this.game = game;
+        this.capacity = CONFIG.maxParticles;
+        this.positions = new Float32Array(this.capacity * 3);
+        this.colors = new Float32Array(this.capacity * 3);
+        this.alphas = new Float32Array(this.capacity);
+        this.sizes = new Float32Array(this.capacity);
+        this.velocities = new Float32Array(this.capacity * 3);
+        this.lives = new Float32Array(this.capacity);
+        this.maxLives = new Float32Array(this.capacity);
+        this.cursor = 0;
+        this.trailTimer = 0;
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute("position", new THREE.BufferAttribute(this.positions, 3));
+        geometry.setAttribute("color", new THREE.BufferAttribute(this.colors, 3));
+        geometry.setAttribute("aAlpha", new THREE.BufferAttribute(this.alphas, 1));
+        geometry.setAttribute("aSize", new THREE.BufferAttribute(this.sizes, 1));
+        const material = new THREE.ShaderMaterial({
+          transparent: true,
+          depthWrite: false,
+          vertexColors: true,
+          blending: THREE.AdditiveBlending,
+          vertexShader: `
+            attribute float aAlpha;
+            attribute float aSize;
+            varying vec3 vColor;
+            varying float vAlpha;
+            void main() {
+              vColor = color;
+              vAlpha = aAlpha;
+              vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+              gl_PointSize = aSize * (260.0 / max(1.0, -mvPosition.z));
+              gl_Position = projectionMatrix * mvPosition;
+            }
+          `,
+          fragmentShader: `
+            varying vec3 vColor;
+            varying float vAlpha;
+            void main() {
+              vec2 p = gl_PointCoord - vec2(0.5);
+              float d = dot(p, p);
+              if (d > 0.25) discard;
+              float soft = smoothstep(0.25, 0.02, d);
+              gl_FragColor = vec4(vColor, vAlpha * soft);
+            }
+          `
+        });
+        this.points = new THREE.Points(geometry, material);
+        this.points.frustumCulled = false;
+        game.scene.add(this.points);
+        for (let i = 0; i < this.capacity; i += 1) this.hide(i);
+      }
+
+      hide(index) {
+        const base = index * 3;
+        this.positions[base] = 0;
+        this.positions[base + 1] = -10000;
+        this.positions[base + 2] = 0;
+        this.alphas[index] = 0;
+        this.lives[index] = 0;
+      }
+
+      colorFor(kind) {
+        const map = {
+          land: new THREE.Color(0xd8f5ff),
+          bounce: new THREE.Color(0xffd66f),
+          crystal: new THREE.Color(0x78f1ff),
+          debris: new THREE.Color(0xa49b8e),
+          fire: new THREE.Color(0xff7d42),
+          void: new THREE.Color(0xe566ff),
+          shield: new THREE.Color(0x80aaff),
+          wind: new THREE.Color(0xd9f8ff)
+        };
+        return map[kind] || map.land;
+      }
+
+      emit(position, kind = "land", requested = 10, options = {}) {
+        const reduced = this.game.settings.reducedMotion ? .35 : 1;
+        const count = Math.max(0, Math.floor(requested * this.game.settings.particles * reduced));
+        const color = this.colorFor(kind);
+        const visual = this.game.visualRng;
+        for (let n = 0; n < count; n += 1) {
+          const index = this.cursor;
+          this.cursor = (this.cursor + 1) % this.capacity;
+          const base = index * 3;
+          const life = visual.range(options.lifeMin ?? .35, options.lifeMax ?? .8);
+          this.positions[base] = position.x;
+          this.positions[base + 1] = position.y;
+          this.positions[base + 2] = position.z;
+          this.velocities[base] = visual.range(-1.4, 1.4) * (options.spread ?? 1);
+          this.velocities[base + 1] = visual.range(.7, 3.5) * (options.up ?? 1);
+          this.velocities[base + 2] = visual.range(-1.4, 1.4) * (options.spread ?? 1);
+          this.colors[base] = color.r;
+          this.colors[base + 1] = color.g;
+          this.colors[base + 2] = color.b;
+          this.lives[index] = life;
+          this.maxLives[index] = life;
+          this.alphas[index] = .9;
+          this.sizes[index] = visual.range(options.sizeMin ?? 4, options.sizeMax ?? 9);
+        }
+        this.markDirty();
+      }
+
+      trail(position, kind, dt) {
+        if (kind === "none") return;
+        this.trailTimer -= dt;
+        if (this.trailTimer > 0) return;
+        this.trailTimer = this.game.settings.reducedMotion ? .13 : .055;
+        const map = { light: "land", fire: "fire", crystal: "crystal", cloud: "debris" };
+        this.emit(position, map[kind] || "land", 2, { lifeMin: .25, lifeMax: .45, sizeMin: 3, sizeMax: 6, spread: .35, up: .25 });
+      }
+
+      update(dt) {
+        let changed = false;
+        for (let i = 0; i < this.capacity; i += 1) {
+          if (this.lives[i] <= 0) continue;
+          changed = true;
+          this.lives[i] -= dt;
+          if (this.lives[i] <= 0) {
+            this.hide(i);
+            continue;
+          }
+          const base = i * 3;
+          this.velocities[base + 1] -= 4 * dt;
+          this.positions[base] += this.velocities[base] * dt;
+          this.positions[base + 1] += this.velocities[base + 1] * dt;
+          this.positions[base + 2] += this.velocities[base + 2] * dt;
+          this.alphas[i] = clamp(this.lives[i] / this.maxLives[i], 0, 1) * .9;
+          this.sizes[i] *= Math.pow(.982, dt * 60);
+        }
+        if (changed) this.markDirty();
+      }
+
+      markDirty() {
+        this.points.geometry.attributes.position.needsUpdate = true;
+        this.points.geometry.attributes.color.needsUpdate = true;
+        this.points.geometry.attributes.aAlpha.needsUpdate = true;
+        this.points.geometry.attributes.aSize.needsUpdate = true;
+      }
+
+      clear() {
+        for (let i = 0; i < this.capacity; i += 1) this.hide(i);
+        this.markDirty();
+      }
+
+      activeCount() {
+        let count = 0;
+        for (let i = 0; i < this.capacity; i += 1) if (this.lives[i] > 0) count += 1;
+        return count;
+      }
+    }
+
+    class Platform {
+      constructor(game, spec, chunkId) {
+        this.game = game;
+        this.chunkId = chunkId;
+        this.type = spec.type || "static";
+        this.baseAngle = spec.angle;
+        this.angle = spec.angle;
+        this.baseRadius = spec.radius ?? CONFIG.pathRadius;
+        this.radius = this.baseRadius;
+        this.baseTopY = spec.topY;
+        this.topY = spec.topY;
+        this.width = spec.width ?? 2.8;
+        this.depth = spec.depth ?? 2.08;
+        this.thickness = spec.thickness ?? .48;
+        this.speed = spec.speed ?? .8;
+        this.amplitude = spec.amplitude ?? 0;
+        this.motionAxis = spec.motionAxis || "angle";
+        this.phase = spec.phase ?? 0;
+        this.recovery = Boolean(spec.recovery);
+        this.checkpoint = Boolean(spec.checkpoint);
+        this.riskyRoute = Boolean(spec.riskyRoute);
+        this.primaryRoute = spec.primaryRoute !== false;
+        this.active = true;
+        this.triggered = false;
+        this.visited = false;
+        this.timer = 0;
+        this.fallVelocity = 0;
+        this.hazard = null;
+        this.pickupSlots = new Set();
+        this.group = new THREE.Group();
+        this.group.userData.platform = this;
+        this.previousCenter = new THREE.Vector3();
+        this.center = new THREE.Vector3();
+        this.velocity = new THREE.Vector3();
+        this.tempWorld = new THREE.Vector3();
+        this.ownedMaterials = [];
+        this.splitParts = [];
+        this.buildVisual();
+        game.dynamic.add(this.group);
+        this.updateTransform(0.001, 0, true);
+      }
+
+      get visualType() {
+        if (this.checkpoint) return "checkpoint";
+        if (this.recovery) return "recovery";
+        return this.type;
+      }
+
+      get centerY() {
+        return this.topY - this.thickness * .5;
+      }
+
+      buildVisual() {
+        const themeIndex = this.game.themeIndexFor(this.topY);
+        const skin = this.game.profile.selected.platform;
+        const shared = this.game.resources.platformMaterials(themeIndex, this.visualType, skin);
+        let baseMaterial = shared.base;
+        let topMaterial = shared.top;
+        if (this.type === "disappear") {
+          baseMaterial = shared.base.clone();
+          topMaterial = shared.top.clone();
+          baseMaterial.transparent = true;
+          topMaterial.transparent = true;
+          this.ownedMaterials.push(baseMaterial, topMaterial);
+        }
+
+        this.baseMesh = new THREE.Mesh(this.game.resources.geometries.platformBase, baseMaterial);
+        this.baseMesh.scale.set(this.width / 1.55, this.thickness, this.depth / 1.55);
+        this.baseMesh.position.y = -this.thickness * .08;
+        this.baseMesh.castShadow = this.game.settings.quality !== "Low";
+        this.baseMesh.receiveShadow = true;
+        this.group.add(this.baseMesh);
+
+        this.topMesh = new THREE.Mesh(this.game.resources.geometries.platformTop, topMaterial);
+        this.topMesh.scale.set(this.width / 1.46, .12, this.depth / 1.46);
+        this.topMesh.position.y = this.thickness * .45;
+        this.topMesh.receiveShadow = true;
+        this.group.add(this.topMesh);
+
+        const indicatorMaterial = shared.accent.clone();
+        this.ownedMaterials.push(indicatorMaterial);
+        this.indicator = new THREE.Mesh(this.game.resources.geometries.rune, indicatorMaterial);
+        this.indicator.rotation.x = -Math.PI / 2;
+        this.indicator.position.y = this.thickness * .53 + .012;
+        this.indicator.scale.set(Math.min(1.25, this.width * .34), Math.min(1.25, this.depth * .34), 1);
+        this.group.add(this.indicator);
+
+        const rimMaterial = this.game.resources.basic(`rim-${themeIndex}-${skin}`, {
+          color: THEMES[themeIndex].accent,
+          transparent: true,
+          opacity: skin === "rune" ? .38 : .18,
+          depthWrite: false
+        });
+        this.rim = new THREE.Mesh(this.game.resources.geometries.platformRim, rimMaterial);
+        this.rim.rotation.x = Math.PI / 2;
+        this.rim.position.y = this.thickness * .51;
+        this.rim.scale.set(this.width / 1.45, this.depth / 1.45, 1);
+        this.group.add(this.rim);
+
+        const supportLength = Math.max(.35, this.radius - CONFIG.towerRadius - this.depth * .42);
+        const supportMaterial = this.game.resources.standard(`support-${themeIndex}`, {
+          color: THEMES[themeIndex].detail,
+          roughness: .82,
+          metalness: themeIndex === 1 ? .3 : .04
+        });
+        this.support = new THREE.Mesh(this.game.resources.geometries.support, supportMaterial);
+        this.support.scale.set(.28, .19, supportLength);
+        this.support.position.set(0, -this.thickness * .15, -(this.depth * .38 + supportLength * .5));
+        this.support.castShadow = false;
+        this.support.receiveShadow = true;
+        this.group.add(this.support);
+
+        if (["moving", "elevator", "rotating", "oneway", "conveyor"].includes(this.type)) this.addMotionDetails(themeIndex);
+        if (this.type === "collapse" || this.type === "fake") this.addCracks();
+        if (this.checkpoint) this.addCheckpointDetails(themeIndex);
+      }
+
+      addMotionDetails(themeIndex) {
+        const material = this.game.resources.basic(`motion-${themeIndex}`, {
+          color: THEMES[themeIndex].accent,
+          transparent: true,
+          opacity: .65,
+          depthWrite: false
+        });
+        this.motionDetails = new THREE.Group();
+        for (let i = -1; i <= 1; i += 1) {
+          const strip = new THREE.Mesh(this.game.resources.geometries.support, material);
+          strip.scale.set(this.width * .17, .018, .045);
+          strip.position.set(i * this.width * .22, this.thickness * .56, 0);
+          this.motionDetails.add(strip);
+        }
+        this.group.add(this.motionDetails);
+      }
+
+      addCracks() {
+        const material = this.game.resources.basic("crack-lines", { color: 0x3a211e, transparent: true, opacity: .65, depthWrite: false });
+        this.cracks = new THREE.Group();
+        for (let i = 0; i < 3; i += 1) {
+          const crack = new THREE.Mesh(this.game.resources.geometries.support, material);
+          crack.scale.set(this.width * (.18 + i * .05), .012, .025);
+          crack.position.set((i - 1) * .24, this.thickness * .565, (i - 1) * .13);
+          crack.rotation.y = (i - 1) * .55;
+          this.cracks.add(crack);
+        }
+        this.group.add(this.cracks);
+      }
+
+      addCheckpointDetails(themeIndex) {
+        const material = this.game.resources.standard(`checkpoint-detail-${themeIndex}`, {
+          color: THEMES[themeIndex].accent,
+          emissive: THEMES[themeIndex].accent,
+          emissiveIntensity: .22,
+          roughness: .45
+        });
+        this.checkpointRing = new THREE.Mesh(new THREE.TorusGeometry(.82, .075, 7, 28), material);
+        this.checkpointRing.position.set(0, 1.15, 0);
+        this.group.add(this.checkpointRing);
+        for (const side of [-1, 1]) {
+          const pillar = new THREE.Mesh(this.game.resources.geometries.cylinder, material);
+          pillar.scale.set(.09, .7, .09);
+          pillar.position.set(side * .82, .63, 0);
+          this.group.add(pillar);
+        }
+      }
+
+      createSplitParts() {
+        if (this.splitParts.length) return;
+        const material = this.baseMesh.material;
+        for (const side of [-1, 1]) {
+          const part = new THREE.Mesh(this.game.resources.geometries.platformBase, material);
+          part.scale.set((this.width * .46) / 1.55, this.thickness, this.depth / 1.55);
+          part.position.copy(this.group.position);
+          part.rotation.copy(this.group.rotation);
+          part.translateX(side * this.width * .27);
+          part.userData.side = side;
+          part.visible = false;
+          this.game.dynamic.add(part);
+          this.splitParts.push(part);
+        }
+      }
+
+      update(worldDt, worldTime, realDt = worldDt) {
+        this.previousCenter.copy(this.center);
+        if (this.type === "moving") {
+          if (this.motionAxis === "radial") this.radius = this.baseRadius + Math.sin(worldTime * this.speed + this.phase) * this.amplitude;
+          else this.angle = this.baseAngle + Math.sin(worldTime * this.speed + this.phase) * this.amplitude;
+        } else if (this.type === "rotating") {
+          this.angle = this.baseAngle + Math.sin(worldTime * this.speed + this.phase) * this.amplitude;
+        } else if (this.type === "oneway") {
+          this.angle = this.baseAngle + worldTime * this.speed;
+        } else if (this.type === "elevator") {
+          this.topY = this.baseTopY + Math.sin(worldTime * this.speed + this.phase) * this.amplitude;
+        } else if (this.type === "disappear") {
+          const wave = Math.sin(worldTime * this.speed + this.phase);
+          const warning = wave < -.15 && wave > -.52;
+          this.active = wave > -.52;
+          const fade = clamp((wave + .62) / .35, .08, 1);
+          this.baseMesh.material.opacity = fade * (this.game.profile.selected.platform === "glass" ? .74 : 1);
+          this.topMesh.material.opacity = fade * (this.game.profile.selected.platform === "glass" ? .74 : 1);
+          this.indicator.material.opacity = warning ? .95 : .42;
+          this.group.visible = fade > .1;
+        }
+
+        if ((this.type === "collapse" || this.type === "fake") && this.triggered) {
+          this.timer += worldDt;
+          const delay = this.type === "fake" ? .42 : .78;
+          if (this.timer > delay) {
+            this.fallVelocity -= 18 * worldDt;
+            this.topY += this.fallVelocity * worldDt;
+            this.group.rotation.z += worldDt * 1.4;
+            if (this.topY < this.baseTopY - 3.2) this.active = false;
+          }
+        }
+
+        if (this.type === "splitting" && this.triggered) {
+          this.timer += worldDt;
+          if (this.timer > .58) {
+            this.createSplitParts();
+            this.active = false;
+            this.group.visible = false;
+            for (const part of this.splitParts) {
+              part.visible = true;
+              part.position.y -= worldDt * (3 + this.timer * 4);
+              part.rotation.z += worldDt * part.userData.side * 1.8;
+              part.rotation.x += worldDt * .7;
+            }
+          }
+        }
+
+        if (this.type === "tilting") {
+          const target = this.triggered && this.timer < .35 ? .16 : 0;
+          this.group.rotation.z = lerp(this.group.rotation.z, target, damp(4, worldDt));
+          this.timer += worldDt;
+        }
+
+        this.updateTransform(realDt, worldTime, false);
+      }
+
+      updateTransform(worldDt, worldTime, immediate) {
+        const shake = this.triggered && (this.type === "collapse" || this.type === "fake") && this.timer < .78 ? Math.sin(worldTime * 55) * .035 : 0;
+        this.center.set(Math.cos(this.angle) * this.radius, this.centerY + shake, Math.sin(this.angle) * this.radius);
+        this.group.position.copy(this.center);
+        this.group.rotation.y = Math.PI / 2 - this.angle;
+        if (immediate || worldDt <= 0) this.velocity.set(0, 0, 0);
+        else this.velocity.copy(this.center).sub(this.previousCenter).multiplyScalar(1 / worldDt);
+        if (this.type === "bounce") {
+          const pulse = 1 + Math.sin(worldTime * 5 + this.phase) * .035;
+          this.topMesh.scale.y = .12 * pulse;
+          this.indicator.rotation.z = worldTime * .35;
+        }
+        if (this.motionDetails) this.motionDetails.position.x = Math.sin(worldTime * 3.2 + this.phase) * this.width * .07;
+        if (this.checkpointRing) this.checkpointRing.rotation.y = worldTime * .7;
+      }
+
+      localCoordinates(worldX, worldZ, output = { x: 0, z: 0 }) {
+        const centerX = Math.cos(this.angle) * this.radius;
+        const centerZ = Math.sin(this.angle) * this.radius;
+        const dx = worldX - centerX;
+        const dz = worldZ - centerZ;
+        output.x = dx * Math.sin(this.angle) - dz * Math.cos(this.angle);
+        output.z = dx * Math.cos(this.angle) + dz * Math.sin(this.angle);
+        return output;
+      }
+
+      containsWorld(worldX, worldZ, padding = 0) {
+        const local = this.localCoordinates(worldX, worldZ, Platform.tempLocal);
+        return Math.abs(local.x) <= this.width * .5 + padding && Math.abs(local.z) <= this.depth * .5 + padding;
+      }
+
+      containsSwept(player) {
+        const deltaAngleValue = angleDelta(player.previousAngle, player.angle);
+        const deltaRadius = player.radius - player.previousRadius;
+        for (let i = 0; i <= 12; i += 1) {
+          const t = i / 12;
+          const angle = player.previousAngle + deltaAngleValue * t;
+          const radius = player.previousRadius + deltaRadius * t;
+          const x = Math.cos(angle) * radius;
+          const z = Math.sin(angle) * radius;
+          if (this.containsWorld(x, z, CONFIG.playerRadius * .72)) return true;
+        }
+        return false;
+      }
+
+      worldPoint(localX, localY, localZ, output) {
+        const radialX = Math.cos(this.angle);
+        const radialZ = Math.sin(this.angle);
+        const tangentX = Math.sin(this.angle);
+        const tangentZ = -Math.cos(this.angle);
+        output.set(
+          radialX * this.radius + tangentX * localX + radialX * localZ,
+          this.topY + localY,
+          radialZ * this.radius + tangentZ * localX + radialZ * localZ
+        );
+        return output;
+      }
+
+      trigger() {
+        if (this.triggered) return;
+        this.triggered = true;
+        this.timer = 0;
+        if (this.type === "collapse" || this.type === "fake") this.game.audio.play("collapse");
+        if (this.type === "splitting") this.createSplitParts();
+      }
+
+      safeForRescue() {
+        return this.active && !this.hazard && !["collapse", "fake", "splitting", "disappear"].includes(this.type);
+      }
+
+      destroy() {
+        this.hazard?.destroy();
+        this.game.dynamic.remove(this.group);
+        for (const part of this.splitParts) this.game.dynamic.remove(part);
+        for (const material of this.ownedMaterials) material.dispose();
+        if (this.checkpointRing) {
+          this.checkpointRing.geometry.dispose();
+        }
+        this.splitParts.length = 0;
+      }
+    }
+    Platform.tempLocal = { x: 0, z: 0 };
+
+    class Crystal {
+      constructor(game, platform, options = {}) {
+        this.game = game;
+        this.platform = platform;
+        this.risky = Boolean(options.risky);
+        this.localX = options.localX ?? 0;
+        this.localZ = options.localZ ?? 0;
+        this.state = "idle";
+        this.bobPhase = game.rng.range(0, TAU);
+        this.velocity = new THREE.Vector3();
+        this.anchor = new THREE.Vector3();
+        this.mesh = new THREE.Mesh(
+          game.resources.geometries.crystal,
+          game.resources.standard("crystal-material", { color: 0x7cecff, emissive: 0x28bddd, emissiveIntensity: 1.55, roughness: .18, metalness: .12 })
+        );
+        this.mesh.castShadow = false;
+        game.dynamic.add(this.mesh);
+        this.update(0, 0);
+      }
+
+      update(realDt, worldTime) {
+        if (this.state === "collected") return;
+        this.platform.worldPoint(this.localX, .77 + Math.sin(worldTime * 3 + this.bobPhase) * .08, this.localZ, this.anchor);
+        if (this.state === "idle") {
+          this.mesh.position.copy(this.anchor);
+          if (this.game.power.magnet > 0 && this.mesh.position.distanceToSquared(this.game.player.centerPosition) < 18) this.state = "attracted";
+        } else if (this.state === "attracted") {
+          const target = this.game.player.centerPosition;
+          Crystal.temp.copy(target).sub(this.mesh.position);
+          const distance = Crystal.temp.length();
+          if (distance > .001) {
+            Crystal.temp.multiplyScalar(1 / distance);
+            this.velocity.addScaledVector(Crystal.temp, 22 * realDt);
+            this.velocity.multiplyScalar(Math.exp(-4.1 * realDt));
+            this.mesh.position.addScaledVector(this.velocity, realDt);
+          }
+          if (distance > 6.2 && this.game.power.magnet <= 0) {
+            this.state = "idle";
+            this.velocity.set(0, 0, 0);
+          }
+        }
+        this.mesh.rotation.y += realDt * 2.7;
+        this.mesh.rotation.x += realDt * .6;
+        if (this.mesh.position.distanceToSquared(this.game.player.centerPosition) <= .62 * .62) this.collect();
+      }
+
+      collect() {
+        if (this.state === "collected") return;
+        this.state = "collected";
+        this.mesh.visible = false;
+        this.game.runCrystals += 1;
+        const scoreValue = 10 + this.game.upgrades.crystalValue * 10 + (this.risky ? 10 : 0);
+        this.game.crystalScore += scoreValue;
+        this.game.profile.wallet += 1;
+        this.game.saveManager.saveProfile();
+        this.game.particles.emit(this.mesh.position, "crystal", 16);
+        this.game.audio.play("crystal");
+        this.game.flash(`Crystal +${scoreValue}`);
+      }
+
+      destroy() {
+        this.game.dynamic.remove(this.mesh);
+      }
+    }
+    Crystal.temp = new THREE.Vector3();
+
+    class PowerUp {
+      constructor(game, platform, type, options = {}) {
+        this.game = game;
+        this.platform = platform;
+        this.type = type;
+        this.localX = options.localX ?? 0;
+        this.localZ = options.localZ ?? 0;
+        this.collected = false;
+        this.bobPhase = game.rng.range(0, TAU);
+        const colors = { doubleJump: 0x8df0ff, shield: 0x80aaff, slow: 0xd18cff, magnet: 0xff7fca, highBounce: 0xffd65c, feather: 0xe8f6ff };
+        this.mesh = new THREE.Mesh(
+          game.resources.geometries.power,
+          game.resources.standard(`power-${type}`, { color: colors[type], emissive: colors[type], emissiveIntensity: 1.25, roughness: .22 })
+        );
+        game.dynamic.add(this.mesh);
+      }
+
+      update(realDt, worldTime) {
+        if (this.collected) return;
+        this.platform.worldPoint(this.localX, 1.02 + Math.sin(worldTime * 3 + this.bobPhase) * .11, this.localZ, this.mesh.position);
+        this.mesh.rotation.x += realDt;
+        this.mesh.rotation.y += realDt * 1.8;
+        if (this.mesh.position.distanceToSquared(this.game.player.centerPosition) < .72 * .72) this.collect();
+      }
+
+      collect() {
+        if (this.collected) return;
+        this.collected = true;
+        this.mesh.visible = false;
+        if (this.type === "shield") this.game.power.shield = Math.min(3, this.game.power.shield + 1);
+        else if (this.type === "doubleJump") this.game.power.doubleJump = 1;
+        else this.game.power[this.type] = Math.max(this.game.power[this.type], this.type === "slow" ? 8 : 10);
+        this.game.particles.emit(this.mesh.position, "bounce", 18);
+        this.game.audio.play("power");
+        this.game.flash(`${this.type.replace(/([A-Z])/g, " $1")} acquired`);
+      }
+
+      destroy() {
+        this.game.dynamic.remove(this.mesh);
+      }
+    }
+
+    class Hazard {
+      constructor(game, platform, type, phase = 0) {
+        this.game = game;
+        this.platform = platform;
+        this.type = type;
+        this.phase = phase;
+        this.cooldown = 0;
+        this.warningPlayed = false;
+        this.group = new THREE.Group();
+        this.group.position.y = platform.thickness * .52;
+        platform.group.add(this.group);
+        this.build();
+      }
+
+      build() {
+        const dangerMaterial = this.game.resources.standard("hazard-danger", { color: 0xf26458, emissive: 0x8a1915, emissiveIntensity: .7, roughness: .48 });
+        if (this.type === "spikes") {
+          this.spikePositions = [-.45, 0, .45];
+          for (const x of this.spikePositions) {
+            const spike = new THREE.Mesh(this.game.resources.geometries.spike, dangerMaterial);
+            spike.position.set(x, .28, 0);
+            this.group.add(spike);
+          }
+        } else if (this.type === "fire") {
+          this.vent = new THREE.Mesh(this.game.resources.geometries.vent, dangerMaterial);
+          this.group.add(this.vent);
+          this.flameMaterial = this.game.resources.basic("hazard-flame", { color: 0xff8a42, transparent: true, opacity: .84, depthWrite: false });
+          this.flame = new THREE.Mesh(this.game.resources.geometries.flame, this.flameMaterial);
+          this.flame.position.y = .63;
+          this.group.add(this.flame);
+        } else if (this.type === "laser") {
+          this.leftEmitter = new THREE.Mesh(this.game.resources.geometries.emitter, dangerMaterial);
+          this.rightEmitter = new THREE.Mesh(this.game.resources.geometries.emitter, dangerMaterial);
+          this.leftEmitter.rotation.z = Math.PI / 2;
+          this.rightEmitter.rotation.z = Math.PI / 2;
+          this.leftEmitter.position.set(-1.45, .55, 0);
+          this.rightEmitter.position.set(1.45, .55, 0);
+          this.beamMaterial = this.game.resources.basic("hazard-laser", { color: 0xff446e, transparent: true, opacity: .88, depthWrite: false });
+          this.beam = new THREE.Mesh(this.game.resources.geometries.beam, this.beamMaterial);
+          this.beam.position.y = .55;
+          this.group.add(this.leftEmitter, this.rightEmitter, this.beam);
+        } else if (this.type === "wind") {
+          const material = this.game.resources.basic("hazard-wind", { color: 0xd9f8ff, transparent: true, opacity: .48, depthWrite: false });
+          this.windLines = [];
+          for (let i = 0; i < 5; i += 1) {
+            const line = new THREE.Mesh(this.game.resources.geometries.windLine, material);
+            line.position.set((i - 2) * .42, .24 + i * .1, 0);
+            this.group.add(line);
+            this.windLines.push(line);
+          }
+        }
+      }
+
+      update(worldDt, worldTime) {
+        if (!this.platform.active) {
+          this.group.visible = false;
+          return;
+        }
+        this.group.visible = true;
+        this.cooldown = Math.max(0, this.cooldown - worldDt);
+        const player = this.game.player;
+        const local = this.platform.localCoordinates(player.centerPosition.x, player.centerPosition.z, Hazard.tempLocal);
+        const relativeY = player.footY - this.platform.topY;
+
+        if (this.type === "spikes") {
+          if (relativeY >= -.05 && relativeY <= .85) {
+            for (const x of this.spikePositions) {
+              if (Math.hypot(local.x - x, local.z) < .26 + CONFIG.playerRadius * .55) {
+                this.tryDamage("spikes");
+                break;
+              }
+            }
+          }
+        } else if (this.type === "fire") {
+          const cycle = ((worldTime * .62 + this.phase / TAU) % 4 + 4) % 4;
+          const warning = cycle >= 1.55 && cycle < 2.15;
+          const active = cycle >= 2.15 && cycle < 3.05;
+          this.flame.visible = warning || active;
+          this.flame.scale.y = warning ? .28 + Math.sin(worldTime * 18) * .05 : .82 + Math.sin(worldTime * 12) * .12;
+          this.flameMaterial.opacity = active ? .88 : .38;
+          if (warning && !this.warningPlayed) {
+            this.warningPlayed = true;
+            this.game.audio.play("warning");
+          }
+          if (!warning && !active) this.warningPlayed = false;
+          if (active && relativeY > -.1 && relativeY < 1.45 && Math.hypot(local.x, local.z) < .42 + CONFIG.playerRadius * .5) this.tryDamage("fire");
+        } else if (this.type === "laser") {
+          const cycle = ((worldTime * .48 + this.phase / TAU) % 4 + 4) % 4;
+          const warning = cycle >= 1.5 && cycle < 2.15;
+          const active = cycle >= 2.15 && cycle < 3.1;
+          const beamAngle = worldTime * .72 + this.phase;
+          this.group.rotation.y = beamAngle;
+          this.beam.visible = warning || active;
+          this.beam.scale.y = active ? 1 : .45;
+          this.beamMaterial.opacity = active ? .9 : .32;
+          if (warning && !this.warningPlayed) {
+            this.warningPlayed = true;
+            this.game.audio.play("warning");
+          }
+          if (!warning && !active) this.warningPlayed = false;
+          if (active && relativeY > .25 && relativeY < 1.1) {
+            const cos = Math.cos(-beamAngle);
+            const sin = Math.sin(-beamAngle);
+            const rx = local.x * cos - local.z * sin;
+            const rz = local.x * sin + local.z * cos;
+            if (distancePointToSegment2D(rx, rz, -1.4, 0, 1.4, 0) < .11 + CONFIG.playerRadius * .65) this.tryDamage("laser");
+          }
+        } else if (this.type === "wind") {
+          for (const line of this.windLines) {
+            line.position.x -= worldDt * 1.8;
+            if (line.position.x < -1.15) line.position.x = 1.15;
+          }
+          if (Math.abs(local.x) < 1.3 && Math.abs(local.z) < .75 && relativeY > -.1 && relativeY < 1.7) {
+            player.angularVelocity = clamp(player.angularVelocity + .62 * worldDt, -1.8, 1.8);
+          }
+        }
+      }
+
+      tryDamage(source) {
+        if (this.cooldown > 0) return;
+        this.cooldown = .85;
+        this.game.hitHazard(source);
+      }
+
+      destroy() {
+        this.platform.group.remove(this.group);
+      }
+    }
+    Hazard.tempLocal = { x: 0, z: 0 };
+
+    class ProjectilePool {
+      constructor(game) {
+        this.game = game;
+        this.items = [];
+        const material = game.resources.basic("projectile-material", { color: 0xff6d9c, transparent: true, opacity: .92, depthWrite: false });
+        for (let i = 0; i < CONFIG.maxProjectiles; i += 1) {
+          const mesh = new THREE.Mesh(game.resources.geometries.projectile, material);
+          mesh.visible = false;
+          game.dynamic.add(mesh);
+          this.items.push({ active: false, mesh, velocity: new THREE.Vector3(), previous: new THREE.Vector3(), life: 0 });
+        }
+      }
+
+      spawn(position, velocity) {
+        const item = this.items.find(candidate => !candidate.active);
+        if (!item) return false;
+        item.active = true;
+        item.mesh.visible = true;
+        item.mesh.position.copy(position);
+        item.previous.copy(position);
+        item.velocity.copy(velocity);
+        item.life = 4.2;
+        return true;
+      }
+
+      update(worldDt) {
+        const player = this.game.player;
+        for (const item of this.items) {
+          if (!item.active) continue;
+          item.life -= worldDt;
+          item.previous.copy(item.mesh.position);
+          item.mesh.position.addScaledVector(item.velocity, worldDt);
+          item.mesh.rotation.x += worldDt * 6;
+          const distance = ProjectilePool.distanceToSegment3D(player.centerPosition, item.previous, item.mesh.position);
+          if (distance < CONFIG.playerRadius + .13) {
+            this.game.hitHazard("projectile");
+            item.life = 0;
+          }
+          if (item.life <= 0) this.release(item);
+        }
+      }
+
+      release(item) {
+        item.active = false;
+        item.mesh.visible = false;
+        item.mesh.position.y = -10000;
+      }
+
+      clear() {
+        for (const item of this.items) this.release(item);
+      }
+
+      activeCount() {
+        return this.items.filter(item => item.active).length;
+      }
+
+      static distanceToSegment3D(point, start, end) {
+        ProjectilePool.ab.copy(end).sub(start);
+        const lengthSquared = ProjectilePool.ab.lengthSq();
+        const t = lengthSquared > 0 ? clamp(ProjectilePool.ap.copy(point).sub(start).dot(ProjectilePool.ab) / lengthSquared, 0, 1) : 0;
+        ProjectilePool.closest.copy(start).addScaledVector(ProjectilePool.ab, t);
+        return ProjectilePool.closest.distanceTo(point);
+      }
+    }
+    ProjectilePool.ab = new THREE.Vector3();
+    ProjectilePool.ap = new THREE.Vector3();
+    ProjectilePool.closest = new THREE.Vector3();
+
+    class FallingRockPool {
+      constructor(game) {
+        this.game = game;
+        this.items = [];
+        const rockMaterial = game.resources.standard("rock-material", { color: 0x6f6257, roughness: 1 });
+        const markerMaterial = game.resources.basic("rock-marker", { color: 0xff8b70, transparent: true, opacity: .55, side: THREE.DoubleSide, depthWrite: false });
+        for (let i = 0; i < CONFIG.maxRocks; i += 1) {
+          const mesh = new THREE.Mesh(game.resources.geometries.rock, rockMaterial);
+          const marker = new THREE.Mesh(game.resources.geometries.ring, markerMaterial);
+          marker.rotation.x = -Math.PI / 2;
+          mesh.visible = false;
+          marker.visible = false;
+          game.dynamic.add(mesh, marker);
+          this.items.push({ active: false, mesh, marker, velocityY: 0, radius: .5, life: 0, warning: 0 });
+        }
+      }
+
+      spawn() {
+        const item = this.items.find(candidate => !candidate.active);
+        if (!item) return;
+        const rng = this.game.rng;
+        const angle = this.game.player.angle + rng.range(-.62, .62);
+        const radiusFromCenter = CONFIG.pathRadius + rng.range(-1.25, 1.25);
+        item.radius = rng.range(.34, .68);
+        item.mesh.scale.setScalar(item.radius / .5);
+        item.mesh.position.set(
+          Math.cos(angle) * radiusFromCenter,
+          this.game.player.footY + rng.range(12, 16),
+          Math.sin(angle) * radiusFromCenter
+        );
+        item.marker.position.set(item.mesh.position.x, this.game.player.footY + .02, item.mesh.position.z);
+        item.marker.scale.setScalar(item.radius * 1.55);
+        item.velocityY = -rng.range(6.5, 8.8);
+        item.life = 5;
+        item.warning = .62;
+        item.active = true;
+        item.mesh.visible = false;
+        item.marker.visible = true;
+      }
+
+      update(worldDt) {
+        for (const item of this.items) {
+          if (!item.active) continue;
+          item.life -= worldDt;
+          if (item.warning > 0) {
+            item.warning -= worldDt;
+            item.marker.material.opacity = .34 + Math.sin(this.game.worldTime * 16) * .2;
+            if (item.warning <= 0) {
+              item.mesh.visible = true;
+              item.marker.visible = false;
+            }
+          } else {
+            item.velocityY -= 4.2 * worldDt;
+            item.mesh.position.y += item.velocityY * worldDt;
+            item.mesh.rotation.x += worldDt * 2.3;
+            item.mesh.rotation.z += worldDt * 1.6;
+            if (item.mesh.position.distanceToSquared(this.game.player.centerPosition) < (item.radius + CONFIG.playerRadius) ** 2) {
+              this.game.hitHazard("falling rock");
+              item.life = 0;
+            }
+          }
+          if (item.life <= 0 || item.mesh.position.y < this.game.player.footY - 9) this.release(item);
+        }
+      }
+
+      release(item) {
+        item.active = false;
+        item.mesh.visible = false;
+        item.marker.visible = false;
+        item.mesh.position.y = -10000;
+      }
+
+      clear() {
+        for (const item of this.items) this.release(item);
+      }
+
+      activeCount() {
+        return this.items.filter(item => item.active).length;
+      }
+    }
+
+    class Enemy {
+      constructor(game, spec, chunkId) {
+        this.game = game;
+        this.type = spec.type;
+        this.chunkId = chunkId;
+        this.platform = spec.platform || null;
+        this.baseAngle = spec.angle;
+        this.angle = spec.angle;
+        this.radius = spec.radius ?? CONFIG.pathRadius;
+        this.baseY = spec.y;
+        this.phase = spec.phase ?? 0;
+        this.timer = game.rng.range(0, 1.2);
+        this.cooldown = 0;
+        this.group = new THREE.Group();
+        this.group.userData.enemy = this;
+        game.dynamic.add(this.group);
+        this.build();
+      }
+
+      build() {
+        const material = this.game.resources.standard("enemy-material", { color: 0x713f8e, emissive: 0x32164b, emissiveIntensity: .65, roughness: .43, metalness: .16 });
+        if (this.type === "drone") {
+          this.body = new THREE.Mesh(this.game.resources.geometries.drone, material);
+        } else if (this.type === "guardian") {
+          this.body = new THREE.Mesh(this.game.resources.geometries.guardian, material);
+        } else if (this.type === "turret") {
+          this.body = new THREE.Mesh(this.game.resources.geometries.turret, material);
+        } else {
+          this.body = new THREE.Mesh(this.game.resources.geometries.blocker, material);
+          this.body.rotation.z = Math.PI / 2;
+        }
+        this.body.castShadow = this.game.settings.quality === "High";
+        this.group.add(this.body);
+        this.charge = new THREE.Mesh(
+          this.game.resources.geometries.sphere,
+          this.game.resources.basic("enemy-charge", { color: 0xff7ab0, transparent: true, opacity: .55, depthWrite: false })
+        );
+        this.charge.scale.setScalar(.1);
+        this.charge.visible = false;
+        this.charge.position.y = .42;
+        this.group.add(this.charge);
+      }
+
+      update(worldDt, worldTime) {
+        this.timer += worldDt;
+        this.cooldown = Math.max(0, this.cooldown - worldDt);
+        let y = this.baseY;
+        if (this.platform) {
+          this.angle = this.platform.angle;
+          this.radius = this.platform.radius;
+          y = this.platform.topY + .95;
+        }
+        if (this.type === "drone") {
+          this.angle = this.baseAngle + Math.sin(worldTime * .92 + this.phase) * .74;
+          y += Math.sin(worldTime * 2 + this.phase) * .15;
+        } else if (this.type === "guardian") {
+          this.angle = this.baseAngle + worldTime * .52;
+          y += Math.sin(worldTime * 1.6 + this.phase) * .12;
+        } else if (this.type === "blocker" && this.platform) {
+          const offset = Math.sin(worldTime * 1.1 + this.phase) * Math.max(.25, this.platform.width * .28);
+          this.platform.worldPoint(offset, .68, 0, this.group.position);
+          this.group.rotation.y = Math.PI / 2 - this.platform.angle;
+        }
+
+        if (!(this.type === "blocker" && this.platform)) {
+          this.group.position.set(Math.cos(this.angle) * this.radius, y, Math.sin(this.angle) * this.radius);
+          this.group.rotation.y = Math.PI / 2 - this.angle + worldTime * .4;
+        }
+
+        if (this.type === "turret") {
+          const cadence = 2.75;
+          const chargeStart = 2.05;
+          const cycle = this.timer % cadence;
+          this.charge.visible = cycle > chargeStart;
+          if (this.charge.visible) this.charge.scale.setScalar(.08 + (cycle - chargeStart) * .17);
+          if (this.timer >= cadence) {
+            this.timer -= cadence;
+            this.fire();
+          }
+        }
+
+        const distance = this.group.position.distanceTo(this.game.player.centerPosition);
+        if (distance < .68 && this.cooldown <= 0) {
+          this.cooldown = .8;
+          if (this.type === "blocker") {
+            const direction = Math.sign(angleDelta(this.game.player.angle, this.angle)) || 1;
+            this.game.player.angularVelocity = clamp(this.game.player.angularVelocity - direction * .7, -1.8, 1.8);
+            this.game.cameraShake = Math.max(this.game.cameraShake, .08);
+          } else {
+            this.game.hitHazard(this.type);
+          }
+        }
+      }
+
+      fire() {
+        Enemy.tempDirection.copy(this.game.player.centerPosition).sub(this.group.position);
+        const distance = Enemy.tempDirection.length();
+        if (distance < .01 || distance > 16) return;
+        Enemy.tempDirection.multiplyScalar(4.5 / distance);
+        this.game.projectiles.spawn(this.group.position, Enemy.tempDirection);
+        this.game.audio.play("turret");
+      }
+
+      destroy() {
+        this.game.dynamic.remove(this.group);
+      }
+    }
+    Enemy.tempDirection = new THREE.Vector3();
+
+    class Player {
+      constructor(game) {
+        this.game = game;
+        this.group = new THREE.Group();
+        this.group.name = "player";
+        this.centerPosition = new THREE.Vector3();
+        this.game.scene.add(this.group);
+        this.shadow = new THREE.Mesh(
+          game.resources.geometries.circle,
+          game.resources.basic("player-shadow", { color: 0x142131, transparent: true, opacity: .28, depthWrite: false })
+        );
+        this.shadow.rotation.x = -Math.PI / 2;
+        this.game.scene.add(this.shadow);
+        this.marker = new THREE.Mesh(
+          game.resources.geometries.ring,
+          game.resources.basic("landing-marker", { color: 0x9ce7ff, transparent: true, opacity: .64, side: THREE.DoubleSide, depthWrite: false })
+        );
+        this.marker.rotation.x = -Math.PI / 2;
+        this.game.scene.add(this.marker);
+        this.shieldShell = new THREE.Mesh(
+          game.resources.geometries.sphere,
+          new THREE.MeshBasicMaterial({ color: 0x83b6ff, transparent: true, opacity: .14, wireframe: true, depthWrite: false })
+        );
+        this.shieldShell.scale.setScalar(.72);
+        this.shieldShell.position.y = .58;
+        this.group.add(this.shieldShell);
+        this.magnetField = new THREE.Mesh(
+          new THREE.TorusGeometry(.78, .025, 5, 32),
+          new THREE.MeshBasicMaterial({ color: 0xff7fca, transparent: true, opacity: .35, depthWrite: false })
+        );
+        this.magnetField.rotation.x = Math.PI / 2;
+        this.magnetField.position.y = .55;
+        this.group.add(this.magnetField);
+        this.ownedMaterials = [];
+        this.ownedGeometries = [];
+        this.visualRoot = new THREE.Group();
+        this.group.add(this.visualRoot);
+        this.rebuild();
+        this.reset();
+      }
+
+      clearVisual() {
+        while (this.visualRoot.children.length) this.visualRoot.remove(this.visualRoot.children[0]);
+        for (const material of this.ownedMaterials) material.dispose();
+        for (const geometry of this.ownedGeometries) geometry.dispose();
+        this.ownedMaterials.length = 0;
+        this.ownedGeometries.length = 0;
+      }
+
+      rebuild() {
+        this.clearVisual();
+        const bodyColor = new THREE.Color(this.game.profile.colors.body);
+        const glowColor = new THREE.Color(this.game.profile.colors.glow);
+        const bodyMaterial = new THREE.MeshStandardMaterial({ color: bodyColor, roughness: .34, metalness: .12 });
+        const glowMaterial = new THREE.MeshStandardMaterial({ color: glowColor, emissive: glowColor, emissiveIntensity: 1.45, roughness: .18, metalness: .08 });
+        this.ownedMaterials.push(bodyMaterial, glowMaterial);
+        const skin = this.game.profile.selected.skin;
+        if (skin === "knight") {
+          const torsoGeometry = new THREE.CylinderGeometry(.28, .35, .72, 9);
+          const headGeometry = new THREE.SphereGeometry(.29, 12, 9);
+          const crestGeometry = new THREE.ConeGeometry(.13, .38, 6);
+          const shoulderGeometry = new THREE.TorusGeometry(.3, .055, 5, 12);
+          this.ownedGeometries.push(torsoGeometry, headGeometry, crestGeometry, shoulderGeometry);
+          const torso = new THREE.Mesh(torsoGeometry, bodyMaterial);
+          torso.position.y = .47;
+          const head = new THREE.Mesh(headGeometry, bodyMaterial);
+          head.position.y = .96;
+          const crest = new THREE.Mesh(crestGeometry, glowMaterial);
+          crest.position.y = 1.25;
+          const shoulder = new THREE.Mesh(shoulderGeometry, glowMaterial);
+          shoulder.rotation.x = Math.PI / 2;
+          shoulder.position.y = .71;
+          this.visualRoot.add(torso, head, crest, shoulder);
+        } else if (skin === "robot") {
+          const torsoGeometry = new THREE.BoxGeometry(.56, .67, .47, 2, 2, 2);
+          const headGeometry = new THREE.BoxGeometry(.47, .36, .4, 2, 1, 2);
+          const antennaGeometry = new THREE.CylinderGeometry(.025, .025, .27, 6);
+          const tipGeometry = new THREE.SphereGeometry(.07, 8, 6);
+          this.ownedGeometries.push(torsoGeometry, headGeometry, antennaGeometry, tipGeometry);
+          const torso = new THREE.Mesh(torsoGeometry, bodyMaterial);
+          torso.position.y = .5;
+          const head = new THREE.Mesh(headGeometry, glowMaterial);
+          head.position.y = .98;
+          const antenna = new THREE.Mesh(antennaGeometry, bodyMaterial);
+          antenna.position.y = 1.28;
+          const tip = new THREE.Mesh(tipGeometry, glowMaterial);
+          tip.position.y = 1.43;
+          this.visualRoot.add(torso, head, antenna, tip);
+        } else if (skin === "crystal") {
+          const coreGeometry = new THREE.OctahedronGeometry(.47, 1);
+          const upperGeometry = new THREE.ConeGeometry(.24, .62, 6);
+          const lowerGeometry = new THREE.ConeGeometry(.19, .45, 6);
+          this.ownedGeometries.push(coreGeometry, upperGeometry, lowerGeometry);
+          const core = new THREE.Mesh(coreGeometry, glowMaterial);
+          core.position.y = .58;
+          const upper = new THREE.Mesh(upperGeometry, bodyMaterial);
+          upper.position.y = 1.02;
+          const lower = new THREE.Mesh(lowerGeometry, bodyMaterial);
+          lower.rotation.z = Math.PI;
+          lower.position.y = .18;
+          this.visualRoot.add(core, upper, lower);
+        } else {
+          const body = new THREE.Mesh(this.game.resources.geometries.playerCapsule, bodyMaterial);
+          body.position.y = .58;
+          const coreGeometry = new THREE.SphereGeometry(.19, 12, 9);
+          const haloGeometry = new THREE.TorusGeometry(.34, .035, 5, 18);
+          this.ownedGeometries.push(coreGeometry, haloGeometry);
+          const core = new THREE.Mesh(coreGeometry, glowMaterial);
+          core.position.y = .62;
+          const halo = new THREE.Mesh(haloGeometry, glowMaterial);
+          halo.rotation.x = Math.PI / 2;
+          halo.position.y = .8;
+          this.visualRoot.add(body, core, halo);
+        }
+        this.visualRoot.traverse(object => {
+          if (object.isMesh) {
+            object.castShadow = this.game.settings.quality !== "Low";
+            object.receiveShadow = false;
+          }
+        });
+      }
+
+      reset() {
+        this.angle = 0;
+        this.previousAngle = 0;
+        this.radius = CONFIG.pathRadius;
+        this.previousRadius = CONFIG.pathRadius;
+        this.footY = .5;
+        this.previousFootY = .5;
+        this.verticalVelocity = 0;
+        this.angularVelocity = 0;
+        this.radialVelocity = 0;
+        this.maxHeight = 0;
+        this.previousMaxHeight = 0;
+        this.squash = 0;
+        this.invulnerability = 0;
+        this.airborne = true;
+        this.lastPlatform = null;
+        this.aidTimer = 0;
+        this.updateVisual(0);
+      }
+
+      update(dt) {
+        this.previousAngle = this.angle;
+        this.previousRadius = this.radius;
+        this.previousFootY = this.footY;
+        this.previousMaxHeight = this.maxHeight;
+        this.invulnerability = Math.max(0, this.invulnerability - dt);
+
+        const angularInput = this.game.input.angularAxis;
+        const radialInput = this.game.input.radialAxis;
+        const sensitivity = this.game.settings.sensitivity;
+        const airMultiplier = 1 + this.game.upgrades.airControl * .18;
+        const maxAngular = CONFIG.maxAngularSpeed * sensitivity * (1 + this.game.upgrades.airControl * .1);
+        const maxRadial = CONFIG.maxRadialSpeed * sensitivity * (1 + this.game.upgrades.airControl * .08);
+
+        this.angularVelocity += angularInput * CONFIG.angularAcceleration * sensitivity * airMultiplier * dt;
+        this.radialVelocity += radialInput * CONFIG.radialAcceleration * sensitivity * airMultiplier * dt;
+        this.angularVelocity = clamp(this.angularVelocity, -maxAngular, maxAngular);
+        this.radialVelocity = clamp(this.radialVelocity, -maxRadial, maxRadial);
+        if (!angularInput) this.angularVelocity *= Math.exp(-CONFIG.airDragAngular * dt);
+        if (!radialInput) this.radialVelocity *= Math.exp(-CONFIG.airDragRadial * dt);
+
+        this.angle = wrapAngle(this.angle + this.angularVelocity * dt);
+        this.radius = clamp(this.radius + this.radialVelocity * dt, CONFIG.minRadius, CONFIG.maxRadius);
+        const gravityScale = this.game.power.feather > 0 ? CONFIG.featherGravityScale : 1;
+        this.verticalVelocity -= CONFIG.gravity * gravityScale * dt;
+        this.footY += this.verticalVelocity * dt;
+        this.maxHeight = Math.max(this.maxHeight, this.footY - .5);
+        this.centerPosition.set(Math.cos(this.angle) * this.radius, this.footY + .56, Math.sin(this.angle) * this.radius);
+        this.game.checkLanding(this);
+        this.updateVisual(dt);
+      }
+
+      useDoubleJump() {
+        if (this.game.state !== "playing" || this.game.power.doubleJump <= 0 || !this.airborne || this.verticalVelocity > 5) return;
+        this.game.power.doubleJump = 0;
+        this.verticalVelocity = Math.max(10.7, this.verticalVelocity + 6.4);
+        this.squash = .65;
+        this.game.particles.emit(this.centerPosition, "bounce", 15, { up: .5 });
+        this.game.audio.play("jump");
+        this.game.flash("Double jump");
+      }
+
+      updateVisual(dt) {
+        const x = Math.cos(this.angle) * this.radius;
+        const z = Math.sin(this.angle) * this.radius;
+        this.group.position.set(x, this.footY, z);
+        this.centerPosition.set(x, this.footY + .56, z);
+        this.group.rotation.y = Math.PI / 2 - this.angle;
+        const lean = clamp(-this.angularVelocity * .22, -.18, .18);
+        this.visualRoot.rotation.z = lerp(this.visualRoot.rotation.z, lean, damp(8, dt));
+        this.squash = Math.max(0, this.squash - dt * 4.4);
+        const squashAmount = this.game.settings.reducedMotion ? 0 : Math.sin(this.squash * Math.PI) * .11;
+        const airStretch = this.game.settings.reducedMotion ? 0 : clamp(Math.abs(this.verticalVelocity) * .004, 0, .055);
+        this.visualRoot.scale.set(1 + squashAmount - airStretch * .35, 1 - squashAmount + airStretch, 1 + squashAmount - airStretch * .35);
+        this.shieldShell.visible = this.game.power.shield > 0;
+        this.shieldShell.rotation.y += dt * .6;
+        this.magnetField.visible = this.game.power.magnet > 0;
+        this.magnetField.rotation.z += dt * .8;
+        this.visualRoot.visible = this.invulnerability <= 0 || Math.floor(this.invulnerability * 16) % 2 === 0;
+        Player.tempPosition.set(x, this.footY + .55, z);
+        this.game.particles.trail(Player.tempPosition, this.game.profile.selected.trail, dt);
+        this.aidTimer -= dt;
+        if (this.aidTimer <= 0) {
+          this.aidTimer = .035;
+          this.updateLandingAid();
+        }
+      }
+
+      updateLandingAid() {
+        let best = null;
+        for (const chunk of this.game.generator.chunks) {
+          for (const platform of chunk.platforms) {
+            if (!platform.active || platform.topY > this.footY + .18 || this.footY - platform.topY > 9.5) continue;
+            if (platform.containsWorld(this.centerPosition.x, this.centerPosition.z, .04) && (!best || platform.topY > best.topY)) best = platform;
+          }
+        }
+        if (!best) {
+          this.shadow.visible = false;
+          this.marker.visible = false;
+          return;
+        }
+        this.shadow.visible = true;
+        this.marker.visible = this.verticalVelocity < 0;
+        this.shadow.position.set(this.centerPosition.x, best.topY + .025, this.centerPosition.z);
+        this.marker.position.set(this.centerPosition.x, best.topY + .035, this.centerPosition.z);
+        const distance = clamp((this.footY - best.topY) / 8, 0, 1);
+        this.shadow.scale.setScalar(1 - distance * .5);
+        this.shadow.material.opacity = .34 * (1 - distance * .65);
+      }
+    }
+    Player.tempPosition = new THREE.Vector3();
+
+    class ChunkGenerator {
+      constructor(game) {
+        this.game = game;
+        this.templates = [
+          "gentleSpiral", "alternate", "staircase", "radialWeave", "movingLesson",
+          "elevatorSequence", "rotatingSequence", "bridge", "splitPath", "collapseRun", "hazardCorridor"
+        ];
+        this.resetState();
+      }
+
+      resetState() {
+        this.chunks = [];
+        this.nextId = 1;
+        this.highest = 0;
+        this.lastAngle = 0;
+        this.lastRadius = CONFIG.pathRadius;
+        this.recentTemplates = [];
+        this.nextCheckpoint = CONFIG.checkpointEvery;
+        this.crystalRouteSpawned = 0;
+        this.primaryPlatformCount = 0;
+      }
+
+      clear() {
+        for (const chunk of this.chunks) this.destroyChunk(chunk);
+        this.resetState();
+      }
+
+      destroyChunk(chunk) {
+        for (const platform of chunk.platforms) platform.destroy();
+        for (const crystal of chunk.crystals) crystal.destroy();
+        for (const powerUp of chunk.powerUps) powerUp.destroy();
+        for (const enemy of chunk.enemies) enemy.destroy();
+      }
+
+      createChunk(name) {
+        return {
+          id: this.nextId++,
+          name,
+          platforms: [],
+          crystals: [],
+          powerUps: [],
+          enemies: [],
+          entryY: this.highest,
+          exitY: this.highest,
+          hazardBudget: 0
+        };
+      }
+
+      addPlatform(chunk, spec) {
+        const platform = new Platform(this.game, {
+          radius: this.lastRadius,
+          phase: this.game.rng.range(0, TAU),
+          ...spec
+        }, chunk.id);
+        chunk.platforms.push(platform);
+        if (platform.primaryRoute) {
+          this.primaryPlatformCount += 1;
+          this.lastAngle = platform.angle;
+          this.lastRadius = platform.radius;
+          this.highest = Math.max(this.highest, platform.topY);
+          chunk.exitY = this.highest;
+        }
+        return platform;
+      }
+
+      intro() {
+        const chunk = this.createChunk("tutorial");
+        const steps = [
+          { angle: 0, topY: .5, width: 4.35, type: "static" },
+          { angle: .13, topY: 2.25, width: 3.8, type: "static" },
+          { angle: .32, topY: 4.08, width: 3.55, type: "static" },
+          { angle: .55, topY: 5.92, width: 3.35, type: "moving", amplitude: .18, speed: .72 },
+          { angle: .78, topY: 7.78, width: 3.2, type: "collapse" },
+          { angle: 1.0, topY: 9.72, width: 3.25, type: "bounce" }
+        ];
+        for (const step of steps) {
+          const platform = this.addPlatform(chunk, { ...step, depth: 2.35, primaryRoute: true });
+          if (step.topY > 2 && step.topY < 9 && this.game.rng.chance(.45)) this.addCrystal(chunk, platform, false, "left");
+        }
+        this.chunks.push(chunk);
+      }
+
+      difficultyAt(height = this.highest) {
+        if (height < 20) return 0;
+        if (height < 50) return 1;
+        if (height < 100) return 2;
+        if (height < 150) return 3;
+        if (height < 200) return 4;
+        return 5;
+      }
+
+      chooseTemplate() {
+        let candidates = this.templates.slice();
+        if (this.recentTemplates.length >= 2) {
+          const last = this.recentTemplates[this.recentTemplates.length - 1];
+          const previous = this.recentTemplates[this.recentTemplates.length - 2];
+          candidates = candidates.filter(name => !(name === last && name === previous));
+        }
+        if (this.highest < 42) candidates = candidates.filter(name => !["hazardCorridor", "collapseRun", "splitPath"].includes(name));
+        if (candidates.length === 0) candidates = ["gentleSpiral"];
+        const chosen = this.game.rng.pick(candidates, "gentleSpiral");
+        this.recentTemplates.push(chosen);
+        if (this.recentTemplates.length > 5) this.recentTemplates.shift();
+        return chosen;
+      }
+
+      choosePlatformType(template, index, difficulty) {
+        if (template === "movingLesson") return index % 2 ? "moving" : "static";
+        if (template === "elevatorSequence") return index % 2 ? "elevator" : "static";
+        if (template === "rotatingSequence") return index % 2 ? "rotating" : "oneway";
+        if (template === "collapseRun") return index % 3 === 2 ? "bounce" : "collapse";
+        if (template === "bridge") return difficulty >= 3 && index === 3 ? "conveyor" : "static";
+        const pool = ["static", "static", "moving", "bounce", "collapse", "rotating"];
+        if (difficulty >= 2) pool.push("elevator", "conveyor", "slippery");
+        if (difficulty >= 3) pool.push("tilting", "oneway");
+        // Disappearing, fake, and splitting platforms remain optional risky-route mechanics,
+        // so the guaranteed primary route never depends on a timed or deceptive surface.
+        return this.game.rng.pick(pool, "static");
+      }
+
+      stepPattern(template, index, direction, difficulty) {
+        const rng = this.game.rng;
+        let angleStep = direction * rng.range(.2, .34);
+        let radialStep = rng.range(-.16, .16);
+        if (template === "alternate") angleStep = direction * (index % 2 === 0 ? rng.range(.31, .38) : -rng.range(.27, .34));
+        else if (template === "staircase") angleStep = direction * rng.range(.13, .21);
+        else if (template === "bridge") angleStep = direction * rng.range(.08, .14);
+        else if (template === "radialWeave") {
+          angleStep = direction * rng.range(.18, .26);
+          radialStep = (index % 2 === 0 ? -1 : 1) * rng.range(.42, .68);
+        } else if (template === "movingLesson" || template === "elevatorSequence") angleStep = direction * rng.range(.18, .27);
+        else if (template === "rotatingSequence") angleStep = direction * rng.range(.2, .3);
+        else if (template === "collapseRun") angleStep = direction * rng.range(.19, .29);
+        else if (template === "hazardCorridor") angleStep = direction * rng.range(.14, .24);
+        const verticalStep = rng.range(difficulty >= 4 ? 1.72 : 1.62, difficulty >= 4 ? 2.05 : 1.96);
+        return { angleStep, radialStep, verticalStep };
+      }
+
+      transitionReachable(previous, next) {
+        const bounce = this.game.mode === "rush" ? CONFIG.rushBounce : CONFIG.baseBounce;
+        const dy = next.topY - previous.topY;
+        if (dy < -.3 || dy > 2.12) return false;
+        const discriminant = bounce * bounce - 2 * CONFIG.gravity * Math.max(0, dy);
+        if (discriminant < 0) return false;
+        const flightTime = (bounce + Math.sqrt(discriminant)) / CONFIG.gravity;
+        const averageRadius = (previous.radius + next.radius) * .5;
+        const tangentialDistance = Math.abs(angleDelta(previous.angle, next.angle)) * averageRadius;
+        const radialDistance = Math.abs(next.radius - previous.radius);
+        const tangentialReach = CONFIG.maxAngularSpeed * .78 * averageRadius * flightTime + previous.width * .2 + next.width * .42;
+        const radialReach = CONFIG.maxRadialSpeed * .68 * flightTime + previous.depth * .18 + next.depth * .42;
+        return tangentialDistance <= tangentialReach && radialDistance <= radialReach;
+      }
+
+      repairTransition(previous, candidate) {
+        const repaired = { ...candidate };
+        let attempts = 0;
+        while (!this.transitionReachable(previous, repaired) && attempts < 8) {
+          repaired.topY = previous.topY + Math.min(1.82, Math.max(1.45, repaired.topY - previous.topY - .08));
+          repaired.angle = previous.angle + angleDelta(previous.angle, repaired.angle) * .82;
+          repaired.radius = lerp(previous.radius, repaired.radius, .78);
+          repaired.width = Math.max(repaired.width, 2.65);
+          repaired.depth = Math.max(repaired.depth, 2.12);
+          attempts += 1;
+        }
+        if (!this.transitionReachable(previous, repaired)) {
+          repaired.topY = previous.topY + 1.55;
+          repaired.angle = previous.angle + clamp(angleDelta(previous.angle, repaired.angle), -.18, .18);
+          repaired.radius = clamp(previous.radius + clamp(repaired.radius - previous.radius, -.25, .25), CONFIG.minRadius + .2, CONFIG.maxRadius - .2);
+          repaired.width = Math.max(repaired.width, 3);
+          repaired.depth = Math.max(repaired.depth, 2.3);
+          repaired.type = "static";
+        }
+        return repaired;
+      }
+
+      createCandidateSpecs(template, difficulty) {
+        const rng = this.game.rng;
+        const direction = rng.chance(.5) ? -1 : 1;
+        const count = rng.int(5, difficulty >= 3 ? 7 : 6);
+        const modeScale = MODE_CONFIG[this.game.mode].platformScale;
+        const specs = [];
+        let previous = {
+          angle: this.lastAngle,
+          radius: this.lastRadius,
+          topY: this.highest,
+          width: 3,
+          depth: 2.2
+        };
+        for (let i = 0; i < count; i += 1) {
+          const pattern = this.stepPattern(template, i, direction, difficulty);
+          const type = this.choosePlatformType(template, i, difficulty);
+          const minimumWidth = difficulty >= 4 ? 2.05 : 2.25;
+          const width = clamp((3.15 - difficulty * .11 + rng.range(-.16, .16)) * modeScale, minimumWidth * modeScale, 3.25);
+          const candidate = {
+            angle: previous.angle + pattern.angleStep,
+            radius: clamp(previous.radius + pattern.radialStep, CONFIG.minRadius + .35, CONFIG.maxRadius - .35),
+            topY: previous.topY + pattern.verticalStep,
+            width: type === "bounce" ? Math.max(width, 2.55) : width,
+            depth: clamp(2.2 - difficulty * .025 + rng.range(-.08, .08), 1.95, 2.25),
+            type,
+            speed: clamp(.72 + difficulty * .055 + rng.range(-.08, .08), .58, 1.08),
+            amplitude: type === "elevator" ? .58 : type === "moving" ? .3 : type === "rotating" ? .4 : type === "oneway" ? .1 : 0,
+            motionAxis: rng.chance(.34) ? "radial" : "angle",
+            primaryRoute: true
+          };
+          const repaired = this.repairTransition(previous, candidate);
+          specs.push(repaired);
+          previous = repaired;
+        }
+        return specs;
+      }
+
+      spawnChunk() {
+        // Reserve enough vertical room for the checkpoint approach before a normal chunk can overshoot the milestone.
+        if (this.highest + 15 >= this.nextCheckpoint) {
+          this.spawnCheckpointApproach();
+          return;
+        }
+        const difficulty = this.difficultyAt();
+        const template = this.chooseTemplate();
+        const chunk = this.createChunk(template);
+        const specs = this.createCandidateSpecs(template, difficulty);
+        let previousPlatform = null;
+        for (let i = 0; i < specs.length; i += 1) {
+          const platform = this.addPlatform(chunk, specs[i]);
+          this.decoratePrimaryPlatform(chunk, platform, difficulty, i);
+          if (template === "splitPath" && i === 2) this.addRiskyBranch(chunk, platform, difficulty);
+          if (!MODE_CONFIG[this.game.mode].noRecovery && difficulty <= 4 && i > 0 && this.game.rng.chance(Math.max(.08, .28 - difficulty * .035))) {
+            this.addRecoveryPlatform(chunk, platform);
+          }
+          previousPlatform = platform;
+        }
+        this.addEnemies(chunk, difficulty, previousPlatform);
+        this.chunks.push(chunk);
+      }
+
+      decoratePrimaryPlatform(chunk, platform, difficulty, index) {
+        let hasCrystal = false;
+        if (this.game.mode === "crystal" && platform.topY < MODE_CONFIG.crystal.heightLimit && this.crystalRouteSpawned < 40) {
+          const remainingHeight = MODE_CONFIG.crystal.heightLimit - platform.topY;
+          const remainingNeeded = 40 - this.crystalRouteSpawned;
+          const force = remainingHeight < remainingNeeded * 3.9;
+          if (force || index % 2 === 0 || this.game.rng.chance(.38)) {
+            this.addCrystal(chunk, platform, false, index % 3 === 0 ? "left" : "right");
+            this.crystalRouteSpawned += 1;
+            hasCrystal = true;
+          }
+        } else if (this.game.rng.chance(.39)) {
+          this.addCrystal(chunk, platform, false, this.game.rng.chance(.5) ? "left" : "right");
+          hasCrystal = true;
+        }
+
+        const powerChance = difficulty < 2 ? .065 : .085;
+        let hasPower = false;
+        if (this.game.rng.chance(powerChance) && !platform.checkpoint) {
+          const types = ["doubleJump", "shield", "slow", "magnet", "highBounce", "feather"];
+          const type = this.game.rng.pick(types, "shield");
+          this.addPowerUp(chunk, platform, type, hasCrystal ? "opposite" : "center");
+          hasPower = true;
+        }
+
+        const hazardAllowed = difficulty >= 1 && platform.topY > 28 && !hasPower && !hasCrystal && !platform.checkpoint && !platform.recovery && !["bounce", "fake", "splitting"].includes(platform.type);
+        const hazardChance = [.0, .08, .12, .16, .19, .21][difficulty];
+        if (hazardAllowed && this.game.rng.chance(hazardChance)) {
+          const hazardTypes = difficulty < 2 ? ["spikes", "wind"] : difficulty < 4 ? ["spikes", "fire", "wind"] : ["spikes", "fire", "laser", "wind"];
+          const type = this.game.rng.pick(hazardTypes, "spikes");
+          platform.hazard = new Hazard(this.game, platform, type, this.game.rng.range(0, TAU));
+        }
+      }
+
+      addCrystal(chunk, platform, risky, slotName) {
+        if (platform.pickupSlots.has(slotName)) return null;
+        const offset = Math.min(.62, platform.width * .22);
+        let localX = 0;
+        if (slotName === "left") localX = -offset;
+        else if (slotName === "right") localX = offset;
+        else if (slotName === "opposite") localX = platform.pickupSlots.has("left") ? offset : -offset;
+        platform.pickupSlots.add(slotName);
+        const crystal = new Crystal(this.game, platform, { risky, localX, localZ: 0 });
+        chunk.crystals.push(crystal);
+        return crystal;
+      }
+
+      addPowerUp(chunk, platform, type, slotName) {
+        if (platform.pickupSlots.has(slotName)) slotName = "right";
+        if (platform.pickupSlots.has(slotName)) slotName = "left";
+        if (platform.pickupSlots.has(slotName)) return null;
+        const offset = Math.min(.58, platform.width * .2);
+        const localX = slotName === "left" ? -offset : slotName === "right" || slotName === "opposite" ? offset : 0;
+        platform.pickupSlots.add(slotName);
+        const powerUp = new PowerUp(this.game, platform, type, { localX, localZ: 0 });
+        chunk.powerUps.push(powerUp);
+        return powerUp;
+      }
+
+      addRiskyBranch(chunk, sourcePlatform, difficulty) {
+        const direction = this.game.rng.chance(.5) ? -1 : 1;
+        const candidate = {
+          angle: sourcePlatform.angle + direction * this.game.rng.range(.44, .58),
+          radius: clamp(sourcePlatform.radius + this.game.rng.range(-.35, .35), CONFIG.minRadius + .4, CONFIG.maxRadius - .4),
+          topY: sourcePlatform.topY + this.game.rng.range(.08, .28),
+          width: clamp(2.15 - difficulty * .04, 1.9, 2.15),
+          depth: 1.9,
+          type: this.game.rng.pick(["collapse", "disappear", "splitting", "fake"], "collapse"),
+          riskyRoute: true,
+          primaryRoute: false,
+          speed: .75,
+          amplitude: 0
+        };
+        const platform = new Platform(this.game, { phase: this.game.rng.range(0, TAU), ...candidate }, chunk.id);
+        chunk.platforms.push(platform);
+        this.addCrystal(chunk, platform, true, "center");
+        if (this.game.rng.chance(.38)) this.addPowerUp(chunk, platform, this.game.rng.pick(["shield", "magnet", "doubleJump"], "shield"), "right");
+      }
+
+      addRecoveryPlatform(chunk, sourcePlatform) {
+        const candidate = {
+          angle: sourcePlatform.angle + this.game.rng.range(-.16, .16),
+          radius: clamp(sourcePlatform.radius + this.game.rng.range(-.22, .22), CONFIG.minRadius + .3, CONFIG.maxRadius - .3),
+          topY: sourcePlatform.topY - 1.2,
+          width: 2.65,
+          depth: 2.25,
+          type: "static",
+          recovery: true,
+          primaryRoute: false
+        };
+        const platform = new Platform(this.game, { phase: this.game.rng.range(0, TAU), ...candidate }, chunk.id);
+        chunk.platforms.push(platform);
+        if (this.game.rng.chance(.2)) this.addCrystal(chunk, platform, false, "center");
+      }
+
+      addEnemies(chunk, difficulty, finalPlatform) {
+        if (difficulty < 2 || this.highest < 65) return;
+        const budget = difficulty >= 4 ? 2 : 1;
+        for (let i = 0; i < budget; i += 1) {
+          if (!this.game.rng.chance(.17 + difficulty * .025)) continue;
+          const type = this.game.rng.pick(difficulty < 3 ? ["drone", "blocker"] : ["drone", "guardian", "turret", "blocker"], "drone");
+          let spec;
+          if ((type === "turret" || type === "blocker") && finalPlatform && !finalPlatform.hazard && finalPlatform.pickupSlots.size === 0) {
+            spec = { type, platform: finalPlatform, angle: finalPlatform.angle, radius: finalPlatform.radius, y: finalPlatform.topY + 1, phase: this.game.rng.range(0, TAU) };
+          } else {
+            spec = { type, angle: this.lastAngle + this.game.rng.range(-.5, .5), radius: this.lastRadius + this.game.rng.range(-.5, .5), y: this.highest + this.game.rng.range(.9, 1.5), phase: this.game.rng.range(0, TAU) };
+          }
+          chunk.enemies.push(new Enemy(this.game, spec, chunk.id));
+        }
+      }
+
+      spawnCheckpointApproach() {
+        const chunk = this.createChunk("checkpointApproach");
+        let angle = this.lastAngle;
+        let radius = this.lastRadius;
+        let y = this.highest;
+        while (this.nextCheckpoint - y > 1.9) {
+          angle += this.game.rng.range(-.16, .16);
+          radius = clamp(radius + this.game.rng.range(-.18, .18), CONFIG.minRadius + .45, CONFIG.maxRadius - .45);
+          y += Math.min(1.75, this.nextCheckpoint - y - 1.65);
+          this.addPlatform(chunk, { angle, radius, topY: y, width: 3.35, depth: 2.35, type: "static", primaryRoute: true });
+        }
+        angle += this.game.rng.range(-.14, .14);
+        const checkpoint = this.addPlatform(chunk, {
+          angle,
+          radius,
+          topY: this.nextCheckpoint,
+          width: 5.25,
+          depth: 3.25,
+          type: "static",
+          checkpoint: true,
+          primaryRoute: true
+        });
+        this.addCrystal(chunk, checkpoint, false, "left");
+        this.nextCheckpoint += CONFIG.checkpointEvery;
+        this.chunks.push(chunk);
+      }
+
+      ensureAhead(height) {
+        let safety = 0;
+        while (this.highest < height + CONFIG.generationAhead && safety < 20) {
+          this.spawnChunk();
+          safety += 1;
+        }
+        if (safety >= 20 && DEBUG) console.warn("Generation safety limit reached");
+      }
+
+      cleanup(minY) {
+        for (let index = this.chunks.length - 1; index >= 0; index -= 1) {
+          const chunk = this.chunks[index];
+          const removable = chunk.platforms.every(platform => platform.topY < minY && platform !== this.game.player.lastPlatform);
+          if (!removable) continue;
+          this.destroyChunk(chunk);
+          this.chunks.splice(index, 1);
+        }
+      }
+
+      platformCount() {
+        return this.chunks.reduce((sum, chunk) => sum + chunk.platforms.length, 0);
+      }
+    }
+
+    class Game {
+      constructor() {
+        this.root = document.getElementById("game-root");
+        this.saveManager = new SaveManager();
+        this.profile = this.saveManager.profile;
+        this.settings = this.saveManager.settings;
+        this.state = "menu";
+        this.settingsReturnState = "menu";
+        this.mode = "endless";
+        this.power = { shield: 0, slow: 0, magnet: 0, highBounce: 0, feather: 0, doubleJump: 0 };
+        this.upgrades = { airControl: 0, bounce: 0, rescue: 0, shield: 0, crystalValue: 0, cameraSlow: 0 };
+        this.accumulator = 0;
+        this.lastFrameTime = performance.now() / 1000;
+        this.fpsSmoothing = 60;
+        this.visualRng = new RNG((Date.now() ^ 0x9e3779b9) >>> 0);
+        this.rng = new RNG();
+
+        this.scene = new THREE.Scene();
+        this.camera = new THREE.PerspectiveCamera(this.settings.fov, innerWidth / innerHeight, .1, 550);
+        this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+        this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        this.root.appendChild(this.renderer.domElement);
+
+        this.resources = new ResourceCache();
+        this.dynamic = new THREE.Group();
+        this.scene.add(this.dynamic);
+        this.audio = new AudioManager(this.settings);
+        this.ui = this.bindUI();
+        this.setupScene();
+        this.particles = new ParticleSystem(this);
+        this.projectiles = new ProjectilePool(this);
+        this.rocks = new FallingRockPool(this);
+        this.generator = new ChunkGenerator(this);
+        this.player = new Player(this);
+        this.input = new InputManager(this);
+        this.setupUI();
+        this.applySettings();
+        this.resetRun(true);
+        this.setState("menu");
+        this.resize();
+        window.addEventListener("resize", () => this.resize());
+        this.animate = this.animate.bind(this);
+        requestAnimationFrame(this.animate);
+      }
+
+      bindUI() {
+        const id = name => document.getElementById(name);
+        return {
+          overlays: {
+            menu: id("menu-overlay"),
+            checkpoint: id("checkpoint-overlay"),
+            paused: id("pause-overlay"),
+            settings: id("settings-overlay"),
+            gameover: id("gameover-overlay")
+          },
+          hud: id("hud"),
+          touch: id("touch-controls"),
+          message: id("message"),
+          modeGrid: id("mode-grid"),
+          shopGrid: id("shop-grid"),
+          missionGrid: id("mission-grid"),
+          upgradeGrid: id("upgrade-grid"),
+          resultGrid: id("result-grid"),
+          resultMissions: id("result-missions"),
+          breakdown: id("breakdown"),
+          wallet: id("wallet"),
+          menuBest: id("menu-best"),
+          objective: id("objective"),
+          newRecord: id("new-record"),
+          gameoverTitle: id("gameover-title"),
+          skin: id("skin-select"),
+          trail: id("trail-select"),
+          landing: id("landing-select"),
+          tower: id("tower-select"),
+          platform: id("platform-select"),
+          startEffect: id("start-effect-select"),
+          bodyColor: id("body-color"),
+          glowColor: id("glow-color"),
+          hudHeight: id("hud-height"),
+          hudScore: id("hud-score"),
+          hudCrystals: id("hud-crystals"),
+          hudCombo: id("hud-combo"),
+          hudTime: id("hud-time"),
+          hudBest: id("hud-best"),
+          debug: id("debug-panel")
+        };
+      }
+
+      setupScene() {
+        this.backgroundColor = new THREE.Color(THEMES[0].background);
+        this.targetBackgroundColor = this.backgroundColor.clone();
+        this.fogColor = new THREE.Color(THEMES[0].fog);
+        this.targetFogColor = this.fogColor.clone();
+        this.scene.background = this.backgroundColor;
+        this.scene.fog = new THREE.Fog(this.fogColor, 24, 92);
+
+        this.hemi = new THREE.HemisphereLight(0xe1f7ff, 0x344052, 2.15);
+        this.scene.add(this.hemi);
+        this.sun = new THREE.DirectionalLight(0xffedca, 2.9);
+        this.sun.position.set(13, 23, 10);
+        this.sun.castShadow = true;
+        this.sun.shadow.mapSize.set(1024, 1024);
+        this.sun.shadow.camera.left = -18;
+        this.sun.shadow.camera.right = 18;
+        this.sun.shadow.camera.top = 24;
+        this.sun.shadow.camera.bottom = -12;
+        this.sun.shadow.camera.near = 1;
+        this.sun.shadow.camera.far = 70;
+        this.scene.add(this.sun);
+
+        this.towerMaterial = new THREE.MeshStandardMaterial({ color: THEMES[0].tower, roughness: .92, metalness: .03 });
+        this.towerDetailMaterial = new THREE.MeshStandardMaterial({ color: THEMES[0].detail, roughness: .78, metalness: .08 });
+        this.towerSegments = [];
+        const towerGeometry = new THREE.CylinderGeometry(CONFIG.towerRadius, CONFIG.towerRadius * 1.025, CONFIG.towerSegmentHeight, 32, 4, false);
+        const bandGeometry = new THREE.TorusGeometry(CONFIG.towerRadius * 1.025, .11, 6, 32);
+        const ribGeometry = this.resources.geometries.support;
+        for (let index = 0; index < CONFIG.towerSegmentCount; index += 1) {
+          const group = new THREE.Group();
+          const tower = new THREE.Mesh(towerGeometry, this.towerMaterial);
+          tower.receiveShadow = true;
+          group.add(tower);
+          for (let b = -2; b <= 2; b += 1) {
+            const band = new THREE.Mesh(bandGeometry, this.towerDetailMaterial);
+            band.rotation.x = Math.PI / 2;
+            band.position.y = b * 12;
+            group.add(band);
+          }
+          for (let r = 0; r < 8; r += 1) {
+            const angle = r / 8 * TAU;
+            const rib = new THREE.Mesh(ribGeometry, this.towerDetailMaterial);
+            rib.scale.set(.16, CONFIG.towerSegmentHeight * .46, .22);
+            rib.position.set(Math.cos(angle) * (CONFIG.towerRadius + .06), 0, Math.sin(angle) * (CONFIG.towerRadius + .06));
+            rib.rotation.y = -angle;
+            group.add(rib);
+          }
+          this.scene.add(group);
+          this.towerSegments.push(group);
+        }
+
+        this.decor = new THREE.Group();
+        this.scene.add(this.decor);
+        this.clouds = [];
+        const cloudMaterial = this.resources.basic("cloud-material", { color: 0xeaf7fb, transparent: true, opacity: .19, depthWrite: false });
+        for (let i = 0; i < 40; i += 1) {
+          const group = new THREE.Group();
+          const puffCount = this.visualRng.int(2, 4);
+          for (let p = 0; p < puffCount; p += 1) {
+            const puff = new THREE.Mesh(this.resources.geometries.sphere, cloudMaterial);
+            puff.position.set((p - puffCount / 2) * 1.4, this.visualRng.range(-.2, .2), this.visualRng.range(-.6, .6));
+            puff.scale.set(this.visualRng.range(1.8, 3.8), this.visualRng.range(.45, .9), this.visualRng.range(1.4, 3.1));
+            group.add(puff);
+          }
+          const angle = this.visualRng.range(0, TAU);
+          const radius = this.visualRng.range(20, 58);
+          group.position.set(Math.cos(angle) * radius, this.visualRng.range(-20, 230), Math.sin(angle) * radius);
+          group.userData.baseAngle = angle;
+          this.decor.add(group);
+          this.clouds.push(group);
+        }
+
+        this.islands = [];
+        const rockMaterial = this.resources.standard("island-rock", { color: 0x6e716f, roughness: 1 });
+        const ruinMaterial = this.resources.standard("island-ruin", { color: 0xaaa99f, roughness: .9 });
+        for (let i = 0; i < 12; i += 1) {
+          const island = new THREE.Group();
+          const rock = new THREE.Mesh(new THREE.ConeGeometry(this.visualRng.range(2, 4), this.visualRng.range(3, 7), 7), rockMaterial);
+          rock.rotation.z = Math.PI;
+          const ruin = new THREE.Mesh(this.resources.geometries.box, ruinMaterial);
+          ruin.scale.set(.7, this.visualRng.range(1.3, 3), .7);
+          ruin.position.y = 1.25;
+          island.add(rock, ruin);
+          const angle = this.visualRng.range(0, TAU);
+          const radius = this.visualRng.range(27, 62);
+          island.position.set(Math.cos(angle) * radius, this.visualRng.range(8, 240), Math.sin(angle) * radius);
+          island.rotation.y = this.visualRng.range(0, TAU);
+          this.decor.add(island);
+          this.islands.push(island);
+        }
+
+        this.themeIndex = 0;
+        this.targetThemeIndex = 0;
+        this.applyThemeImmediate(0);
+      }
+
+      setupUI() {
+        for (const [modeId, mode] of Object.entries(MODE_CONFIG)) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "mode-card";
+          button.dataset.mode = modeId;
+          button.innerHTML = `<strong>${mode.name}</strong><span class="tiny">${mode.description}</span>`;
+          button.addEventListener("click", () => {
+            this.audio.ensure();
+            this.audio.play("select");
+            this.mode = modeId;
+            this.renderModes();
+          });
+          this.ui.modeGrid.appendChild(button);
+        }
+
+        this.ui.skin.addEventListener("change", () => this.selectCosmetic("skin", this.ui.skin.value));
+        this.ui.trail.addEventListener("change", () => this.selectCosmetic("trail", this.ui.trail.value));
+        this.ui.landing.addEventListener("change", () => this.selectCosmetic("landing", this.ui.landing.value));
+        this.ui.tower.addEventListener("change", () => this.selectCosmetic("tower", this.ui.tower.value));
+        this.ui.platform.addEventListener("change", () => this.selectCosmetic("platform", this.ui.platform.value));
+        this.ui.startEffect.addEventListener("change", () => this.selectCosmetic("startEffect", this.ui.startEffect.value));
+        this.ui.bodyColor.addEventListener("input", () => {
+          this.profile.colors.body = this.ui.bodyColor.value;
+          this.player.rebuild();
+          this.saveManager.saveProfile();
+        });
+        this.ui.glowColor.addEventListener("input", () => {
+          this.profile.colors.glow = this.ui.glowColor.value;
+          this.player.rebuild();
+          this.saveManager.saveProfile();
+        });
+
+        document.getElementById("start-button").addEventListener("click", () => this.startRun());
+        document.getElementById("menu-settings-button").addEventListener("click", () => this.openSettings("menu"));
+        document.getElementById("resume-button").addEventListener("click", () => this.resume());
+        document.getElementById("pause-settings-button").addEventListener("click", () => this.openSettings("paused"));
+        document.getElementById("pause-restart-button").addEventListener("click", () => this.startRun());
+        document.getElementById("pause-menu-button").addEventListener("click", () => this.toMenu());
+        document.getElementById("settings-close-button").addEventListener("click", () => this.closeSettings());
+        document.getElementById("restart-button").addEventListener("click", () => this.startRun());
+        document.getElementById("gameover-menu-button").addEventListener("click", () => this.toMenu());
+        document.getElementById("reset-records-button").addEventListener("click", () => {
+          if (confirm("Reset all Skyspire records? Permanent unlocks will be kept.")) {
+            this.saveManager.resetRecords();
+            this.profile = this.saveManager.profile;
+            this.refreshMenu();
+          }
+        });
+        document.getElementById("reset-progress-button").addEventListener("click", () => {
+          if (confirm("Reset permanent shards, cosmetics, and missions? Records will be kept.")) {
+            this.saveManager.resetProgression();
+            this.profile = this.saveManager.profile;
+            this.player.rebuild();
+            this.refreshMenu();
+          }
+        });
+
+        document.addEventListener("pointerdown", event => {
+          if (event.target.closest("button")) this.audio.ensure();
+        }, { passive: true });
+
+        this.syncSettingsUI();
+        this.renderModes();
+        this.refreshMenu();
+      }
+
+      selectCosmetic(kind, id) {
+        if (!this.profile.unlocked[kind]?.includes(id)) return;
+        this.profile.selected[kind] = id;
+        if (kind === "skin") this.player.rebuild();
+        if (kind === "tower") this.updateTowerStyle();
+        this.saveManager.saveProfile();
+      }
+
+      renderModes() {
+        for (const button of this.ui.modeGrid.children) button.classList.toggle("selected", button.dataset.mode === this.mode);
+      }
+
+      refreshMenu() {
+        this.ui.wallet.textContent = String(this.profile.wallet);
+        this.ui.menuBest.textContent = `${Math.floor(this.profile.records.bestHeight)} m`;
+        this.renderShop();
+        this.renderMissions(this.ui.missionGrid, this.emptySnapshot());
+        this.refreshCosmetics();
+      }
+
+      refreshCosmetics() {
+        const bindings = {
+          skin: this.ui.skin,
+          trail: this.ui.trail,
+          landing: this.ui.landing,
+          tower: this.ui.tower,
+          platform: this.ui.platform,
+          startEffect: this.ui.startEffect
+        };
+        for (const [kind, select] of Object.entries(bindings)) {
+          select.innerHTML = "";
+          for (const id of this.profile.unlocked[kind]) {
+            const option = document.createElement("option");
+            option.value = id;
+            option.textContent = COSMETICS[kind][id]?.name || id;
+            select.appendChild(option);
+          }
+          if (!this.profile.unlocked[kind].includes(this.profile.selected[kind])) this.profile.selected[kind] = this.profile.unlocked[kind][0];
+          select.value = this.profile.selected[kind];
+        }
+        this.ui.bodyColor.value = this.profile.colors.body;
+        this.ui.glowColor.value = this.profile.colors.glow;
+      }
+
+      renderShop() {
+        this.ui.shopGrid.innerHTML = "";
+        for (const item of SHOP) {
+          const owned = this.profile.unlocked[item.kind].includes(item.id);
+          const card = document.createElement("div");
+          card.className = "card shop-item";
+          const copy = document.createElement("div");
+          copy.innerHTML = `<strong>${COSMETICS[item.kind][item.id].name}</strong><div class="tiny">${item.kind} · ${owned ? "Owned" : `${item.cost} shards`}</div>`;
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "secondary";
+          button.textContent = owned ? "Owned" : "Unlock";
+          button.disabled = owned || this.profile.wallet < item.cost;
+          button.addEventListener("click", () => this.buyItem(item));
+          card.append(copy, button);
+          this.ui.shopGrid.appendChild(card);
+        }
+      }
+
+      buyItem(item) {
+        if (this.profile.wallet < item.cost || this.profile.unlocked[item.kind].includes(item.id)) return;
+        this.profile.wallet -= item.cost;
+        this.profile.unlocked[item.kind].push(item.id);
+        this.profile.unlocked[item.kind] = [...new Set(this.profile.unlocked[item.kind])];
+        this.saveManager.saveProfile(true);
+        this.audio.play("upgrade");
+        this.refreshMenu();
+      }
+
+      emptySnapshot() {
+        return {
+          maxHeight: 0,
+          runCrystals: 0,
+          stats: {
+            types: { moving: 0 },
+            longestCombo: 0,
+            cleanCheckpointReached: false
+          }
+        };
+      }
+
+      renderMissions(target, snapshot, newlyCompleted = new Set()) {
+        target.innerHTML = "";
+        for (const mission of MISSIONS) {
+          const done = Boolean(this.profile.missions[mission.id]);
+          const card = document.createElement("div");
+          card.className = `card mission ${done ? "done" : ""}`;
+          const suffix = newlyCompleted.has(mission.id) ? " · Completed this run" : "";
+          card.innerHTML = `<strong>${mission.name}</strong><div class="tiny">${done ? "Completed" : mission.progress(snapshot)} · Reward ${mission.reward}${suffix}</div>`;
+          target.appendChild(card);
+        }
+      }
+
+      syncSettingsUI() {
+        document.getElementById("set-quality").value = this.settings.quality;
+        document.getElementById("set-shadows").checked = this.settings.shadows;
+        document.getElementById("set-particles").value = String(this.settings.particles);
+        document.getElementById("set-shake").checked = this.settings.shake;
+        document.getElementById("set-sensitivity").value = String(this.settings.sensitivity);
+        document.getElementById("set-fov").value = String(this.settings.fov);
+        document.getElementById("set-reduced").checked = this.settings.reducedMotion;
+        document.getElementById("set-muted").checked = this.settings.muted;
+        document.getElementById("set-master").value = String(this.settings.masterVolume);
+        document.getElementById("set-sfx").value = String(this.settings.sfxVolume);
+        document.getElementById("set-ambience").value = String(this.settings.ambienceVolume);
+      }
+
+      readSettingsUI() {
+        this.settings.quality = document.getElementById("set-quality").value;
+        this.settings.shadows = document.getElementById("set-shadows").checked;
+        this.settings.particles = safeNumber(document.getElementById("set-particles").value, .7, .2, 1);
+        this.settings.shake = document.getElementById("set-shake").checked;
+        this.settings.sensitivity = safeNumber(document.getElementById("set-sensitivity").value, 1, .7, 1.5);
+        this.settings.fov = safeNumber(document.getElementById("set-fov").value, 60, 48, 78);
+        this.settings.reducedMotion = document.getElementById("set-reduced").checked;
+        this.settings.muted = document.getElementById("set-muted").checked;
+        this.settings.masterVolume = safeNumber(document.getElementById("set-master").value, .72, 0, 1);
+        this.settings.sfxVolume = safeNumber(document.getElementById("set-sfx").value, .8, 0, 1);
+        this.settings.ambienceVolume = safeNumber(document.getElementById("set-ambience").value, .34, 0, 1);
+      }
+
+      applySettings() {
+        const quality = this.settings.quality;
+        const dprCap = quality === "Low" ? 1 : quality === "High" ? 1.8 : 1.4;
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, dprCap));
+        this.renderer.shadowMap.enabled = this.settings.shadows && quality !== "Low";
+        this.sun.castShadow = this.renderer.shadowMap.enabled;
+        this.sun.shadow.mapSize.set(quality === "High" ? 1536 : 1024, quality === "High" ? 1536 : 1024);
+        this.camera.fov = this.settings.fov;
+        this.camera.updateProjectionMatrix();
+        const visibleClouds = quality === "Low" ? 20 : quality === "High" ? 40 : 30;
+        this.clouds.forEach((cloud, index) => { cloud.visible = index < visibleClouds; });
+        const visibleIslands = quality === "Low" ? 5 : quality === "High" ? 12 : 8;
+        this.islands.forEach((island, index) => { island.visible = index < visibleIslands; });
+        this.audio.settings = this.settings;
+        this.audio.applySettings();
+        this.player?.rebuild();
+        this.resize();
+      }
+
+      openSettings(returnState = this.state) {
+        if (this.state === "playing") {
+          this.pause();
+          returnState = "paused";
+        }
+        this.settingsReturnState = returnState === "settings" ? "menu" : returnState;
+        this.syncSettingsUI();
+        this.setState("settings");
+      }
+
+      closeSettings() {
+        this.readSettingsUI();
+        this.saveManager.saveSettings();
+        this.applySettings();
+        this.setState(this.settingsReturnState === "playing" ? "paused" : this.settingsReturnState);
+      }
+
+      setState(nextState) {
+        this.state = nextState;
+        for (const overlay of Object.values(this.ui.overlays)) overlay.classList.remove("visible");
+        this.ui.hud.classList.remove("visible");
+        this.ui.touch.classList.remove("visible");
+        this.hideMessage();
+
+        if (nextState === "menu") this.ui.overlays.menu.classList.add("visible");
+        else if (nextState === "paused") this.ui.overlays.paused.classList.add("visible");
+        else if (nextState === "settings") this.ui.overlays.settings.classList.add("visible");
+        else if (nextState === "checkpoint") this.ui.overlays.checkpoint.classList.add("visible");
+        else if (nextState === "gameover") this.ui.overlays.gameover.classList.add("visible");
+
+        if (["playing", "dying", "checkpoint", "paused"].includes(nextState)) this.ui.hud.classList.add("visible");
+        const coarsePointer = window.matchMedia?.("(pointer: coarse)")?.matches || innerWidth <= 900;
+        if (nextState === "playing" && coarsePointer) this.ui.touch.classList.add("visible");
+        this.audio.setPaused(["paused", "settings", "checkpoint", "gameover"].includes(nextState));
+        if (nextState !== "playing") this.input?.clear();
+        this.accumulator = 0;
+        this.lastFrameTime = performance.now() / 1000;
+      }
+
+      handleEscape() {
+        if (this.state === "playing") this.pause();
+        else if (this.state === "paused") this.resume();
+        else if (this.state === "settings") this.closeSettings();
+      }
+
+      pause() {
+        if (this.state !== "playing") return;
+        this.setState("paused");
+      }
+
+      resume() {
+        if (this.state !== "paused") return;
+        this.setState("playing");
+      }
+
+      startRun() {
+        this.audio.ensure();
+        this.resetRun(false);
+        this.setState("playing");
+        this.player.verticalVelocity = this.mode === "rush" ? CONFIG.rushBounce : CONFIG.baseBounce;
+        this.player.airborne = true;
+        if (this.profile.selected.startEffect === "pulse") this.particles.emit(this.player.centerPosition, "bounce", 28);
+        else if (this.profile.selected.startEffect === "starfall") {
+          for (let i = 0; i < 4; i += 1) {
+            Game.tempPosition.copy(this.player.centerPosition);
+            Game.tempPosition.y += i * .35;
+            this.particles.emit(Game.tempPosition, i % 2 ? "crystal" : "bounce", 15);
+          }
+        }
+        this.audio.play("start");
+        this.flash(`${MODE_CONFIG[this.mode].name} · Seed ${this.currentSeed}`);
+      }
+
+      toMenu() {
+        this.resetRun(true);
+        this.setState("menu");
+        this.refreshMenu();
+      }
+
+      seedForRun() {
+        if (this.mode === "daily") return hashString(`skyspire-daily-v2-${utcDateKey()}`);
+        if (this.mode === "time") return MODE_CONFIG.time.fixedSeed;
+        const entropy = `${Date.now()}-${performance.now()}-${Math.random()}`;
+        return hashString(entropy);
+      }
+
+      resetRun(preview) {
+        this.input?.clear();
+        this.generator.clear();
+        this.particles.clear();
+        this.projectiles.clear();
+        this.rocks.clear();
+        this.currentSeed = this.seedForRun();
+        this.rng = new RNG(this.currentSeed);
+        this.visualRng = new RNG((this.currentSeed ^ 0xa5a5a5a5) >>> 0);
+        this.power = { shield: 0, slow: 0, magnet: 0, highBounce: 0, feather: 0, doubleJump: 0 };
+        this.upgrades = { airControl: 0, bounce: 0, rescue: 0, shield: 0, crystalValue: 0, cameraSlow: 0 };
+        this.stats = {
+          platforms: 0,
+          longestCombo: 0,
+          perfect: 0,
+          edge: 0,
+          riskyRoute: 0,
+          recoveries: 0,
+          shieldHits: 0,
+          cleanCheckpointReached: false,
+          types: {
+            static: 0, moving: 0, rotating: 0, oneway: 0, elevator: 0, collapse: 0,
+            fake: 0, disappear: 0, bounce: 0, conveyor: 0, slippery: 0,
+            tilting: 0, splitting: 0, recovery: 0, checkpoint: 0
+          }
+        };
+        this.runCrystals = 0;
+        this.crystalScore = 0;
+        this.landingScore = 0;
+        this.combo = 0;
+        this.lastLandingHeight = .5;
+        this.runTime = 0;
+        this.worldTime = 0;
+        this.cameraPressureY = -3;
+        this.cameraY = 6;
+        this.cameraAngle = 0;
+        this.cameraLook = this.cameraLook || new THREE.Vector3();
+        this.cameraLook.set(0, 1, 0);
+        this.cameraShake = 0;
+        this.cameraPulse = 0;
+        this.messageTimer = 0;
+        this.deathTimer = 0;
+        this.nextRockTime = 7;
+        this.triggeredMilestones = new Set();
+        this.hudAccumulator = 0;
+        this.hudCache = {};
+        this.player.reset();
+        this.generator.intro();
+        this.generator.ensureAhead(0);
+        this.applyThemeImmediate(0);
+        this.updateTowerSegments(0);
+        this.updateCamera(0, true);
+        this.updateHUD(true);
+        if (preview) {
+          this.player.verticalVelocity = 0;
+          this.player.group.visible = true;
+        }
+      }
+
+      themeIndexFor(height) {
+        let index = 0;
+        for (let i = 0; i < THEMES.length; i += 1) if (height >= THEMES[i].at) index = i;
+        return index;
+      }
+
+      towerColorFor(theme) {
+        const style = this.profile.selected.tower;
+        if (style === "moss") return new THREE.Color(0x526d58);
+        if (style === "gold") return new THREE.Color(0xa98a43);
+        if (style === "neon") return new THREE.Color(0x29214c);
+        return new THREE.Color(theme.tower);
+      }
+
+      detailColorFor(theme) {
+        const style = this.profile.selected.tower;
+        if (style === "moss") return new THREE.Color(0x78906d);
+        if (style === "gold") return new THREE.Color(0xd0b666);
+        if (style === "neon") return new THREE.Color(0x7754b8);
+        return new THREE.Color(theme.detail);
+      }
+
+      applyThemeImmediate(height) {
+        const index = this.themeIndexFor(height);
+        const theme = THEMES[index];
+        this.themeIndex = index;
+        this.targetThemeIndex = index;
+        this.backgroundColor.setHex(theme.background);
+        this.targetBackgroundColor.setHex(theme.background);
+        this.fogColor.setHex(theme.fog);
+        this.targetFogColor.setHex(theme.fog);
+        this.scene.fog.color.copy(this.fogColor);
+        this.targetTowerColor = this.towerColorFor(theme);
+        this.targetDetailColor = this.detailColorFor(theme);
+        this.towerMaterial.color.copy(this.targetTowerColor);
+        this.towerDetailMaterial.color.copy(this.targetDetailColor);
+        this.updateTowerStyle();
+        this.audio.setTheme(theme);
+      }
+
+      setThemeTarget(height) {
+        const index = this.themeIndexFor(height);
+        if (index === this.targetThemeIndex) return;
+        this.targetThemeIndex = index;
+        const theme = THEMES[index];
+        this.targetBackgroundColor.setHex(theme.background);
+        this.targetFogColor.setHex(theme.fog);
+        this.targetTowerColor = this.towerColorFor(theme);
+        this.targetDetailColor = this.detailColorFor(theme);
+        this.audio.setTheme(theme);
+        if (this.state === "playing") this.flash(`${theme.name} reaches`);
+      }
+
+      updateTowerStyle() {
+        const theme = THEMES[this.targetThemeIndex ?? this.themeIndex ?? 0];
+        this.targetTowerColor = this.towerColorFor(theme);
+        this.targetDetailColor = this.detailColorFor(theme);
+        const neon = this.profile.selected.tower === "neon";
+        this.towerMaterial.emissive.setHex(neon ? 0x28135f : 0x000000);
+        this.towerMaterial.emissiveIntensity = neon ? .38 : 0;
+      }
+
+      updateThemeTransition(dt) {
+        const factor = damp(1.6, dt);
+        this.backgroundColor.lerp(this.targetBackgroundColor, factor);
+        this.fogColor.lerp(this.targetFogColor, factor);
+        this.scene.fog.color.copy(this.fogColor);
+        this.towerMaterial.color.lerp(this.targetTowerColor, factor);
+        this.towerDetailMaterial.color.lerp(this.targetDetailColor, factor);
+        const colorDistance = Math.max(
+          Math.abs(this.backgroundColor.r - this.targetBackgroundColor.r),
+          Math.abs(this.backgroundColor.g - this.targetBackgroundColor.g),
+          Math.abs(this.backgroundColor.b - this.targetBackgroundColor.b)
+        );
+        if (colorDistance < .005) this.themeIndex = this.targetThemeIndex;
+      }
+
+      updateTowerSegments(centerHeight) {
+        const segmentHeight = CONFIG.towerSegmentHeight;
+        const startIndex = Math.floor(centerHeight / segmentHeight) - Math.floor(CONFIG.towerSegmentCount / 2);
+        for (let i = 0; i < this.towerSegments.length; i += 1) {
+          this.towerSegments[i].position.y = (startIndex + i) * segmentHeight + segmentHeight * .5;
+        }
+      }
+
+      updateDecor(centerHeight, dt) {
+        for (const cloud of this.clouds) {
+          if (!cloud.visible) continue;
+          if (cloud.position.y < centerHeight - 70) cloud.position.y += 270;
+          else if (cloud.position.y > centerHeight + 210) cloud.position.y -= 270;
+          cloud.rotation.y += dt * .005;
+        }
+        for (const island of this.islands) {
+          if (!island.visible) continue;
+          if (island.position.y < centerHeight - 90) island.position.y += 330;
+          else if (island.position.y > centerHeight + 250) island.position.y -= 330;
+        }
+      }
+
+      checkLanding(player) {
+        if (player.verticalVelocity > 0) return;
+        let best = null;
+        for (const chunk of this.generator.chunks) {
+          for (const platform of chunk.platforms) {
+            if (!platform.active) continue;
+            const previousTop = platform.previousCenter.y + platform.thickness * .5;
+            const previousRelative = player.previousFootY - previousTop;
+            const currentRelative = player.footY - platform.topY;
+            const relativeVelocity = player.verticalVelocity - platform.velocity.y;
+            if (relativeVelocity > .2) continue;
+            if (previousRelative >= -.14 && currentRelative <= .16 && platform.containsSwept(player)) {
+              if (!best || platform.topY > best.topY) best = platform;
+            }
+          }
+        }
+        if (best) this.landPlayer(player, best);
+      }
+
+      landPlayer(player, platform) {
+        player.footY = platform.topY;
+        player.lastPlatform = platform;
+        player.contactPlatform = platform;
+        player.airborne = false;
+        platform.trigger();
+
+        const radialX = Math.cos(platform.angle);
+        const radialZ = Math.sin(platform.angle);
+        const tangentX = -Math.sin(platform.angle);
+        const tangentZ = Math.cos(platform.angle);
+        const tangentialSpeed = platform.velocity.x * tangentX + platform.velocity.z * tangentZ;
+        const radialSpeed = platform.velocity.x * radialX + platform.velocity.z * radialZ;
+        player.angularVelocity = clamp(player.angularVelocity + tangentialSpeed / Math.max(1, platform.radius) * .78, -1.65, 1.65);
+        player.radialVelocity = clamp(player.radialVelocity + radialSpeed * .72, -4.2, 4.2);
+        if (platform.type === "conveyor") player.angularVelocity = clamp(player.angularVelocity + .38, -1.65, 1.65);
+        if (platform.type === "tilting") player.radialVelocity = clamp(player.radialVelocity + .52, -4.2, 4.2);
+        if (platform.type === "slippery") {
+          player.angularVelocity *= 1.1;
+          player.radialVelocity *= 1.08;
+        }
+
+        const isHigher = platform.topY > this.lastLandingHeight + .3;
+        if (isHigher) {
+          this.combo = Math.min(99, this.combo + 1);
+          this.lastLandingHeight = platform.topY;
+        } else {
+          this.combo = 0;
+          if (platform.recovery) this.stats.recoveries += 1;
+        }
+        this.stats.longestCombo = Math.max(this.stats.longestCombo, this.combo);
+        this.stats.platforms += 1;
+        const typeKey = platform.checkpoint ? "checkpoint" : platform.recovery ? "recovery" : platform.type;
+        this.stats.types[typeKey] = (this.stats.types[typeKey] || 0) + 1;
+
+        const quality = this.landingQuality(player, platform);
+        const perfectThreshold = MODE_CONFIG[this.mode].perfectThreshold ?? .78;
+        let landingBonus = 0;
+        if (quality >= perfectThreshold) {
+          landingBonus = this.mode === "precision" ? 22 : 11;
+          this.stats.perfect += 1;
+          this.audio.play("perfect");
+          this.flash(`Perfect +${landingBonus}`);
+        } else if (quality < .24) {
+          landingBonus = 6;
+          this.stats.edge += 1;
+          this.flash("Edge save +6");
+        } else {
+          this.audio.play("land");
+        }
+        if (platform.riskyRoute) {
+          landingBonus += 18;
+          this.stats.riskyRoute += 1;
+          this.flash("Risk route +18");
+        }
+
+        const typeMultiplier = {
+          static: 1,
+          moving: 1.15,
+          rotating: 1.25,
+          oneway: 1.3,
+          elevator: 1.18,
+          collapse: 1.25,
+          fake: 1.35,
+          disappear: 1.3,
+          bounce: 1.16,
+          conveyor: 1.18,
+          slippery: 1.16,
+          tilting: 1.2,
+          splitting: 1.3
+        }[platform.type] || 1;
+        this.landingScore += Math.floor((5 + this.combo * 2 + landingBonus) * typeMultiplier);
+
+        let bounce = (this.mode === "rush" ? CONFIG.rushBounce : CONFIG.baseBounce) * (1 + this.upgrades.bounce * .05);
+        if (platform.type === "bounce") bounce += CONFIG.bounceBonus;
+        if (this.power.highBounce > 0) bounce += CONFIG.highBounceBonus;
+        bounce += clamp(platform.velocity.y, -1, 2.1);
+        player.verticalVelocity = clamp(bounce, 8.8, CONFIG.maxBounce);
+        player.squash = platform.type === "bounce" ? 1.25 : 1;
+        player.airborne = true;
+        player.contactPlatform = null;
+
+        Game.tempPosition.set(player.centerPosition.x, platform.topY + .08, player.centerPosition.z);
+        const effectCount = this.profile.selected.landing === "burst" ? 24 : this.profile.selected.landing === "ring" ? 15 : 9;
+        this.particles.emit(Game.tempPosition, platform.type === "bounce" ? "bounce" : "land", effectCount);
+        if (platform.type === "bounce") this.audio.play("bounce");
+        if (this.settings.shake && !this.settings.reducedMotion && (platform.type === "bounce" || this.profile.selected.landing !== "basic")) this.cameraShake = Math.max(this.cameraShake, .14);
+
+        if (this.combo === 15) this.flash("15 landing combo");
+        if (platform.checkpoint && !platform.visited) {
+          platform.visited = true;
+          this.openCheckpoint(platform);
+        }
+      }
+
+      landingQuality(player, platform) {
+        const local = platform.localCoordinates(player.centerPosition.x, player.centerPosition.z, Game.tempLocal);
+        const normalizedX = Math.abs(local.x) / Math.max(.01, platform.width * .5);
+        const normalizedZ = Math.abs(local.z) / Math.max(.01, platform.depth * .5);
+        const edgeRatio = Math.max(normalizedX, normalizedZ);
+        const speedPenalty = clamp((Math.abs(player.angularVelocity) + Math.abs(player.radialVelocity) * .12) * .035, 0, .12);
+        return clamp(1 - edgeRatio - speedPenalty, 0, 1);
+      }
+
+      openCheckpoint() {
+        this.stats.cleanCheckpointReached ||= this.stats.recoveries === 0 && this.stats.shieldHits === 0;
+        this.setState("checkpoint");
+        this.audio.play("checkpoint");
+        const valid = UPGRADE_DEFS.filter(definition => {
+          if (definition.id === "rescue" && MODE_CONFIG[this.mode].noRecovery) return false;
+          return (this.upgrades[definition.id] || 0) < definition.cap;
+        });
+        const choices = this.rng.shuffle(valid).slice(0, 3);
+        this.ui.upgradeGrid.innerHTML = "";
+        for (const definition of choices) {
+          const level = this.upgrades[definition.id] || 0;
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "secondary";
+          button.innerHTML = `<strong>${definition.name}</strong><br><span class="tiny">${definition.text(level)}</span>`;
+          button.addEventListener("click", () => this.chooseUpgrade(definition));
+          this.ui.upgradeGrid.appendChild(button);
+        }
+        if (choices.length === 0) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.textContent = "Continue with 30 bonus score";
+          button.addEventListener("click", () => {
+            this.landingScore += 30;
+            this.setState("playing");
+          });
+          this.ui.upgradeGrid.appendChild(button);
+        }
+      }
+
+      chooseUpgrade(definition) {
+        if (definition.id === "shield") {
+          this.upgrades.shield = Math.min(definition.cap, this.upgrades.shield + 1);
+          this.power.shield = Math.min(3, this.power.shield + 1);
+        } else {
+          this.upgrades[definition.id] = Math.min(definition.cap, (this.upgrades[definition.id] || 0) + 1);
+        }
+        this.audio.play("upgrade");
+        this.setState("playing");
+        this.flash(definition.name);
+      }
+
+      hitHazard(source) {
+        if (this.state !== "playing" || this.player.invulnerability > 0) return;
+        if (this.power.shield > 0) {
+          this.power.shield -= 1;
+          this.player.invulnerability = CONFIG.invulnerabilityAfterHit;
+          this.stats.shieldHits += 1;
+          this.combo = 0;
+          this.cameraShake = Math.max(this.cameraShake, .19);
+          this.particles.emit(this.player.centerPosition, "shield", 22);
+          this.audio.play("shieldBreak");
+          this.flash("Shield absorbed hit");
+          return;
+        }
+        this.triggerDeath(source);
+      }
+
+      rescuePlayer() {
+        let best = null;
+        for (const chunk of this.generator.chunks) {
+          for (const platform of chunk.platforms) {
+            if (!platform.safeForRescue()) continue;
+            if (platform.topY >= this.player.maxHeight || platform.topY < this.player.maxHeight - 16) continue;
+            if (!best || platform.topY > best.topY) best = platform;
+          }
+        }
+        if (!best) return false;
+        this.player.angle = best.angle;
+        this.player.radius = best.radius;
+        this.player.footY = best.topY + .06;
+        this.player.verticalVelocity = CONFIG.baseBounce;
+        this.player.angularVelocity *= .25;
+        this.player.radialVelocity *= .25;
+        this.player.invulnerability = CONFIG.invulnerabilityAfterRescue;
+        this.player.lastPlatform = best;
+        this.player.airborne = true;
+        this.stats.recoveries += 1;
+        this.combo = 0;
+        this.cameraPressureY = Math.min(this.cameraPressureY, best.topY - 5);
+        this.particles.emit(best.group.position, "bounce", 24);
+        this.audio.play("rescue");
+        this.flash("Rescued");
+        return true;
+      }
+
+      triggerDeath(reason = "fall") {
+        if (this.state !== "playing") return;
+        if (!MODE_CONFIG[this.mode].noRecovery && this.upgrades.rescue > 0) {
+          this.upgrades.rescue -= 1;
+          if (this.rescuePlayer()) return;
+        }
+        this.deathReason = reason;
+        this.deathTimer = .72;
+        this.combo = 0;
+        this.cameraShake = Math.max(this.cameraShake, .22);
+        this.audio.play("hit");
+        this.setState("dying");
+      }
+
+      score() {
+        const raw = this.player.maxHeight * 10 + this.crystalScore + this.landingScore;
+        return Math.floor(raw * MODE_CONFIG[this.mode].scoreMultiplier);
+      }
+
+      updateRecords(success, height, score) {
+        const records = this.profile.records;
+        let improved = false;
+        if (height > records.bestHeight) {
+          records.bestHeight = height;
+          improved = true;
+        }
+        if (this.mode === "endless" && score > records.endlessScore) {
+          records.endlessScore = score;
+          improved = true;
+        } else if (this.mode === "time" && success && (records.timeBest === null || this.runTime < records.timeBest)) {
+          records.timeBest = this.runTime;
+          improved = true;
+        } else if (this.mode === "precision" && score > records.precisionScore) {
+          records.precisionScore = score;
+          improved = true;
+        } else if (this.mode === "rush" && score > records.rushScore) {
+          records.rushScore = score;
+          improved = true;
+        } else if (this.mode === "norecovery" && score > records.norecoveryScore) {
+          records.norecoveryScore = score;
+          improved = true;
+        } else if (this.mode === "crystal" && success && (records.crystalBestTime === null || this.runTime < records.crystalBestTime)) {
+          records.crystalBestTime = this.runTime;
+          improved = true;
+        } else if (this.mode === "daily") {
+          const key = utcDateKey();
+          const old = records.daily[key];
+          if (!old || score > old.score) {
+            records.daily[key] = { height, score, time: this.runTime, success };
+            improved = true;
+          }
+          const keys = Object.keys(records.daily).sort();
+          while (keys.length > 30) delete records.daily[keys.shift()];
+        }
+        return improved;
+      }
+
+      finishRun(success = false) {
+        if (this.state === "gameover") return;
+        const height = Math.max(0, Math.floor(this.player.maxHeight));
+        const score = this.score();
+        const recordImproved = this.updateRecords(success, height, score);
+        const snapshot = { maxHeight: height, runCrystals: this.runCrystals, stats: this.stats };
+        const newlyCompleted = new Set();
+        for (const mission of MISSIONS) {
+          if (!this.profile.missions[mission.id] && mission.test(snapshot)) {
+            this.profile.missions[mission.id] = true;
+            this.profile.wallet += mission.reward;
+            newlyCompleted.add(mission.id);
+          }
+        }
+        this.saveManager.saveProfile(true);
+        this.ui.gameoverTitle.textContent = success ? "Challenge complete" : "Run over";
+        this.ui.newRecord.style.display = recordImproved ? "block" : "none";
+        const stats = [
+          ["Height", `${height} m`],
+          ["Score", score.toLocaleString()],
+          ["Run crystals", this.runCrystals],
+          ["Permanent shards", this.profile.wallet],
+          ["Time", fmtTime(this.runTime)],
+          ["Platforms", this.stats.platforms],
+          ["Longest combo", `x${this.stats.longestCombo}`],
+          ["Perfect", this.stats.perfect],
+          ["Risk routes", this.stats.riskyRoute]
+        ];
+        this.ui.resultGrid.innerHTML = stats.map(([label, value]) => `<div class="card stat"><span>${label}</span><strong>${value}</strong></div>`).join("");
+        this.ui.breakdown.textContent = Object.entries(this.stats.types).filter(([, count]) => count > 0).map(([type, count]) => `${type}: ${count}`).join(" · ") || "No landings";
+        this.renderMissions(this.ui.resultMissions, snapshot, newlyCompleted);
+        this.setState("gameover");
+        this.audio.play(success ? "success" : "gameover");
+        if (newlyCompleted.size) setTimeout(() => this.audio.play("mission"), 240);
+      }
+
+      updatePowers(dt) {
+        for (const key of ["slow", "magnet", "highBounce", "feather"]) this.power[key] = Math.max(0, this.power[key] - dt);
+      }
+
+      updatePlaying(dt) {
+        this.runTime += dt;
+        this.updatePowers(dt);
+        const worldScale = this.power.slow > 0 ? CONFIG.worldSlowScale : 1;
+        const worldDt = dt * worldScale;
+        this.worldTime += worldDt;
+
+        const mode = MODE_CONFIG[this.mode];
+        const cameraReduction = 1 - Math.min(.3, this.upgrades.cameraSlow * .1);
+        const pressureRate = (mode.cameraStart + Math.min(mode.cameraMax - mode.cameraStart, this.player.maxHeight * mode.cameraGrowth)) * cameraReduction;
+        this.cameraPressureY += dt * pressureRate;
+
+        for (const chunk of this.generator.chunks) {
+          for (const platform of chunk.platforms) {
+            platform.update(worldDt, this.worldTime, dt);
+            platform.hazard?.update(worldDt, this.worldTime);
+          }
+          for (const crystal of chunk.crystals) crystal.update(dt, this.worldTime);
+          for (const powerUp of chunk.powerUps) powerUp.update(dt, this.worldTime);
+          for (const enemy of chunk.enemies) enemy.update(worldDt, this.worldTime);
+        }
+        this.projectiles.update(worldDt);
+        this.rocks.update(worldDt);
+        this.player.update(dt);
+        this.checkMilestones();
+
+        if (this.state !== "playing") return;
+        this.generator.ensureAhead(this.player.maxHeight);
+        this.generator.cleanup(this.player.maxHeight - CONFIG.cleanupDistance);
+
+        if (this.player.maxHeight > 64 && this.runTime >= this.nextRockTime) {
+          this.nextRockTime = this.runTime + Math.max(2.8, 7.2 - this.player.maxHeight * .011);
+          this.rocks.spawn();
+        }
+
+        this.setThemeTarget(this.player.maxHeight);
+        const cameraDanger = this.cameraPressureY - 4.5;
+        const hardFallLimit = this.player.maxHeight - 18;
+        if (this.player.footY < cameraDanger || this.player.footY < hardFallLimit) {
+          this.triggerDeath("fall");
+          return;
+        }
+
+        if (this.mode === "time" && this.player.maxHeight >= 200) {
+          this.finishRun(true);
+          return;
+        }
+        if (this.mode === "crystal") {
+          if (this.runCrystals >= mode.crystalGoal) {
+            this.finishRun(true);
+            return;
+          }
+          if (this.player.maxHeight >= mode.heightLimit) {
+            this.triggerDeath("crystal goal missed");
+            return;
+          }
+        }
+        this.updateHUD(false, dt);
+      }
+
+      updateDying(dt) {
+        this.deathTimer -= dt;
+        this.player.previousFootY = this.player.footY;
+        this.player.verticalVelocity -= CONFIG.gravity * .38 * dt;
+        this.player.footY += this.player.verticalVelocity * .38 * dt;
+        this.player.updateVisual(dt);
+        if (this.deathTimer <= 0) this.finishRun(false);
+      }
+
+      updateMenu(dt) {
+        const worldDt = dt * .18;
+        this.worldTime += worldDt;
+        for (const chunk of this.generator.chunks) {
+          for (const platform of chunk.platforms) platform.update(worldDt, this.worldTime, dt);
+          for (const crystal of chunk.crystals) {
+            platformSafeUpdateCrystal(crystal, worldDt, this.worldTime);
+          }
+          for (const powerUp of chunk.powerUps) {
+            powerUp.platform.worldPoint(powerUp.localX, 1.02 + Math.sin(this.worldTime * 3 + powerUp.bobPhase) * .11, powerUp.localZ, powerUp.mesh.position);
+            powerUp.mesh.rotation.y += dt * .7;
+          }
+        }
+        this.player.group.rotation.y += dt * .08;
+      }
+
+      checkMilestones() {
+        const previous = this.player.previousMaxHeight;
+        const current = this.player.maxHeight;
+        if (current <= previous) return;
+        const first = Math.max(50, Math.ceil(previous / 50) * 50);
+        for (let mark = first; mark <= current; mark += 50) {
+          if (this.triggeredMilestones.has(mark)) continue;
+          this.triggeredMilestones.add(mark);
+          this.cameraPulse = 1;
+          this.audio.play("milestone");
+          this.flash(`${mark} m milestone`);
+        }
+      }
+
+      updateObjective() {
+        let text = "Climb as high as possible.";
+        if (this.mode === "time") text = `Reach 200 m · ${fmtTime(this.runTime)} · fixed seed ${this.currentSeed}`;
+        else if (this.mode === "daily") text = `Daily tower · ${utcDateKey()} UTC · seed ${this.currentSeed}`;
+        else if (this.mode === "precision") text = "Smaller platforms · stricter perfect zone · calmer sky.";
+        else if (this.mode === "rush") text = "High bounce · rapidly rising sky · 1.35× score.";
+        else if (this.mode === "norecovery") text = "No recovery platforms or rescue charges.";
+        else if (this.mode === "crystal") text = `Collect ${this.runCrystals}/${MODE_CONFIG.crystal.crystalGoal} before ${MODE_CONFIG.crystal.heightLimit} m.`;
+        this.ui.objective.textContent = text;
+      }
+
+      updateHUD(force = false, dt = 0) {
+        this.hudAccumulator += dt;
+        if (!force && this.hudAccumulator < .075) return;
+        this.hudAccumulator = 0;
+        const values = {
+          height: `${Math.floor(Math.max(0, this.player.maxHeight))} m`,
+          score: this.score().toLocaleString(),
+          crystals: String(this.runCrystals),
+          combo: `x${this.combo}`,
+          time: fmtTime(this.runTime),
+          best: `${Math.floor(this.profile.records.bestHeight)} m`
+        };
+        const bindings = {
+          height: this.ui.hudHeight,
+          score: this.ui.hudScore,
+          crystals: this.ui.hudCrystals,
+          combo: this.ui.hudCombo,
+          time: this.ui.hudTime,
+          best: this.ui.hudBest
+        };
+        for (const [key, value] of Object.entries(values)) {
+          if (force || this.hudCache[key] !== value) {
+            bindings[key].textContent = value;
+            this.hudCache[key] = value;
+          }
+        }
+        const powerDisplays = [
+          ["power-shield", this.power.shield, `Shield ×${this.power.shield}`],
+          ["power-rescue", this.upgrades.rescue, `Rescue ×${this.upgrades.rescue}`],
+          ["power-slow", this.power.slow, `Slow time · ${Math.ceil(this.power.slow)}s`],
+          ["power-magnet", this.power.magnet, `Magnet · ${Math.ceil(this.power.magnet)}s`],
+          ["power-bounce", this.power.highBounce, `High bounce · ${Math.ceil(this.power.highBounce)}s`],
+          ["power-feather", this.power.feather, `Feather · ${Math.ceil(this.power.feather)}s`],
+          ["power-double", this.power.doubleJump, "Double jump ready"]
+        ];
+        for (const [id, value, label] of powerDisplays) {
+          const element = document.getElementById(id);
+          element.classList.toggle("visible", value > 0);
+          if (value > 0 && element.textContent !== label) element.textContent = label;
+        }
+        this.updateObjective();
+      }
+
+      flash(text) {
+        if (!text) return;
+        this.ui.message.textContent = text;
+        this.ui.message.classList.add("visible");
+        this.messageTimer = 1.1;
+      }
+
+      hideMessage() {
+        this.ui.message.classList.remove("visible");
+        this.messageTimer = 0;
+      }
+
+      updateMessage(dt) {
+        if (this.messageTimer <= 0) return;
+        this.messageTimer -= dt;
+        if (this.messageTimer <= 0) this.ui.message.classList.remove("visible");
+      }
+
+      updateCamera(dt, immediate = false) {
+        if (this.state === "menu" || (this.state === "settings" && this.settingsReturnState === "menu")) {
+          this.cameraAngle += dt * .075;
+          this.camera.position.set(Math.cos(this.cameraAngle) * 16.7, 7.2, Math.sin(this.cameraAngle) * 16.7);
+          this.camera.lookAt(0, 4.4, 0);
+          return;
+        }
+        const follow = immediate ? 1 : damp(5.2, dt);
+        this.cameraAngle += angleDelta(this.cameraAngle, this.player.angle) * follow;
+        const desiredY = Math.max(5.7, this.player.maxHeight + 5.15, this.cameraPressureY + 5.2);
+        this.cameraY = immediate ? desiredY : lerp(this.cameraY, desiredY, damp(3.8, dt));
+        const playerX = Math.cos(this.player.angle) * this.player.radius;
+        const playerZ = Math.sin(this.player.angle) * this.player.radius;
+        const lookY = this.player.footY + .98 + clamp(this.player.verticalVelocity * .018, -.14, .12);
+        const lookSpeed = this.player.verticalVelocity < 0 ? 9.5 : 6.5;
+        this.cameraLook.x = immediate ? playerX * .84 : lerp(this.cameraLook.x, playerX * .84, damp(lookSpeed, dt));
+        this.cameraLook.y = immediate ? lookY : lerp(this.cameraLook.y, lookY, damp(lookSpeed + 1, dt));
+        this.cameraLook.z = immediate ? playerZ * .84 : lerp(this.cameraLook.z, playerZ * .84, damp(lookSpeed, dt));
+        const distance = CONFIG.cameraDistance + this.cameraPulse * 1.45;
+        const shakeStrength = this.settings.shake && !this.settings.reducedMotion ? this.cameraShake * .13 : 0;
+        const shakeX = this.visualRng.range(-.5, .5) * shakeStrength;
+        const shakeY = this.visualRng.range(-.5, .5) * shakeStrength;
+        const shakeZ = this.visualRng.range(-.5, .5) * shakeStrength;
+        this.camera.position.set(
+          Math.cos(this.cameraAngle) * distance + shakeX,
+          this.cameraY + shakeY,
+          Math.sin(this.cameraAngle) * distance + shakeZ
+        );
+        this.camera.lookAt(this.cameraLook);
+        const motionFov = this.settings.reducedMotion ? 0 : clamp(Math.abs(Math.min(0, this.player.verticalVelocity)) * .24, 0, 3.4) + this.cameraPulse * 1.7;
+        const targetFov = this.settings.fov + motionFov;
+        if (Math.abs(this.camera.fov - targetFov) > .04) {
+          this.camera.fov = lerp(this.camera.fov, targetFov, damp(5, dt));
+          this.camera.updateProjectionMatrix();
+        }
+        this.cameraShake = Math.max(0, this.cameraShake - dt * .92);
+        this.cameraPulse = Math.max(0, this.cameraPulse - dt * .85);
+      }
+
+      updateDebug(dt) {
+        if (!DEBUG) return;
+        this.ui.debug.style.display = "block";
+        this.ui.debug.textContent = [
+          `state: ${this.state}`,
+          `seed: ${this.currentSeed}`,
+          `fps: ${this.fpsSmoothing.toFixed(1)}`,
+          `platforms: ${this.generator.platformCount()}`,
+          `particles: ${this.particles.activeCount()}`,
+          `projectiles: ${this.projectiles.activeCount()}`,
+          `rocks: ${this.rocks.activeCount()}`,
+          `world time: ${this.worldTime.toFixed(2)}`,
+          `frame dt: ${(dt * 1000).toFixed(2)} ms`
+        ].join("\n");
+      }
+
+      resize() {
+        const width = Math.max(1, innerWidth);
+        const height = Math.max(1, innerHeight);
+        this.camera.aspect = width / height;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(width, height, false);
+      }
+
+      animate(timestampMs) {
+        requestAnimationFrame(this.animate);
+        const now = timestampMs / 1000;
+        const frameDt = clamp(now - this.lastFrameTime || 1 / 60, 0, MAX_FRAME_DT);
+        this.lastFrameTime = now;
+        this.fpsSmoothing = lerp(this.fpsSmoothing, 1 / Math.max(.001, frameDt), .05);
+
+        if (this.state === "playing" || this.state === "dying") {
+          this.accumulator += frameDt;
+          let steps = 0;
+          while (this.accumulator >= FIXED_STEP && steps < 12) {
+            if (this.state === "playing") this.updatePlaying(FIXED_STEP);
+            else if (this.state === "dying") this.updateDying(FIXED_STEP);
+            this.accumulator -= FIXED_STEP;
+            steps += 1;
+          }
+          if (steps >= 12) this.accumulator = 0;
+        } else if (this.state === "menu") {
+          this.updateMenu(frameDt);
+        }
+
+        if (["playing", "dying", "menu", "gameover"].includes(this.state)) this.particles.update(frameDt);
+        this.updateThemeTransition(frameDt);
+        const centerHeight = this.state === "menu" ? 8 : this.player.maxHeight;
+        this.updateTowerSegments(centerHeight);
+        this.updateDecor(centerHeight, frameDt);
+        this.updateCamera(frameDt, false);
+        this.updateMessage(frameDt);
+        this.updateDebug(frameDt);
+        this.renderer.render(this.scene, this.camera);
+      }
+    }
+
+    function platformSafeUpdateCrystal(crystal, dt, worldTime) {
+      if (crystal.state === "collected") return;
+      crystal.platform.worldPoint(crystal.localX, .77 + Math.sin(worldTime * 3 + crystal.bobPhase) * .08, crystal.localZ, crystal.mesh.position);
+      crystal.mesh.rotation.y += dt * 1.2;
+    }
+
+    Game.tempPosition = new THREE.Vector3();
+    Game.tempLocal = { x: 0, z: 0 };
+
+    window.addEventListener("DOMContentLoaded", () => {
+      if (!window.THREE) {
+        document.body.innerHTML = "<main style='min-height:100vh;display:grid;place-items:center;padding:30px;background:#07111d;color:white;font-family:system-ui'><section><h1>Skyspire could not load</h1><p>Three.js failed to download. Check the internet connection and reload the page.</p></section></main>";
+        return;
+      }
+      try {
+        window.skyspireGame = new Game();
+      } catch (error) {
+        console.error(error);
+        const message = String(error?.stack || error).replace(/[&<>]/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[character]));
+        document.body.innerHTML = `<main style="min-height:100vh;display:grid;place-items:center;padding:30px;background:#07111d;color:white;font-family:system-ui"><section><h1>Skyspire failed to start</h1><pre style="white-space:pre-wrap;max-width:900px">${message}</pre></section></main>`;
+      }
+    });
+  })();
+  </script>
+</body>
+</html>
