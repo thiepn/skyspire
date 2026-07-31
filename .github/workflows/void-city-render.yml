@@ -1,0 +1,84 @@
+name: Void City gameplay render
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    if: github.head_ref == 'void-city-render-20260801' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Check out temporary render branch
+        uses: actions/checkout@v4
+
+      - name: Reconstruct Void City project
+        shell: bash
+        run: |
+          set -euxo pipefail
+          cat void-city-ci/xz*.b64 | base64 --decode > void-city.tar.xz
+          mkdir void-city
+          tar -xJf void-city.tar.xz -C void-city
+          cp void-city-ci/capture-gameplay.mjs void-city/scripts/capture-gameplay.mjs
+          test -f void-city/package.json
+          test -f void-city/src/main.ts
+          test -f void-city/scripts/capture-gameplay.mjs
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install npm dependencies
+        working-directory: void-city
+        run: npm install --no-audit --no-fund
+
+      - name: Run production release checks
+        working-directory: void-city
+        run: npm run release
+
+      - name: Install Chromium screenshot runner
+        working-directory: void-city
+        run: |
+          npm install --no-save --no-audit --no-fund playwright@1.54.2
+          npx playwright install --with-deps chromium
+
+      - name: Launch game and capture real gameplay
+        working-directory: void-city
+        shell: bash
+        run: |
+          set -euxo pipefail
+          npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/void-city-vite.log 2>&1 &
+          preview_pid=$!
+          trap 'kill $preview_pid || true' EXIT
+          ready=0
+          for attempt in {1..120}; do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then
+              ready=1
+              break
+            fi
+            sleep 1
+          done
+          test "$ready" -eq 1
+          node scripts/capture-gameplay.mjs
+          test -s screenshots/void-city-v7-gameplay-01.png
+          test -s screenshots/void-city-v7-gameplay-02.png
+          test -s screenshots/void-city-v7-gameplay-03.png
+
+      - name: Upload screenshots, report, and production build
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: void-city-gameplay-screenshots
+          path: |
+            void-city/screenshots
+            void-city/dist
+            /tmp/void-city-vite.log
+          if-no-files-found: warn
+          retention-days: 3
