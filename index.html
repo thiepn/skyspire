@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
 <meta content="#081523" name="theme-color"/>
-<title>Skyspire v12 — Crown of the Living Spire</title>
+<title>Skyspire v12.0.0 — Crown of the Living Spire</title>
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#081426">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1180,37 +1180,6 @@ body:has(#touch-controls.visible) #tutorial{display:none!important;}
 .toast-stack{max-width:calc(100vw - 16px);box-sizing:border-box;overflow:hidden}
 .toast{min-width:0;max-width:100%;box-sizing:border-box;overflow-wrap:anywhere;word-break:break-word}
 </style>
-
-<style id="v12-definitive-style">
-/* Skyspire v12 — Crown of the Living Spire */
-:root{--v12-emerald:#8fffd0;--v12-amber:#ffd58c;--v12-void:#c7a4ff;--v12-danger:#ff9aa9}
-#v12-event-hud,#v12-build-hud{position:fixed;z-index:18;display:none;pointer-events:none;border:1px solid rgba(var(--v11-theme-a),.2);background:linear-gradient(145deg,rgba(4,12,27,.9),rgba(12,25,47,.82));backdrop-filter:blur(14px) saturate(1.2);box-shadow:0 14px 36px rgba(0,0,0,.25),inset 0 1px rgba(255,255,255,.06);color:#effaff}
-#v12-event-hud.visible,#v12-build-hud.visible{display:block}
-#v12-event-hud{left:50%;top:max(208px,calc(env(safe-area-inset-top) + 198px));transform:translateX(-50%);width:min(390px,calc(100vw - 28px));padding:9px 13px;border-radius:15px;text-align:center}
-#v12-event-hud strong{display:block;color:var(--v12-amber);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase}
-#v12-event-hud span{display:block;margin-top:3px;color:#c7d6e8;font-size:.62rem;line-height:1.35}
-#v12-event-hud i{display:block;height:3px;margin-top:7px;border-radius:999px;background:linear-gradient(90deg,var(--v12-emerald),rgb(var(--v11-theme-a)),var(--v12-void));transform-origin:left}
-#v12-build-hud{left:14px;top:max(186px,calc(env(safe-area-inset-top) + 176px));max-width:220px;padding:7px 10px;border-radius:13px;font-size:.61rem}
-#v12-build-hud strong{color:rgb(var(--v11-theme-a));letter-spacing:.1em;text-transform:uppercase}
-#v12-build-hud span{display:block;margin-top:2px;color:#b9cadc}
-.v12-mastery-map{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
-.v12-biome-card{position:relative;min-height:190px;padding:15px;border:1px solid rgba(190,228,255,.13);border-radius:18px;background:linear-gradient(155deg,rgba(255,255,255,.055),rgba(255,255,255,.015));overflow:hidden}
-.v12-biome-card::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 80% 0%,var(--v12-card-glow,rgba(142,232,255,.13)),transparent 45%);pointer-events:none}
-.v12-biome-card h4{position:relative;margin:0 0 8px;color:#fff;font-size:.84rem}.v12-biome-card p{position:relative;margin:3px 0;color:#aebed4;font-size:.61rem;line-height:1.4}.v12-biome-card b{color:#fff}.v12-mastery-track{position:relative;height:6px;margin:11px 0 7px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}.v12-mastery-track i{display:block;height:100%;background:linear-gradient(90deg,rgb(var(--v11-theme-a)),rgb(var(--v11-theme-b)),rgb(var(--v11-theme-c)))}
-.v12-trial-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0 12px}.v12-trial-toolbar select,.v12-trial-toolbar input{min-width:150px}.v12-trial-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.v12-trial-card{min-height:168px;text-align:left;display:flex;flex-direction:column;align-items:stretch}.v12-trial-card .v12-stars{margin-top:auto;color:var(--v12-amber);letter-spacing:.11em}.v12-category{font-size:.56rem;color:var(--v12-emerald);letter-spacing:.11em;text-transform:uppercase}
-.v12-guide{margin:12px 0;padding:16px;border:1px solid rgba(143,255,208,.22);border-radius:18px;background:linear-gradient(135deg,rgba(64,211,171,.09),rgba(117,99,236,.06))}.v12-guide ol{margin:9px 0 0;padding-left:20px;color:#c8d8e9;font-size:.7rem;line-height:1.6}.v12-guide-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.v12-ending{margin:15px 0;padding:18px;border:1px solid rgba(255,213,140,.25);border-radius:20px;background:radial-gradient(circle at 50% 0%,rgba(255,213,140,.12),transparent 55%),rgba(7,15,31,.7);text-align:center}.v12-ending strong{display:block;color:var(--v12-amber);font-size:1rem}.v12-ending p{margin:7px auto 0;max-width:620px;color:#c8d8e9;font-size:.72rem;line-height:1.55}
-.v12-story-list{display:grid;gap:8px}.v12-story-item{padding:12px 14px;border:1px solid rgba(255,255,255,.08);border-radius:14px;background:rgba(255,255,255,.025)}.v12-story-item.locked{opacity:.55}.v12-story-item strong{font-size:.75rem}.v12-story-item p{margin:5px 0 0;color:#aebed4;font-size:.64rem;line-height:1.45}
-.v12-setting-note{color:#8fa5bd;font-size:.58rem;line-height:1.35}.v12-pill{display:inline-flex;padding:4px 8px;border:1px solid rgba(143,255,208,.2);border-radius:999px;color:#cffff0;background:rgba(143,255,208,.055);font-size:.55rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
-body.v12-dyslexia{font-family:Verdana,Tahoma,Arial,sans-serif!important;letter-spacing:.018em}body.v12-large-text{--v9-font-scale:1.15}.v12-caption-only #v11-ambient-canvas{opacity:.35}
-@media(max-width:900px){.v12-mastery-map{grid-template-columns:repeat(2,minmax(0,1fr))}.v12-trial-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:600px){.v12-mastery-map,.v12-trial-grid{grid-template-columns:1fr}.v12-biome-card{min-height:0}#v12-event-hud{top:max(180px,calc(env(safe-area-inset-top) + 170px));width:calc(100vw - 16px)}#v12-build-hud{left:8px;top:auto;bottom:max(102px,calc(env(safe-area-inset-bottom) + 94px));max-width:155px}.v12-trial-toolbar>*{width:100%}}
-@media(max-height:560px) and (orientation:landscape){#v12-event-hud{top:146px;max-width:330px}#v12-build-hud{display:none!important}}
-body:has(#boss-banner.visible) #v12-event-hud,body:has(#boss-banner.visible) #v12-build-hud{opacity:0;visibility:hidden}
-body:has(.overlay.visible) #v12-event-hud,body:has(.overlay.visible) #v12-build-hud{display:none!important}
-@media(prefers-reduced-motion:reduce){#v12-event-hud,#v12-build-hud{transition:none!important}}
-</style>
-
 </head>
 <body>
 <main aria-label="Skyspire game canvas" id="game-root"></main>
@@ -8772,14 +8741,14 @@ body:has(.overlay.visible) #v12-event-hud,body:has(.overlay.visible) #v12-build-
     const V11_PATCH_VERSION="11.0.1";
     function v1101NormalizeLabel(value){return String(value||"").trim().replace(/\s+/g," ").toUpperCase();}
     function v1101DecorateRelease(){
-      document.title="Skyspire v11.0.1 — Astral Renaissance";
+      document.title="Skyspire v12.0.0 — Crown of the Living Spire";
       const eyebrow=document.querySelector("#menu-overlay .eyebrow");
-      if(eyebrow)eyebrow.textContent="v11.0.1 · Astral Renaissance";
+      if(eyebrow)eyebrow.textContent="v12.0.0 · Crown of the Living Spire";
       const release=document.querySelector("#v9-dashboard .v9-system-card");
       if(release){
         const title=release.querySelector("strong"),copy=document.getElementById("v9-status-copy");
-        if(title)title.textContent="v11.0.1 · Visual Stability";
-        if(copy)copy.textContent="Responsive HUD repair, feedback deduplication, mobile title and navigation fixes, and modal-state cleanup.";
+        if(title)title.textContent="v12.0.0 · Crown of the Living Spire";
+        if(copy)copy.textContent="140 authored sequence families, 50 Crown trials, Living Spire events, definitive campaign mastery, and expanded accessibility.";
       }
     }
     function v1101ClearHiddenOverlayArtifacts(state){
@@ -9050,277 +9019,251 @@ body:has(.overlay.visible) #v12-event-hud,body:has(.overlay.visible) #v12-build-
 
 
     // ---------------------------------------------------------------------
-    // Skyspire v12.0.0 — Crown of the Living Spire
-    // Definitive campaign, content-depth, accessibility and mastery layer.
+    // Skyspire v12 — Crown of the Living Spire
+    // Definitive campaign, authored-depth, mastery, accessibility and
+    // production layer. Existing v3-v11 saves and deterministic modes remain
+    // compatible; all new data lives under profile.v12/settings.v12 fields.
     // ---------------------------------------------------------------------
-    const V12_VERSION="12.0.0";
-    const V12_RULESET="skyspire-v12-crown-1";
-    const V12_BIOMES=["Ancient Reach","Clockwork Ascent","Prism Expanse","Celestial Temple","Void Crown"];
-    const V12_EVENT_LIBRARY=Object.freeze({
-      0:[
-        {id:"awakening-statues",name:"The Statues Awaken",copy:"Ancient guardians illuminate the safest rhythm. Perfect and Clean landings generate additional Flow.",duration:16,effect:"flow"},
-        {id:"frozen-falls",name:"Frozen Waterfall",copy:"A waterfall hardens into a luminous climbing line. Recovery pressure is temporarily reduced.",duration:15,effect:"pressure"},
-        {id:"ruin-fall",name:"Falling Ruin",copy:"The old wall sheds debris. Momentum landings earn a temporary High Bounce charge.",duration:15,effect:"momentum"}
-      ],
-      1:[
-        {id:"machine-blackout",name:"Machine Blackout",copy:"The engine dims and readable guide lights mark moving surfaces.",duration:15,effect:"clarity"},
-        {id:"emergency-overdrive",name:"Emergency Overdrive",copy:"Machinery accelerates, but Momentum rewards and score rise with it.",duration:14,effect:"overdrive"},
-        {id:"maintenance-window",name:"Maintenance Window",copy:"Hazards enter a service cycle. Controlled landings reduce camera pressure.",duration:16,effect:"pressure"}
-      ],
-      2:[
-        {id:"crystal-bloom-v12",name:"Crystal Bloom",copy:"Resonant crystals multiply across the route and chained pickups generate Flow.",duration:17,effect:"crystal"},
-        {id:"prism-stillness",name:"Prism Stillness",copy:"The chamber holds one perfect moment. Apex control and landing prediction become clearer.",duration:15,effect:"clarity"},
-        {id:"shard-song",name:"Shard Song",copy:"Every controlled landing adds a note. Complete the phrase to gain a shield fragment.",duration:18,effect:"song"}
-      ],
-      3:[
-        {id:"solar-alignment",name:"Solar Alignment",copy:"Celestial rings align and extend aerial control near the apex.",duration:16,effect:"air"},
-        {id:"cloud-sanctuary",name:"Cloud Sanctuary",copy:"The storm quiets. Camera pressure recedes while clean landings are maintained.",duration:18,effect:"pressure"},
-        {id:"thunder-procession",name:"Thunder Procession",copy:"Lightning follows the rhythm. Momentum Chains charge Skyflow more rapidly.",duration:15,effect:"momentum"}
-      ],
-      4:[
-        {id:"memory-return",name:"The Tower Remembers",copy:"Echoes repeat your strongest landing grade and amplify its reward.",duration:17,effect:"echo"},
-        {id:"dual-reality-v12",name:"Dual Reality",copy:"The physical and remembered routes overlap. Secret and Skill rewards are strengthened.",duration:16,effect:"routes"},
-        {id:"crown-recursion",name:"Crown Recursion",copy:"The Void reconstructs previous lessons. Controlled sequences restore Flow and pressure.",duration:18,effect:"flow"}
-      ]
-    });
-    const V12_STORY=Object.freeze([
-      {id:"architects",at:12,title:"The Architects' Measure",copy:"The first builders believed height was a language. Every landing was a word addressed to the sky."},
-      {id:"pilgrims",at:38,title:"The Pilgrim Route",copy:"The lower ruins were not defensive walls. They were lessons built wide enough for fear to become rhythm."},
-      {id:"engine-oath",at:76,title:"The Engine Oath",copy:"The Clockwork Crown was created when stone could no longer carry the ambitions of the climbers below."},
-      {id:"stored-light",at:118,title:"Light That Remembers",copy:"Crystal records motion, hesitation and resolve. The Prism Expanse has watched every failed ascent."},
-      {id:"open-temple",at:164,title:"The Roofless Temple",copy:"Its worshippers removed the roof so no ceiling could become mistaken for the summit."},
-      {id:"echo-origin",at:212,title:"Origin of the Echo",copy:"The Void guardian is assembled from the habits of every climber who reached it."},
-      {id:"living-spire",at:242,title:"The Living Spire",copy:"The tower does not merely test its climber. It learns which challenge will reveal who the climber has become."},
-      {id:"door-beyond",at:250,title:"The Door Beyond the Crown",copy:"The summit is a question. The answer is the way the climber chooses to descend, return and climb again."}
+    const V12_VERSION = "12.0.0";
+    const V12_RULESET = "skyspire-v12-crown-living-spire-1";
+    const V12_BIOME_NAMES = ["Ancient Reach","Clockwork Ascent","Prism Expanse","Celestial Temple","Void Crown"];
+    const V12_ACT_STARTS = [0,50,100,150,200];
+    const V12_ACT_ENDS = [50,100,150,200,250];
+
+    const V12_SEQUENCE_NAMES = Object.freeze([
+      ["Pilgrim Steps","Sunken Causeway","Rune Gallery","Aqueduct Rise","Mossbound Arc","Shattered Procession","Vine Cathedral","Guardian Terrace","Echoing Columns","First-Light Stair","Broken Reliquary","Crownward Ruins","Falling Nave","Stonewake Crossing","Sundial Ledge","Ancient Orrery","Weathered Rampart","Hollow Shrine","Skywell Ruin","Sentinel Procession"],
+      ["Ratchet Walk","Pressure Gallery","Copper Relay","Escapement Rise","Boiler Causeway","Pendulum Array","Turbine Crossing","Clockmaker's Spine","Foundry Lift","Signal Bridge","Chainwheel Ascent","Valve Cathedral","Furnace Balcony","Governor Run","Iron Meridian","Steamlock Passage","Warden's Dial","Piston Choir","Overdrive Causeway","Coreward Assembly"],
+      ["Harmonic Stair","Facet Crossing","Luminous Causeway","Refraction Gallery","Prism Ladder","Constellation Walk","Resonant Bloom","Shard Meridian","Glass Horizon","Chromatic Relay","Crystal Choir","Mirror Causeway","Spectrum Vault","Radiant Weave","Gemheart Stair","Aurora Prism","Chime Passage","Starfacet Rise","Shattered Lens","Heartward Constellation"],
+      ["Pilgrim Clouds","Bellflower Path","Solar Arcade","Halo Causeway","Windward Gallery","Thunder Stair","Seraphic Rings","Cloud Monastery","Sunbeam Crossing","Tempest Nave","Celestial Choir","Featherbridge","Observatory Rise","Skygarden Walk","Lightning Procession","Aerial Sanctum","Dawn Meridian","Stormglass Causeway","Wingward Ascent","Seraph Gate"],
+      ["Memory Stair","Inverted Causeway","Echo Gallery","Fractured Meridian","Shadow Procession","Null Cathedral","Mirrorless Walk","Crown Paradox","Vanishing Archive","Event Horizon","Reversed Ascent","Blackstar Causeway","Dual-Reality Stair","Forgotten Route","Last Reflection","Void Reliquary","Silent Spiral","Crown Memory","Final Fracture","Echo's End"]
     ]);
-    const V12_ENDINGS=Object.freeze({
-      first:{name:"First Ascent",copy:"The crown opens and the tower recognizes a new climber. The Spire Archive begins to reveal its complete memory."},
-      true:{name:"True Crown",copy:"With every guardian relic restored, the crown becomes a door. The tower's five voices answer as one."},
-      master:{name:"Spiremaster",copy:"The climb no longer commands you. The Living Spire reshapes itself around a master who has learned every language of ascent."}
-    });
-    const V12_CONTROL_PRESETS=Object.freeze({
-      precise:{name:"Precise",sensitivity:1.2,cameraSmoothing:.72,gamepadDeadzone:.12,apexAssist:.72,copy:"Fast response and lower smoothing."},
-      balanced:{name:"Balanced",sensitivity:1,cameraSmoothing:1,gamepadDeadzone:.18,apexAssist:1,copy:"The intended default control profile."},
-      smooth:{name:"Smooth",sensitivity:.88,cameraSmoothing:1.28,gamepadDeadzone:.2,apexAssist:1.18,copy:"Gentler steering and stronger camera damping."},
-      touch:{name:"Touch",sensitivity:.94,cameraSmoothing:1.2,gamepadDeadzone:.18,apexAssist:1.22,copy:"Extra aerial correction for touch controls."},
-      custom:{name:"Custom",copy:"Use the individual controls below."}
-    });
-
-    const V12_EXTRA_SEQUENCE_BLUEPRINTS=Object.freeze({
-      0:[
-        ["ancient-aqueduct","Broken Aqueduct",["static","collapse","static","moving","static","bounce"],[.12,.18,.14,.25,.16,.2],[0,.12,-.1,.18,-.12,0],[1.48,1.62,1.52,1.7,1.56,1.82],[1.22,1.04,1.16,1.04,1.12,1.16],"A dry aqueduct circles the tower in interrupted stone arcs."],
-        ["ancient-pilgrim-rest","Pilgrim's Rest",["static","static","static","moving","static","static"],[.1,.12,.1,.2,.12,.1],[0,.06,-.04,.12,-.08,0],[1.42,1.46,1.5,1.62,1.48,1.54],[1.28,1.24,1.22,1.12,1.2,1.24],"A broad landmark gives the lower climb a deliberate breath."],
-        ["ancient-sun-wheel","Sun Wheel",["rotating","static","collapse","rotating","static","bounce"],[.3,.14,.2,.32,.16,.2],[.1,-.08,.12,-.14,.08,0],[1.58,1.5,1.64,1.68,1.52,1.82],[1.04,1.16,1.04,1.02,1.14,1.15],"A ceremonial wheel turns above the ruined courtyard."],
-        ["ancient-sentinel-causeway","Sentinel Causeway",["static","moving","collapse","static","bounce","static"],[.16,.24,.18,.14,.22,.12],[0,.16,-.12,.1,-.08,0],[1.52,1.68,1.62,1.5,1.84,1.54],[1.16,1.04,1.04,1.18,1.15,1.24],"The final causeway frames the Sentinel before it awakens."]
+    const V12_TYPE_PATTERNS = Object.freeze([
+      [
+        ["static","collapse","static","moving","static","bounce","static"],
+        ["static","elevator","static","collapse","moving","static","bounce"],
+        ["moving","static","collapse","static","moving","bounce","static"],
+        ["static","collapse","collapse","static","bounce","static","static"]
       ],
-      1:[
-        ["mech-pressure-switches","Pressure Switch Hall",["static","elevator","conveyor","static","moving","static"],[.14,.18,.16,.12,.24,.14],[0,.14,-.12,.1,-.16,0],[1.48,1.58,1.6,1.5,1.68,1.56],[1.14,1.08,1.08,1.14,1.04,1.16],"Switch plates synchronize a complete mechanical hall."],
-        ["mech-maintenance-shaft","Maintenance Shaft",["elevator","static","moving","elevator","static","bounce"],[.12,.14,.22,.16,.12,.18],[-.1,.12,-.16,.14,-.08,0],[1.46,1.52,1.66,1.5,1.54,1.8],[1.1,1.16,1.04,1.08,1.14,1.15],"A vertical service shaft carries the route through the engine."],
-        ["mech-regulator-ring","Regulator Ring",["rotating","conveyor","rotating","static","moving","static"],[.32,.16,.3,.12,.24,.14],[.12,-.14,.16,-.1,.14,0],[1.58,1.6,1.66,1.5,1.68,1.54],[1.03,1.06,1.02,1.14,1.04,1.16],"A regulator converts angular speed into upward rhythm."],
-        ["mech-warden-assembly","Warden Assembly",["moving","elevator","rotating","conveyor","bounce","static"],[.24,.16,.3,.18,.22,.12],[.16,-.14,.18,-.16,.1,0],[1.68,1.54,1.7,1.64,1.84,1.5],[1.03,1.06,1.02,1.04,1.14,1.22],"The Warden's outer mechanisms assemble around the climber."]
+      [
+        ["rotating","static","conveyor","moving","rotating","elevator","static"],
+        ["elevator","moving","static","conveyor","rotating","static","bounce"],
+        ["conveyor","rotating","moving","static","elevator","conveyor","static"],
+        ["moving","elevator","rotating","conveyor","static","moving","bounce"]
       ],
-      2:[
-        ["crystal-constellation","Constellation Route",["static","disappear","moving","static","rotating","bounce"],[.18,.22,.24,.14,.3,.18],[.12,-.16,.18,-.12,.14,0],[1.54,1.64,1.68,1.5,1.7,1.84],[1.12,1.05,1.04,1.14,1.03,1.15],"A constellation is traced one landing at a time."],
-        ["crystal-harmonic-steps","Harmonic Steps",["static","bounce","static","disappear","static","bounce"],[.14,.2,.12,.22,.14,.2],[0,.14,-.1,.16,-.12,0],[1.48,1.8,1.5,1.64,1.54,1.82],[1.18,1.14,1.14,1.05,1.12,1.15],"Paired crystal tones turn precise landings into a melody."],
-        ["crystal-conservatory","Crystal Conservatory",["slippery","static","moving","static","disappear","static"],[.16,.14,.24,.12,.2,.14],[.12,-.12,.18,-.14,.1,0],[1.52,1.48,1.66,1.5,1.64,1.56],[1.1,1.16,1.04,1.14,1.06,1.18],"A quiet garden of facets rewards controlled correction."],
-        ["crystal-refraction-gate","Refraction Gate",["oneway","rotating","disappear","moving","bounce","static"],[.2,.3,.22,.26,.2,.12],[.14,-.18,.16,-.16,.1,0],[1.62,1.7,1.66,1.68,1.84,1.5],[1.05,1.02,1.04,1.03,1.14,1.22],"Light paths converge before the Prism Heart."]
+      [
+        ["static","disappear","rotating","static","slippery","bounce","static"],
+        ["oneway","static","disappear","moving","static","rotating","bounce"],
+        ["rotating","slippery","static","disappear","moving","static","bounce"],
+        ["static","oneway","moving","disappear","rotating","static","bounce"]
       ],
-      3:[
-        ["temple-thunder-causeway","Thunder Causeway",["static","moving","bounce","rotating","static","bounce"],[.18,.26,.2,.32,.14,.2],[.12,-.18,.14,-.16,.1,0],[1.56,1.68,1.82,1.7,1.52,1.84],[1.12,1.04,1.14,1.02,1.14,1.15],"Thunder marks each transfer across the exposed causeway."],
-        ["temple-solar-choir","Solar Choir",["static","bounce","elevator","static","bounce","static"],[.12,.18,.16,.12,.2,.12],[0,.12,-.1,.1,-.08,0],[1.46,1.8,1.54,1.5,1.82,1.52],[1.2,1.14,1.08,1.18,1.14,1.2],"Sunlit bells answer the climber in an ascending phrase."],
-        ["temple-wind-cloister","Wind Cloister",["moving","static","slippery","moving","static","bounce"],[.24,.12,.18,.26,.14,.2],[.16,-.12,.14,-.18,.1,0],[1.66,1.5,1.56,1.68,1.52,1.84],[1.04,1.16,1.08,1.04,1.14,1.15],"A roofless cloister channels the upper winds."],
-        ["temple-storm-gate","Storm Gate",["rotating","moving","bounce","rotating","moving","static"],[.32,.26,.2,.34,.24,.12],[.16,-.2,.12,-.18,.1,0],[1.7,1.68,1.84,1.7,1.68,1.5],[1.02,1.03,1.14,1.02,1.03,1.22],"The Storm Seraph's gate turns inside the cloud wall."]
+      [
+        ["static","moving","static","bounce","moving","rotating","static"],
+        ["moving","static","elevator","static","bounce","moving","static"],
+        ["static","rotating","moving","bounce","static","moving","elevator"],
+        ["elevator","static","static","moving","rotating","bounce","static"]
       ],
-      4:[
-        ["void-vanishing-archive","Vanishing Archive",["static","disappear","oneway","disappear","moving","static"],[.18,.22,-.2,.24,-.22,.14],[.12,-.16,.18,-.18,.14,0],[1.56,1.66,1.62,1.68,1.7,1.54],[1.1,1.04,1.05,1.03,1.03,1.16],"Recorded paths vanish as soon as they are understood."],
-        ["void-reversed-tower","Reversed Tower",["oneway","rotating","static","disappear","rotating","bounce"],[-.22,.32,-.16,.24,-.34,.2],[.16,-.18,.14,-.16,.12,0],[1.64,1.7,1.54,1.66,1.72,1.84],[1.04,1.02,1.12,1.04,1.02,1.14],"The tower's silhouette turns inside out around the route."],
-        ["void-memory-fracture","Memory Fracture",["splitting","moving","collapse","disappear","bounce","static"],[.22,.26,.18,.24,.2,.12],[.14,-.18,.16,-.16,.1,0],[1.64,1.7,1.62,1.68,1.84,1.5],[1.04,1.03,1.04,1.04,1.14,1.22],"Several earlier lessons fracture into one readable test."],
-        ["void-crown-antechamber","Crown Antechamber",["oneway","rotating","disappear","moving","splitting","static"],[.28,.34,-.24,.28,-.2,.12],[.18,-.22,.18,-.18,.12,0],[1.7,1.72,1.68,1.7,1.66,1.5],[1.03,1.02,1.04,1.03,1.04,1.26],"The final chamber holds every route in temporary balance."]
+      [
+        ["disappear","oneway","moving","static","fake","rotating","bounce"],
+        ["oneway","disappear","static","fake","moving","oneway","static"],
+        ["moving","oneway","rotating","disappear","static","fake","bounce"],
+        ["disappear","static","moving","oneway","fake","rotating","bounce"]
       ]
-    });
-    for(const [biome,rows] of Object.entries(V12_EXTRA_SEQUENCE_BLUEPRINTS)){
-      const list=V9_SEQUENCE_LIBRARY[biome];
-      for(const row of rows)if(!list.some(def=>def.id===row[0]))list.push({id:row[0],name:row[1],types:row[2],angle:row[3],radial:row[4],rise:row[5],width:row[6],story:row[7],biome:Number(biome),v12:true});
-    }
-    function v12AllSequences(){return Object.entries(V9_SEQUENCE_LIBRARY).flatMap(([biome,list])=>list.map(def=>def.biome===undefined?Object.assign({biome:Number(biome)},def):def));}
-    const V12_TRIAL_CATEGORIES=["Precision","Momentum","Flow","Route","Hazard","Speed","Control"];
-    const V12_TRIALS=(()=>{
-      const base=[...V9_TRIALS];const used=new Set(base.map(t=>t.sequence));let serial=0;
-      for(const def of v12AllSequences()){
-        if(base.length>=50)break;if(used.has(def.id))continue;used.add(def.id);const biome=def.biome,slot=serial++%7,category=V12_TRIAL_CATEGORIES[slot],start=biome*50+4+(serial%3)*4,span=30+(serial%4)*2;
-        base.push({id:`v12-${def.id}`,biome,name:`${def.name} · ${category}`,sequence:def.id,start,goal:Math.min(250,start+span),seed:hashString(`v12-trial-${def.id}`),bronze:108+biome*3,silver:84+biome*2,gold:65+biome,category,copy:`Master ${def.name} with an emphasis on ${category.toLowerCase()}.`});
-      }
-      return Object.freeze(base.slice(0,50));
-    })();
+    ]);
 
-    function v12Plain(value){return value&&typeof value==="object"&&!Array.isArray(value);}
-    function v12SafeNumber(value,fallback=0,min=-Infinity,max=Infinity){const n=Number(value);return Number.isFinite(n)?Math.min(max,Math.max(min,n)):fallback;}
+    function v12Slug(text){return String(text).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");}
+    function v12BuildSequence(biome,index){
+      const name=V12_SEQUENCE_NAMES[biome][index],pattern=V12_TYPE_PATTERNS[biome][index%4];
+      const advanced=index>=12,routeExclusive=index>=8&&index<12,landmark=index>=15&&index<18,rare=index>=18;
+      const length=advanced?8:7,types=Array.from({length},(_,i)=>pattern[i%pattern.length]);
+      const direction=index%2?1:-1;
+      const angle=types.map((_,i)=>Number((.12+((i+index)%4)*.038+(advanced ? .025 : 0))*direction).toFixed(3));
+      const radial=types.map((_,i)=>Number((((i+index)%3)-1)*(.075+(biome===4 ? .025 : 0))).toFixed(3));
+      const rise=types.map((_,i)=>Number((1.46+((i*3+index)%5)*.065+(advanced ? .06 : 0)).toFixed(3)));
+      const width=types.map((_,i)=>Number((1.17-((i+index)%4)*.035-(advanced ? .035 : 0)).toFixed(3)));
+      return {id:`v12-${biome}-${v12Slug(name)}`,name,biome,types,angle,radial,rise,width,
+        tier:rare?"rare":landmark?"landmark":routeExclusive?"route":advanced?"advanced":"standard",
+        story:`${name} preserves a ${["forgotten lower-spire rite","synchronized machine cycle","prismatic memory","celestial pilgrimage","fractured crown-memory"][biome]}.`,
+        v12:true};
+    }
+    const V12_SEQUENCE_LIBRARY=Object.freeze(Object.fromEntries([0,1,2,3,4].map(b=>[b,Object.freeze(Array.from({length:20},(_,i)=>Object.freeze(v12BuildSequence(b,i))))])));
+    const V12_SEQUENCE_MAP=new Map(Object.values(V12_SEQUENCE_LIBRARY).flat().map(def=>[def.id,def]));
+    function v12SequenceDef(id){return V12_SEQUENCE_MAP.get(id)||null;}
+
+    const V12_EVENTS=Object.freeze([
+      [
+        {id:"ancient-awakening",name:"Stonewake",copy:"The lower ruins awaken. Controlled landings release stored Flow.",kind:"controlledFlow"},
+        {id:"ancient-waterfall",name:"Frozen Skyfall",copy:"Mist hardens around the tower. Recovery platforms briefly strengthen.",kind:"recoveryGrace"},
+        {id:"ancient-collapse",name:"Falling Basilica",copy:"The old nave collapses in a readable sequence. Momentum rewards increase.",kind:"momentumReward"}
+      ],
+      [
+        {id:"mech-blackout",name:"Power Blackout",copy:"Warning lights replace the main grid. Perfect landings restore machinery.",kind:"perfectCharge"},
+        {id:"mech-overclock",name:"Full Overclock",copy:"The machine accelerates. Momentum chains earn additional score.",kind:"momentumScore"},
+        {id:"mech-maintenance",name:"Maintenance Window",copy:"Service platforms open along safer internal paths.",kind:"safeRelief"}
+      ],
+      [
+        {id:"crystal-bloom",name:"Crystal Bloom",copy:"Every fifth crystal resonates and releases Flow.",kind:"crystalFlow"},
+        {id:"crystal-storm",name:"Resonance Storm",copy:"Crystal chains remain active longer during the storm.",kind:"chainWindow"},
+        {id:"crystal-maze",name:"Shattered-Light Maze",copy:"Secret and Skill routes shine through the fractured prism.",kind:"routeReveal"}
+      ],
+      [
+        {id:"temple-alignment",name:"Solar Alignment",copy:"Apex control strengthens beneath the aligned halos.",kind:"apex"},
+        {id:"temple-thunder",name:"Thunder Procession",copy:"Clean aerial landings discharge the storm into bonus score.",kind:"cleanScore"},
+        {id:"temple-sanctuary",name:"Cloud Sanctuary",copy:"The next recovery preserves more Momentum and Flow.",kind:"sanctuary"}
+      ],
+      [
+        {id:"void-inversion",name:"Inverted Memory",copy:"The spire echoes your recent route. Repeated landings no longer break all Flow.",kind:"echoGrace"},
+        {id:"void-archive",name:"Living Archive",copy:"Authored sequences reveal additional Crown mastery.",kind:"mastery"},
+        {id:"void-duplication",name:"Dual Reality",copy:"Optional routes grant stronger rewards while the realities overlap.",kind:"routeReward"}
+      ]
+    ]);
+
+    const V12_STORY=Object.freeze([
+      {id:"origin",title:"The First Foundation",biome:0,text:"The Spire was raised as a path of practice, not a monument of conquest."},
+      {id:"sentinel-oath",title:"The Sentinel's Oath",biome:0,text:"The first guardian measures whether a climber can rise without forgetting the ground."},
+      {id:"engine",title:"The Clockwork Covenant",biome:1,text:"The machine was built to turn effort into rhythm and rhythm into ascent."},
+      {id:"warden-purpose",title:"The Warden's Purpose",biome:1,text:"The Warden protects the pace of the tower from those who would force it."},
+      {id:"prism-memory",title:"Memory in Crystal",biome:2,text:"Every crystal stores one landing, one failure, and one choice of route."},
+      {id:"heart-song",title:"The Heart's Chord",biome:2,text:"The Prism Heart sings only when separate movements become one deliberate sequence."},
+      {id:"temple-pilgrims",title:"Pilgrims of the Upper Air",biome:3,text:"Those who reached the Temple learned that control is not the absence of wind, but agreement with it."},
+      {id:"seraph-watch",title:"The Seraph's Vigil",biome:3,text:"The Seraph watches for climbers who can preserve purpose while the sky itself moves."},
+      {id:"void-truth",title:"The Tower Remembers",biome:4,text:"The Void is not emptiness. It is every route the climber abandoned and every motion they repeated."},
+      {id:"crown",title:"Crown of the Living Spire",biome:4,text:"The crown does not end the climb. It teaches the Spire a new way to grow."}
+    ]);
+
+    function v12CleanObject(value){return value&&typeof value==="object"&&!Array.isArray(value)?value:{};}
     function v12EnsureProfile(profile){
-      profile=v10EnsureProfile(profile);const raw=v12Plain(profile.v12)?profile.v12:{};
-      profile.v12={version:V12_VERSION,story:v12Plain(raw.story)?raw.story:{},endings:v12Plain(raw.endings)?raw.endings:{},bossMastery:v12Plain(raw.bossMastery)?raw.bossMastery:{},eventCodex:v12Plain(raw.eventCodex)?raw.eventCodex:{},firstRunComplete:Boolean(raw.firstRunComplete),campaignCompletions:v12Plain(raw.campaignCompletions)?raw.campaignCompletions:{},trialFilter:typeof raw.trialFilter==="string"?raw.trialFilter:"all",controlPreset:V12_CONTROL_PRESETS[raw.controlPreset]?raw.controlPreset:"balanced",masteryVisits:Math.floor(v12SafeNumber(raw.masteryVisits,0,0,999999)),versionHistory:Array.isArray(raw.versionHistory)?raw.versionHistory.slice(-12):[]};
-      if(!profile.v12.versionHistory.includes(V12_VERSION))profile.v12.versionHistory.push(V12_VERSION);
+      profile=v12CleanObject(profile);const old=v12CleanObject(profile.v12);const mastery={};
+      for(const def of V12_SEQUENCE_MAP.values()){const raw=v12CleanObject(old.mastery?.[def.id]);mastery[def.id]={clears:Math.max(0,Math.floor(Number(raw.clears)||0)),medal:clamp(Math.floor(Number(raw.medal)||0),0,4),bestTime:Number.isFinite(Number(raw.bestTime))?Math.max(.001,Number(raw.bestTime)):null,bestControlled:clamp(Number(raw.bestControlled)||0,0,1)};}
+      const trials={};for(const [id,raw] of Object.entries(v12CleanObject(old.trials))){if(!V12_SEQUENCE_MAP.has(id))continue;trials[id]={medal:clamp(Math.floor(Number(raw.medal)||0),0,4),time:Number.isFinite(Number(raw.time))?Math.max(.001,Number(raw.time)):null};}
+      profile.v12={version:V12_VERSION,mastery,trials,events:v12CleanObject(old.events),story:v12CleanObject(old.story),bossMastery:v12CleanObject(old.bossMastery),campaign:v12CleanObject(old.campaign),endings:v12CleanObject(old.endings),weekly:v12CleanObject(old.weekly),firstRunComplete:Boolean(old.firstRunComplete),totalCrowns:Math.max(0,Math.floor(Number(old.totalCrowns)||0)),lastRecommended:typeof old.lastRecommended==="string"?old.lastRecommended:""};
       return profile;
     }
-    function v12SanitizeProfileSection(raw){const holder={v12:v12Plain(raw)?raw:{}};return v12EnsureProfile({v6:{},v7:{},v9:{},v10:{},...holder}).v12;}
-
+    function v12EnsureSettings(settings){
+      settings=v12CleanObject(settings);settings.v12ControlPreset=["precise","balanced","smooth","touch","custom"].includes(settings.v12ControlPreset)?settings.v12ControlPreset:"balanced";
+      settings.v12Angular=clamp(Number(settings.v12Angular)||1,.55,1.65);settings.v12Radial=clamp(Number(settings.v12Radial)||1,.55,1.65);settings.v12Damping=clamp(Number(settings.v12Damping)||1,.55,1.8);settings.v12Apex=clamp(Number(settings.v12Apex)||1,0,1.6);settings.v12FontScale=clamp(Number(settings.v12FontScale)||1,.85,1.35);settings.v12GameSpeed=clamp(Number(settings.v12GameSpeed)||1,.72,1);settings.v12HazardCaptions=settings.v12HazardCaptions!==false;settings.v12AdaptiveEffects=settings.v12AdaptiveEffects!==false;settings.v12ProgressiveDisclosure=settings.v12ProgressiveDisclosure!==false;return settings;
+    }
+    const v12DefaultProfileBase=SaveManager.prototype.defaultProfile;
+    SaveManager.prototype.defaultProfile=function(){return v12EnsureProfile(v12DefaultProfileBase.call(this));};
     const v12LoadProfileBase=SaveManager.prototype.loadProfile;
-    SaveManager.prototype.loadProfile=function(){const profile=v12LoadProfileBase.call(this);let stored=null;try{stored=JSON.parse(localStorage.getItem(this.profileKey)||"null");}catch{}if(v12Plain(stored?.v12))profile.v12=stored.v12;return v12EnsureProfile(profile);};
-    SaveManager.prototype.saveProfile=function(immediate=false){
-      clearTimeout(this.saveTimer);const v12=v12SanitizeProfileSection(this.profile?.v12);this.profile=v1102SanitizeProfile(this.profile);this.profile.v12=v12;if(window.skyspireGame)window.skyspireGame.profile=this.profile;
-      const write=()=>{try{localStorage.setItem(this.profileKey,JSON.stringify(this.profile));}catch(error){if(DEBUG)console.warn("Skyspire profile could not be saved",error);}};if(immediate)write();else this.saveTimer=window.setTimeout(write,350);
-    };
+    SaveManager.prototype.loadProfile=function(){return v12EnsureProfile(v12LoadProfileBase.call(this));};
+    const v12DefaultSettingsBase=SaveManager.prototype.defaultSettings;
+    SaveManager.prototype.defaultSettings=function(){return v12EnsureSettings(v12DefaultSettingsBase.call(this));};
     const v12LoadSettingsBase=SaveManager.prototype.loadSettings;
-    SaveManager.prototype.loadSettings=function(){const settings=v12LoadSettingsBase.call(this);let raw={};try{raw=JSON.parse(localStorage.getItem(this.settingsKey)||"{}")||{};}catch{}return Object.assign(settings,{v12ControlPreset:V12_CONTROL_PRESETS[raw.v12ControlPreset]?raw.v12ControlPreset:"balanced",apexAssist:v12SafeNumber(raw.apexAssist,1,.5,1.5),fontMode:["system","readable"].includes(raw.fontMode)?raw.fontMode:"system",eventCaptions:raw.eventCaptions!==false,gameSpeedAssist:v12SafeNumber(raw.gameSpeedAssist,1,.8,1),extraRescue:Boolean(raw.extraRescue),assistInvulnerability:v12SafeNumber(raw.assistInvulnerability,1,1,2)});};
+    SaveManager.prototype.loadSettings=function(){return v12EnsureSettings(v12LoadSettingsBase.call(this));};
 
-    function v12Create(tag,attrs={},text=""){const node=document.createElement(tag);for(const [k,v] of Object.entries(attrs)){if(k==="class")node.className=v;else if(k==="dataset")Object.assign(node.dataset,v);else node.setAttribute(k,v);}if(text)node.textContent=text;return node;}
-    function v12AddUI(game){
-      document.title="Skyspire v12.0.0 — Crown of the Living Spire";const eyebrow=document.querySelector("#menu-overlay .eyebrow");if(eyebrow)eyebrow.textContent="v12 · Crown of the Living Spire · Definitive Edition";const releaseChip=document.getElementById("v11-release-chip");if(releaseChip)releaseChip.textContent="Definitive campaign and mastery edition";const releaseTitle=document.querySelector("#v9-dashboard .v9-system-card strong");if(releaseTitle)releaseTitle.textContent="v12 · Crown of the Living Spire";
-      const status=document.getElementById("v9-status-copy");if(status)status.textContent="60 authored sequences · 50 mastery trials · Living Spire events · definitive campaign and accessibility layer.";
-      if(!document.getElementById("v12-event-hud")){const event=document.createElement("div");event.id="v12-event-hud";event.setAttribute("aria-live","polite");event.innerHTML='<strong id="v12-event-name">Living Spire event</strong><span id="v12-event-copy"></span><i id="v12-event-fill"></i>';document.body.appendChild(event);const build=document.createElement("div");build.id="v12-build-hud";build.innerHTML='<strong id="v12-build-name">Balanced build</strong><span id="v12-build-copy">No dominant archetype yet</span>';document.body.appendChild(build);}
-      const play=document.getElementById("play-pane");if(play&&!document.getElementById("v12-guide")){const guide=document.createElement("section");guide.id="v12-guide";guide.className="v12-guide";guide.innerHTML='<span class="v12-pill">Definitive first climb</span><strong style="display:block;margin-top:8px">Learn the spire in one uninterrupted introduction</strong><ol><li>Steer around the tower and adjust radius.</li><li>Read landing grades, Flow and Momentum.</li><li>Commit to a route and choose a first Technique.</li><li>Reach the Ancient checkpoint and review the ascent.</li></ol><div class="v12-guide-actions"><button id="v12-guided-start">Begin guided ascent</button><button id="v12-guide-dismiss" class="secondary">I know the spire</button></div>';play.prepend(guide);guide.querySelector("#v12-guided-start").onclick=()=>game.startV12GuidedRun();guide.querySelector("#v12-guide-dismiss").onclick=()=>{game.profile.v12.firstRunComplete=true;game.saveManager.saveProfile(true);guide.hidden=true;};}
-      const progress=document.getElementById("progress-pane");if(progress&&!document.getElementById("v12-mastery-map")){const section=document.createElement("section");section.innerHTML='<h3>Living Spire mastery map</h3><p class="tiny">A single view of campaign completion, authored-sequence mastery, boss medals, discoveries and the strongest next challenge.</p><div id="v12-next-goal" class="v9-system-card" style="margin:10px 0"></div><div id="v12-mastery-map" class="v12-mastery-map"></div>';progress.prepend(section);}
-      const challenges=document.getElementById("challenges-pane");if(challenges&&!document.getElementById("v12-trial-library")){const old=document.getElementById("v9-trials-section");if(old)old.hidden=true;const section=document.createElement("section");section.id="v12-trial-library";section.innerHTML='<h3>Optimization Trials 2.0</h3><p class="tiny">Fifty short fixed challenges covering speed, precision, Momentum, Flow, routes, hazards and boss preparation.</p><div class="v12-trial-toolbar"><select id="v12-trial-biome"><option value="all">All biomes</option><option value="0">Ancient Reach</option><option value="1">Clockwork Ascent</option><option value="2">Prism Expanse</option><option value="3">Celestial Temple</option><option value="4">Void Crown</option></select><select id="v12-trial-category"><option value="all">All disciplines</option></select><input id="v12-trial-search" placeholder="Search trials" type="search"></div><div id="v12-trial-grid" class="v12-trial-grid"></div>';challenges.appendChild(section);const category=section.querySelector("#v12-trial-category");for(const item of V12_TRIAL_CATEGORIES){const option=document.createElement("option");option.value=item;option.textContent=item;category.appendChild(option);}for(const input of section.querySelectorAll("select,input"))input.addEventListener("input",()=>game.renderV12Trials());}
-      const archive=document.getElementById("codex-pane");if(archive&&!document.getElementById("v12-story-list")){const section=document.createElement("section");section.innerHTML='<h3>The Spire Archive</h3><p class="tiny">Environmental memories are revealed through campaign height, Secret routes and guardian victories.</p><div id="v12-story-list" class="v12-story-list"></div>';archive.prepend(section);}
-      const settings=document.querySelector("#settings-overlay .panel");if(settings&&!document.getElementById("v12-control-settings")){const anchor=[...settings.querySelectorAll("h3")].find(x=>x.textContent.includes("Accessibility"))||settings.querySelector(".row");const block=document.createElement("section");block.id="v12-control-settings";block.innerHTML='<h3>V12 control and assistance presets</h3><label class="setting"><span>Control preset<small class="v12-setting-note">Precise, Balanced, Smooth, Touch or Custom</small></span><select id="v12-control-preset"></select></label><label class="setting"><span>Apex assistance</span><input id="v12-apex-assist" type="range" min="0.5" max="1.5" step="0.05"></label><label class="setting"><span>Readable interface font</span><input id="v12-font-readable" type="checkbox"></label><label class="setting"><span>Event and hazard captions</span><input id="v12-event-captions" type="checkbox"></label><label class="setting"><span>Assisted game speed</span><select id="v12-game-speed"><option value="1">Standard</option><option value="0.9">90%</option><option value="0.8">80%</option></select></label><label class="setting"><span>Extra campaign rescue</span><input id="v12-extra-rescue" type="checkbox"></label><label class="setting"><span>Extended hit grace</span><select id="v12-hit-grace"><option value="1">Standard</option><option value="1.5">1.5×</option><option value="2">2×</option></select></label>';settings.insertBefore(block,anchor);const select=block.querySelector("#v12-control-preset");for(const [id,preset] of Object.entries(V12_CONTROL_PRESETS)){const option=document.createElement("option");option.value=id;option.textContent=preset.name;select.appendChild(option);}select.onchange=()=>game.applyV12Preset(select.value,true);}
-      const result=document.querySelector("#gameover-overlay .panel");if(result&&!document.getElementById("v12-ending")){const ending=document.createElement("div");ending.id="v12-ending";ending.className="v12-ending";ending.hidden=true;ending.innerHTML='<strong id="v12-ending-name"></strong><p id="v12-ending-copy"></p>';result.querySelector(".row")?.before(ending);}
+    function v12SetupStyle(){if(document.getElementById("v12-style"))return;const style=document.createElement("style");style.id="v12-style";style.textContent=`
+      :root{--v12-crown:#fff0b0;--v12-sky:#8feeff;--v12-violet:#d0b1ff;--v12-success:#a8f3c5;font-size:calc(16px * var(--v12-font-scale,1))}
+      .v12-dashboard,.v12-map-grid,.v12-trial-grid,.v12-archive-grid,.v12-control-grid{display:grid;gap:12px}.v12-dashboard{grid-template-columns:1.35fr .65fr;margin:0 0 16px}.v12-map-grid{grid-template-columns:repeat(5,minmax(0,1fr))}.v12-trial-grid{grid-template-columns:repeat(3,minmax(0,1fr));max-height:520px;overflow:auto;padding-right:4px}.v12-archive-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.v12-control-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .v12-card,.v12-map-card,.v12-trial-card,.v12-story-card{position:relative;border:1px solid rgba(180,226,255,.15);border-radius:18px;padding:15px;background:linear-gradient(145deg,rgba(16,34,61,.82),rgba(6,15,31,.91));box-shadow:inset 0 1px rgba(255,255,255,.05),0 14px 34px rgba(0,0,0,.2);overflow:hidden}.v12-card:before,.v12-map-card:before{content:"";position:absolute;inset:0 0 auto;height:2px;background:linear-gradient(90deg,transparent,var(--v12-sky),var(--v12-violet),transparent);opacity:.7}.v12-card strong,.v12-map-card strong,.v12-trial-card strong,.v12-story-card strong{display:block;color:#fff;margin-bottom:5px}.v12-map-card span,.v12-card p,.v12-story-card p{color:var(--v11-muted);font-size:.82rem;line-height:1.45}.v12-progress{height:7px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:10px}.v12-progress i{display:block;height:100%;background:linear-gradient(90deg,var(--v12-sky),var(--v12-violet),var(--v12-crown));box-shadow:0 0 16px rgba(142,238,255,.5)}.v12-stars{color:var(--v12-crown);letter-spacing:2px}.v12-tier{display:inline-flex!important;width:max-content;padding:3px 8px;border-radius:999px;background:rgba(142,238,255,.12);color:var(--v12-sky)!important;font-size:.68rem!important;text-transform:uppercase;letter-spacing:.1em}.v12-trial-card{text-align:left;min-height:128px}.v12-trial-card:hover,.v12-trial-card:focus-visible{transform:translateY(-2px);border-color:rgba(142,238,255,.5);box-shadow:0 18px 45px rgba(0,0,0,.28),0 0 25px rgba(142,238,255,.08)}
+      #v12-event-hud,#v12-build-hud{position:fixed;z-index:18;pointer-events:none;opacity:0;transform:translateY(-8px);transition:opacity .22s,transform .22s;border:1px solid rgba(190,228,255,.18);background:linear-gradient(145deg,rgba(5,15,31,.88),rgba(8,24,47,.84));box-shadow:0 12px 35px rgba(0,0,0,.3);backdrop-filter:blur(12px)}#v12-event-hud.visible,#v12-build-hud.visible{opacity:1;transform:none}#v12-event-hud{top:max(222px,calc(env(safe-area-inset-top) + 212px));left:50%;translate:-50% 0;border-radius:14px;padding:9px 14px;max-width:min(520px,76vw);text-align:center}#v12-build-hud{left:14px;bottom:16px;border-radius:14px;padding:9px 12px;max-width:230px}#v12-event-hud strong,#v12-build-hud strong{display:block;color:#fff;font-size:.78rem}#v12-event-hud span,#v12-build-hud span{display:block;color:var(--v11-muted);font-size:.68rem;line-height:1.3;margin-top:2px}
+      .v12-locked{opacity:.5;filter:saturate(.5)}.v12-ending{border-color:rgba(255,224,140,.42);background:radial-gradient(circle at 50% 0,rgba(255,225,145,.14),transparent 55%),linear-gradient(145deg,rgba(22,30,55,.9),rgba(7,13,27,.95))}.v12-control-value{font-variant-numeric:tabular-nums;color:var(--v12-sky)}
+      body.v12-low-effects canvas#v11-atmosphere{opacity:.45}body.v12-low-effects .speed-line,body.v12-low-effects .v8-screen-fx{opacity:.35!important}body.v12-font-scaled{--v12-font-scale:1}
+      @media(max-width:900px){.v12-dashboard,.v12-map-grid,.v12-trial-grid,.v12-archive-grid,.v12-control-grid{grid-template-columns:1fr}.v12-trial-grid{max-height:none}#v12-event-hud{top:max(205px,calc(env(safe-area-inset-top) + 195px));max-width:84vw}#v12-build-hud{display:none}}
+      @media(max-height:620px) and (orientation:landscape){#v12-event-hud{top:172px;font-size:.74rem}.v12-dashboard{grid-template-columns:1fr 1fr}}
+      @media(prefers-reduced-motion:reduce){.v12-trial-card:hover{transform:none}}
+    `;document.head.appendChild(style);}
+
+    function v12Make(tag,attrs={},html=""){const node=document.createElement(tag);for(const [key,value] of Object.entries(attrs)){if(key==="class")node.className=value;else node.setAttribute(key,value);}if(html)node.innerHTML=html;return node;}
+    function v12AllSequences(){return [...Object.values(V9_SEQUENCE_LIBRARY).flat(),...Object.values(V12_SEQUENCE_LIBRARY).flat(),...(window.skyspireGame?.v9CustomSequences||[])];}
+    function v12BiomeForHeight(height){return clamp(Math.floor(Math.max(0,height)/50),0,4);}
+
+    const V12_TRIALS=Object.freeze(Object.values(V12_SEQUENCE_LIBRARY).flatMap((list,biome)=>list.slice(0,10).map((def,index)=>Object.freeze({id:def.id,name:def.name,biome,sequence:def.id,start:biome*50+2,goal:biome*50+2+(def.types.length*1.65),bronze:33+biome*3+index*.45,silver:26+biome*2.5+index*.38,gold:21+biome*2+index*.3,crown:17.5+biome*1.7+index*.25,copy:`Master ${def.tier} traversal with immediate retry.`,v12:true}))));
+    const V12_TRIAL_MAP=new Map(V12_TRIALS.map(t=>[t.id,t]));
+
+    const v12ChooseTemplateBase=ChunkGenerator.prototype.chooseTemplate;
+    ChunkGenerator.prototype.chooseTemplate=function(){
+      const trialSequence=this.game.v9TrialActive?.sequence;if(trialSequence&&v12SequenceDef(trialSequence)&&!this.game.v12TrialSequenceConsumed){this.game.v12TrialSequenceConsumed=true;this.game.v9ForcedSequence=null;this.recentTemplates.push(trialSequence);return trialSequence;}
+      if(this.game.v9ForcedSequence||this.game.v9TrialActive)return v12ChooseTemplateBase.call(this);
+      const biome=v12BiomeForHeight(this.highest),list=V12_SEQUENCE_LIBRARY[biome].filter(def=>!this.recentTemplates.slice(-8).includes(def.id));
+      const director=this.game.v12Director||{},chance=director.authoredChance??.82;
+      if(list.length&&this.game.rng.chance(chance)){let pool=list;if(director.preferRelief)pool=list.filter(x=>x.tier==="standard")||list;if(director.preferAdvanced)pool=list.filter(x=>["advanced","landmark","rare"].includes(x.tier));const chosen=this.game.rng.pick(pool.length?pool:list,list[0]).id;this.recentTemplates.push(chosen);if(this.recentTemplates.length>10)this.recentTemplates.shift();return chosen;}
+      return v12ChooseTemplateBase.call(this);
+    };
+    const v12StepPatternBase=ChunkGenerator.prototype.stepPattern;
+    ChunkGenerator.prototype.stepPattern=function(template,index,direction,difficulty){const def=v12SequenceDef(template);if(!def)return v12StepPatternBase.call(this,template,index,direction,difficulty);const i=index%def.types.length,scale=this.game.v12SequenceScale||1;return{angleStep:(def.angle[i]||.16)*direction*scale+this.game.rng.range(-.012,.012),radialStep:(def.radial[i]||0)*scale+this.game.rng.range(-.018,.018),verticalStep:clamp((def.rise[i]||1.6)*(difficulty>1.15?1.025:1)+this.game.rng.range(-.025,.025),1.34,2.02)};};
+    const v12TypeBase=ChunkGenerator.prototype.choosePlatformType;
+    ChunkGenerator.prototype.choosePlatformType=function(template,index,difficulty){const def=v12SequenceDef(template);return def?def.types[index%def.types.length]:v12TypeBase.call(this,template,index,difficulty);};
+    const v12SpecsBase=ChunkGenerator.prototype.createCandidateSpecs;
+    ChunkGenerator.prototype.createCandidateSpecs=function(template,difficulty){const specs=v12SpecsBase.call(this,template,difficulty),def=v12SequenceDef(template);if(!def)return specs;for(let i=0;i<specs.length;i++){specs[i].width=clamp(specs[i].width*(def.width[i%def.width.length]||1),2.15,3.72);specs[i].depth=Math.max(2.02,specs[i].depth);specs[i].v9Sequence=def.id;specs[i].v10SequenceLength=def.types.length;specs[i].v12Tier=def.tier;specs[i].shapeFamily=def.biome===0?"arc":def.biome===1?"beam":def.biome===2?"petal":def.biome===3?"circle":"triangle";}return specs;};
+
+
+    const v12SpawnChunkBase=ChunkGenerator.prototype.spawnChunk;
+    ChunkGenerator.prototype.spawnChunk=function(){const before=this.chunks.length,result=v12SpawnChunkBase.call(this);if(this.chunks.length<=before)return result;const chunk=this.chunks.at(-1),def=v12SequenceDef(chunk?.name);if(!def)return result;chunk.v9Sequence=def.id;chunk.v9Story=def.story;const primary=chunk.platforms.filter(p=>p.primaryRoute&&!p.recovery),actualLength=Math.max(1,primary.length);primary.forEach((p,i)=>{p.v9Sequence=def.id;p.v9SequenceIndex=i;p.v10SequenceLength=actualLength;p.v6MechanicLabel=p.v6MechanicLabel||def.name;p.v12Tier=def.tier;});try{v9BuildLandmark(this.game,chunk,def);}catch{}this.game.v9LastSequence=def;return result;};
+
+    function v12SetupUI(game){
+      document.title="Skyspire v12.0.0 — Crown of the Living Spire";
+      const eyebrow=document.querySelector("#menu-overlay .eyebrow");if(eyebrow)eyebrow.textContent="v12.0.0 · Crown of the Living Spire";const chip=document.getElementById("v11-release-chip");if(chip)chip.textContent="Definitive campaign and mastery edition";
+      v12SetupStyle();document.documentElement.style.setProperty("--v12-font-scale",String(game.settings.v12FontScale));
+      if(!document.getElementById("v12-event-hud")){const e=v12Make("div",{id:"v12-event-hud"},"<strong>Living Spire event</strong><span></span>"),b=v12Make("div",{id:"v12-build-hud"},"<strong>Unshaped ascent</strong><span>No build path formed</span>");document.body.append(e,b);}
+      const play=document.getElementById("play-pane");if(play&&!document.getElementById("v12-dashboard")){const node=v12Make("section",{id:"v12-dashboard",class:"v12-dashboard"},`<article class="v12-card"><span class="v12-tier">Definitive Ascension</span><strong id="v12-recommend-title">Crown of the Living Spire</strong><p id="v12-recommend-copy">Continue the campaign, master a sequence, or begin a focused climb.</p><div class="row"><button id="v12-recommend-play">Start recommended</button><button id="v12-open-map" class="secondary">Mastery map</button></div></article><article class="v12-card"><span class="v12-tier">Campaign</span><strong id="v12-campaign-status">Five acts await</strong><p id="v12-campaign-copy">Authored sequences, Living Spire events, mature boss trials, and three endings.</p></article>`);play.prepend(node);node.querySelector("#v12-recommend-play").onclick=()=>game.startV12Recommended();node.querySelector("#v12-open-map").onclick=()=>{v6ActivateMenuPane("progress-pane");document.getElementById("v12-mastery-map")?.scrollIntoView({behavior:"smooth"});};}
+      const progress=document.getElementById("progress-pane");if(progress&&!document.getElementById("v12-mastery-map")){const section=v12Make("section",{id:"v12-mastery-map"},`<h3>Living Spire mastery map</h3><p class="tiny">Campaign, authored traversal, boss mastery, discoveries, and personal records in one place.</p><div id="v12-map-summary" class="v12-card"></div><div id="v12-map-grid" class="v12-map-grid"></div><h3 style="margin-top:20px">Spire Archive</h3><div id="v12-archive-grid" class="v12-archive-grid"></div>`);progress.prepend(section);}
+      const challenges=document.getElementById("challenges-pane");if(challenges&&!document.getElementById("v12-trials")){const section=v12Make("section",{id:"v12-trials"},`<h3>Optimization Trials 2.0</h3><p class="tiny">50 deterministic 30–120 second routes with Bronze, Silver, Gold, and Crown mastery.</p><div class="row"><select id="v12-trial-biome"><option value="all">All biomes</option>${V12_BIOME_NAMES.map((n,i)=>`<option value="${i}">${n}</option>`).join("")}</select><button id="v12-weekly" class="secondary">Weekly Crown Gauntlet</button></div><div id="v12-trial-grid" class="v12-trial-grid"></div>`);challenges.append(section);section.querySelector("#v12-trial-biome").onchange=()=>game.renderV12Trials();section.querySelector("#v12-weekly").onclick=()=>game.startV12Weekly();}
+      const settingsPanel=document.querySelector("#settings-overlay .panel");if(settingsPanel&&!document.getElementById("v12-control-settings")){const section=v12Make("section",{id:"v12-control-settings"},`<h3>V12 movement and accessibility</h3><div class="v12-control-grid"><label class="setting"><span>Control preset</span><select id="v12-control-preset"><option value="precise">Precise</option><option value="balanced">Balanced</option><option value="smooth">Smooth</option><option value="touch">Touch</option><option value="custom">Custom</option></select></label><label class="setting"><span>Font scale <b id="v12-font-value" class="v12-control-value"></b></span><input id="v12-font-scale" type="range" min=".85" max="1.35" step=".05"></label><label class="setting"><span>Angular sensitivity <b id="v12-angular-value" class="v12-control-value"></b></span><input id="v12-angular" type="range" min=".55" max="1.65" step=".05"></label><label class="setting"><span>Radial sensitivity <b id="v12-radial-value" class="v12-control-value"></b></span><input id="v12-radial" type="range" min=".55" max="1.65" step=".05"></label><label class="setting"><span>Damping <b id="v12-damping-value" class="v12-control-value"></b></span><input id="v12-damping" type="range" min=".55" max="1.8" step=".05"></label><label class="setting"><span>Apex assistance <b id="v12-apex-value" class="v12-control-value"></b></span><input id="v12-apex" type="range" min="0" max="1.6" step=".1"></label><label class="setting"><span>Assisted game speed</span><select id="v12-game-speed"><option value="1">100%</option><option value=".9">90%</option><option value=".8">80%</option><option value=".72">72%</option></select></label><label class="setting"><span>Hazard captions</span><input id="v12-hazard-captions" type="checkbox"></label></div>`);settingsPanel.insertBefore(section,settingsPanel.querySelector(".row:last-child"));for(const id of["v12-font-scale","v12-angular","v12-radial","v12-damping","v12-apex"]){section.querySelector(`#${id}`).addEventListener("input",()=>game.readV12Settings(false));}section.querySelector("#v12-control-preset").onchange=()=>game.applyV12Preset(section.querySelector("#v12-control-preset").value);section.querySelector("#v12-game-speed").onchange=()=>game.readV12Settings(false);section.querySelector("#v12-hazard-captions").onchange=()=>game.readV12Settings(false);}
+      const release=document.querySelector("#v9-dashboard .v9-system-card strong");if(release)release.textContent="v12 · Crown of the Living Spire";const releaseCopy=document.getElementById("v9-status-copy");if(releaseCopy)releaseCopy.textContent="140 authored sequence families · 50 Crown trials · Living Spire events · definitive campaign mastery.";game.renderV12All();
     }
 
-    Game.prototype.renderV12Trials=function(){const host=document.getElementById("v12-trial-grid");if(!host)return;host.replaceChildren();const biome=document.getElementById("v12-trial-biome")?.value||"all",category=document.getElementById("v12-trial-category")?.value||"all",query=(document.getElementById("v12-trial-search")?.value||"").trim().toLowerCase();const filtered=V12_TRIALS.filter(t=>(biome==="all"||String(t.biome)===biome)&&(category==="all"||(t.category||"Control")===category)&&(!query||`${t.name} ${t.copy}`.toLowerCase().includes(query)));for(const trial of filtered){const best=this.profile.v9.trials[trial.id],rank=best?.medal||0,card=document.createElement("button");card.className="v9-trial-card v12-trial-card";const cat=document.createElement("span");cat.className="v12-category";cat.textContent=trial.category||"Mastery";const title=document.createElement("strong");title.textContent=trial.name;const meta=document.createElement("span");meta.textContent=`${V12_BIOMES[trial.biome]} · ${Math.max(1,Math.round(trial.goal-trial.start))} m`;const copy=document.createElement("span");copy.textContent=trial.copy;const stars=document.createElement("div");stars.className="v12-stars";stars.textContent=`${"★".repeat(rank)}${"☆".repeat(3-rank)} · ${best?.time?fmtTime(best.time):"No clear"}`;card.append(cat,title,meta,copy,stars);card.onclick=()=>{this.v9SelectedTrial=trial;this.startV9Trial(trial);};host.appendChild(card);}if(!host.children.length){const empty=document.createElement("p");empty.className="tiny";empty.textContent="No trials match these filters.";host.appendChild(empty);}};
-    Game.prototype.renderV12Mastery=function(){const host=document.getElementById("v12-mastery-map"),goal=document.getElementById("v12-next-goal");if(!host)return;host.replaceChildren();let next=null;for(let biome=0;biome<5;biome++){const defs=v12AllSequences().filter(d=>d.biome===biome),entries=defs.map(d=>this.profile.v10.sequenceMastery[d.id]||{}),discovered=entries.filter(e=>(e.clears||0)>0).length,gold=entries.filter(e=>(e.medal||0)>=3).length,medals=Object.values(this.profile.v6?.biomeMedals?.[V3_BOSSES[biome]?.id]||{}).filter(Boolean).length,story=V12_STORY.filter(s=>v9BiomeIndex(Math.min(249,s.at))===biome&&this.profile.v12.story[s.id]).length,percent=Math.round((discovered/Math.max(1,defs.length)*.45+gold/Math.max(1,defs.length)*.3+medals/5*.15+story/Math.max(1,V12_STORY.filter(s=>v9BiomeIndex(Math.min(249,s.at))===biome).length)*.1)*100);const card=document.createElement("article");card.className="v12-biome-card";card.style.setProperty("--v12-card-glow",[`rgba(255,202,120,.15)`,`rgba(100,190,255,.15)`,`rgba(204,135,255,.16)`,`rgba(255,232,170,.15)`,`rgba(174,110,255,.18)`][biome]);card.innerHTML=`<h4>${V12_BIOMES[biome]}</h4><p><b>${discovered}/${defs.length}</b> sequences cleared</p><p><b>${gold}</b> Gold masteries</p><p><b>${medals}/5</b> boss medals</p><p><b>${story}</b> archive memories</p><div class="v12-mastery-track"><i style="width:${percent}%"></i></div><p><b>${percent}%</b> biome mastery</p>`;host.appendChild(card);if(!next&&percent<100)next={biome,percent,defs,entries};}if(goal){if(next){const missing=next.defs.find((d,i)=>(next.entries[i]?.clears||0)===0);goal.innerHTML="";const strong=document.createElement("strong");strong.textContent=`Recommended: ${V12_BIOMES[next.biome]} mastery`;const p=document.createElement("p");p.textContent=missing?`Clear ${missing.name} or improve an existing sequence medal. Current biome mastery: ${next.percent}%.`:`Improve boss medals and Gold ratings in this biome.`;goal.append(strong,p);}else goal.innerHTML="<strong>Living Spire mastered</strong><p>Every biome objective is complete. Pursue records, Weekly Gauntlets and Spiremaster endings.</p>";}}
-    Game.prototype.renderV12Story=function(){const host=document.getElementById("v12-story-list");if(!host)return;host.replaceChildren();for(const entry of V12_STORY){const unlocked=Boolean(this.profile.v12.story[entry.id]),row=document.createElement("article");row.className=`v12-story-item ${unlocked?"":"locked"}`;const title=document.createElement("strong");title.textContent=unlocked?entry.title:"Unresolved memory";const p=document.createElement("p");p.textContent=unlocked?entry.copy:`Reach ${entry.at} m in Ascension to reveal this memory.`;row.append(title,p);host.appendChild(row);}}
-    Game.prototype.renderV12All=function(){this.renderV12Trials();this.renderV12Mastery();this.renderV12Story();const guide=document.getElementById("v12-guide");if(guide)guide.hidden=Boolean(this.profile.v12.firstRunComplete);};
-    Game.prototype.syncV12Settings=function(){const q=id=>document.getElementById(id);if(q("v12-control-preset"))q("v12-control-preset").value=this.settings.v12ControlPreset||"balanced";if(q("v12-apex-assist"))q("v12-apex-assist").value=this.settings.apexAssist||1;if(q("v12-font-readable"))q("v12-font-readable").checked=this.settings.fontMode==="readable";if(q("v12-event-captions"))q("v12-event-captions").checked=this.settings.eventCaptions!==false;if(q("v12-game-speed"))q("v12-game-speed").value=String(this.settings.gameSpeedAssist||1);if(q("v12-extra-rescue"))q("v12-extra-rescue").checked=Boolean(this.settings.extraRescue);if(q("v12-hit-grace"))q("v12-hit-grace").value=String(this.settings.assistInvulnerability||1);};
-    Game.prototype.readV12Settings=function(){const q=id=>document.getElementById(id);this.settings.v12ControlPreset=q("v12-control-preset")?.value||"balanced";this.settings.apexAssist=v12SafeNumber(q("v12-apex-assist")?.value,1,.5,1.5);this.settings.fontMode=q("v12-font-readable")?.checked?"readable":"system";this.settings.eventCaptions=q("v12-event-captions")?.checked!==false;this.settings.gameSpeedAssist=v12SafeNumber(q("v12-game-speed")?.value,1,.8,1);this.settings.extraRescue=Boolean(q("v12-extra-rescue")?.checked);this.settings.assistInvulnerability=v12SafeNumber(q("v12-hit-grace")?.value,1,1,2);};
-    Game.prototype.applyV12Preset=function(id,notify=false){const preset=V12_CONTROL_PRESETS[id]||V12_CONTROL_PRESETS.balanced;this.settings.v12ControlPreset=id;if(id!=="custom"){this.settings.sensitivity=preset.sensitivity;this.settings.cameraSmoothing=preset.cameraSmoothing;this.settings.gamepadDeadzone=preset.gamepadDeadzone;this.settings.apexAssist=preset.apexAssist;this.syncSettingsUI?.();this.syncV12Settings();this.applySettings();}if(notify)v3Toast(this,`${preset.name} controls`,preset.copy);};
-    Game.prototype.startV12GuidedRun=function(){this.profile.v12.firstRunComplete=true;this.saveManager.saveProfile(true);this.mode="ascension";this.v6Difficulty="pilgrim";this.profile.v6.ascensionDifficulty="pilgrim";if(this.ui.ascensionDifficulty)this.ui.ascensionDifficulty.value="pilgrim";this.v6TutorialChapter=V6_TUTORIALS?.[0]||null;this.startRun();};
-    Game.prototype.buildV12RunEvents=function(){this.v12EventSchedule=[];for(let biome=0;biome<5;biome++){const list=V12_EVENT_LIBRARY[biome],index=(hashString(`${this.currentSeed}-v12-event-${biome}`)>>>0)%list.length;this.v12EventSchedule.push({biome,trigger:biome*50+30+(hashString(`${this.currentSeed}-event-height-${biome}`)%9),def:list[index],done:false});}this.v12ActiveEvent=null;this.v12EventTimer=0;this.v12Song=0;};
-    Game.prototype.startV12Event=function(item){item.done=true;this.v12ActiveEvent=item.def;this.v12EventTimer=item.def.duration;this.profile.v12.eventCodex[item.def.id]=true;this.saveManager.saveProfile();const hud=document.getElementById("v12-event-hud");document.getElementById("v12-event-name").textContent=item.def.name;document.getElementById("v12-event-copy").textContent=item.def.copy;hud?.classList.add("visible");if(this.settings.eventCaptions!==false)v3Toast(this,item.def.name,item.def.copy);this.audio.play("milestone");this.addFlow?.(8,"Living Spire event");};
-    Game.prototype.updateV12Event=function(dt){if(!this.v12ActiveEvent)return;this.v12EventTimer=Math.max(0,this.v12EventTimer-dt);const def=this.v12ActiveEvent;if(def.effect==="pressure")this.cameraPressureY-=dt*.28;if(def.effect==="air"&&this.player.airborne&&Math.abs(this.player.verticalVelocity)<3)this.player.angularVelocity*=1+dt*.15;if(def.effect==="overdrive")this.landingScore+=dt*1.2;if(def.effect==="clarity")this.player.aidTimer=Math.min(this.player.aidTimer,.015);const fill=document.getElementById("v12-event-fill");if(fill)fill.style.transform=`scaleX(${clamp(this.v12EventTimer/def.duration,0,1)})`;if(this.v12EventTimer<=0){this.v12ActiveEvent=null;document.getElementById("v12-event-hud")?.classList.remove("visible");}}
-    Game.prototype.updateV12BuildHUD=function(){const scores={Aerialist:0,Guardian:0,Seeker:0,Tempest:0,Skyflow:0};for(const def of UPGRADE_DEFS||[]){const level=this.upgrades[def.id]||0;if(level&&scores[def.archetype]!==undefined)scores[def.archetype]+=level;}for(const id of this.v9Arts||[]){const art=V9_ARTS.find(a=>a.id===id);if(art)scores[art.archetype]=(scores[art.archetype]||0)+2;}const [name,value]=Object.entries(scores).sort((a,b)=>b[1]-a[1])[0],hud=document.getElementById("v12-build-hud");if(!hud)return;if(this.state!=="playing"||value<=0){hud.classList.remove("visible");return;}hud.classList.add("visible");document.getElementById("v12-build-name").textContent=`${name} build`;document.getElementById("v12-build-copy").textContent=`${value} build weight · ${(this.v10Resonances?.size||0)} Resonance${this.v10Resonances?.size===1?"":"s"}`;};
-    Game.prototype.unlockV12Story=function(){if(this.mode!=="ascension")return;for(const item of V12_STORY)if(this.player.maxHeight>=item.at&&!this.profile.v12.story[item.id]){this.profile.v12.story[item.id]=true;this.saveManager.saveProfile();v3Toast(this,item.title,item.copy);this.v6AscentEvents?.push({height:item.at,type:`v12-story-${item.id}`});}}
-    Game.prototype.resolveV12Ending=function(success){if(!success||this.mode!=="ascension")return null;const difficulty=this.v6Difficulty||this.profile.v6.ascensionDifficulty||"climber",relicCount=new Set(this.profile.progression?.relics||[]).size;let id="first";if(difficulty==="spiremaster")id="master";else if(["ascendant","spiremaster"].includes(difficulty)&&relicCount>=5)id="true";this.profile.v12.endings[id]=true;this.profile.v12.campaignCompletions[difficulty]=(this.profile.v12.campaignCompletions[difficulty]||0)+1;return V12_ENDINGS[id];};
+    Game.prototype.renderV12All=function(){this.renderV12Dashboard?.();this.renderV12Mastery?.();this.renderV12Trials?.();this.renderV12Settings?.();this.renderV12Build?.();};
+    Game.prototype.renderV12Dashboard=function(){const title=document.getElementById("v12-recommend-title"),copy=document.getElementById("v12-recommend-copy"),status=document.getElementById("v12-campaign-status");if(!title)return;const resume=this.profile.v6?.ascensionResume,uncleared=V12_TRIALS.find(t=>(this.profile.v12.trials[t.id]?.medal||0)<1),bosses=this.profile.lifetime?.bosses||0;if(resume){title.textContent=`Continue ${V12_BIOME_NAMES[v12BiomeForHeight(resume.height||0)]}`;copy.textContent=`Resume at ${Math.floor(resume.height||0)} m with the stored build and campaign state.`;this.v12Recommended={type:"resume"};}else if(uncleared){title.textContent=`Master ${uncleared.name}`;copy.textContent=`A focused ${V12_BIOME_NAMES[uncleared.biome]} trial with instant retry.`;this.v12Recommended={type:"trial",trial:uncleared};}else{title.textContent="Begin definitive Ascension";copy.textContent="Climb five authored acts and claim the Living Crown.";this.v12Recommended={type:"ascension"};}if(status)status.textContent=bosses>=5?"The crown remembers your ascent":`${Math.min(5,bosses)}/5 guardians overcome`;};
+    Game.prototype.startV12Recommended=function(){const r=this.v12Recommended;if(r?.type==="resume")return this.resumeV6Ascension?.();if(r?.type==="trial")return this.startV12Trial(r.trial);this.mode="ascension";this.renderModes?.();this.startRun();};
+    Game.prototype.renderV12Mastery=function(){const grid=document.getElementById("v12-map-grid"),summary=document.getElementById("v12-map-summary"),archive=document.getElementById("v12-archive-grid");if(!grid)return;grid.replaceChildren();let total=0,max=0;for(let biome=0;biome<5;biome++){const defs=V12_SEQUENCE_LIBRARY[biome],stars=defs.reduce((s,d)=>s+(this.profile.v12.mastery[d.id]?.medal||0),0),maximum=defs.length*4;total+=stars;max+=maximum;const boss=V3_BOSSES[biome],bossDone=this.profile.progression.relics.includes(boss.relic),story=V12_STORY.filter(x=>x.biome===biome&&this.profile.v12.story[x.id]).length;const card=v12Make("article",{class:"v12-map-card"},`<span class="v12-tier">Act ${biome+1}</span><strong>${V12_BIOME_NAMES[biome]}</strong><span>${stars}/${maximum} sequence stars · ${story}/2 archive fragments</span><span>${bossDone?"Guardian overcome":"Guardian awaiting"}</span><div class="v12-progress"><i style="width:${maximum?stars/maximum*100:0}%"></i></div>`);grid.append(card);}summary.innerHTML=`<strong>${total}/${max} Crown mastery stars</strong><p>${this.profile.v12.totalCrowns||0} Crown trial ratings · ${Object.keys(this.profile.v12.story).filter(k=>this.profile.v12.story[k]).length}/${V12_STORY.length} archive discoveries.</p><div class="v12-progress"><i style="width:${max?total/max*100:0}%"></i></div>`;if(archive){archive.replaceChildren();for(const item of V12_STORY){const open=Boolean(this.profile.v12.story[item.id]);archive.append(v12Make("article",{class:`v12-story-card ${open?"":"v12-locked"}`},`<strong>${open?item.title:"Undiscovered memory"}</strong><p>${open?item.text:`Explore ${V12_BIOME_NAMES[item.biome]} landmarks, Secrets, and its guardian.`}</p>`));}}};
+    Game.prototype.renderV12Trials=function(){const grid=document.getElementById("v12-trial-grid");if(!grid)return;const filter=document.getElementById("v12-trial-biome")?.value||"all";grid.replaceChildren();for(const trial of V12_TRIALS){if(filter!=="all"&&Number(filter)!==trial.biome)continue;const result=this.profile.v12.trials[trial.id]||{medal:0,time:null};const button=v12Make("button",{class:"v12-trial-card"},`<span class="v12-tier">${V12_BIOME_NAMES[trial.biome]}</span><strong>${trial.name}</strong><span class="tiny">${trial.copy}</span><span class="v12-stars">${"★".repeat(result.medal)}${"☆".repeat(4-result.medal)}</span><span class="tiny">${result.time?fmtTime(result.time):"No clear"} · Crown ${trial.crown.toFixed(1)}s</span>`);button.onclick=()=>this.startV12Trial(trial);grid.append(button);}};
+    Game.prototype.startV12Trial=function(trial){this.v12TrialActive=trial;this.startV9Trial({...trial,goal:trial.goal});};
+    Game.prototype.startV12Weekly=function(){const week=Math.floor((Date.now()-Date.UTC(2025,0,6))/604800000),biome=((week%5)+5)%5,index=(week*7%20+20)%20,def=V12_SEQUENCE_LIBRARY[biome][index],trial=V12_TRIAL_MAP.get(def.id);this.v12WeeklyActive={week,trialId:trial.id};this.startV12Trial({...trial,id:`v12-week-${week}`,name:`Weekly Crown · ${trial.name}`});};
 
-    const v12SetupSceneBase=Game.prototype.setupScene;
-    Game.prototype.setupScene=function(){this.profile=v12EnsureProfile(this.profile);this.saveManager.profile=this.profile;const result=v12SetupSceneBase.call(this);this.v12EventSchedule=[];this.v12ActiveEvent=null;this.v12EventTimer=0;this.v12AudioBeat=0;return result;};
+    const v12FinishV9TrialBase=Game.prototype.finishV9Trial;
+    Game.prototype.finishV9Trial=function(success){const trial=this.v12TrialActive,elapsed=this.runTime;const result=v12FinishV9TrialBase.call(this,success);if(trial){let medal=success?(elapsed<=trial.crown?4:elapsed<=trial.gold?3:elapsed<=trial.silver?2:1):0,old=this.profile.v12.trials[trial.id]||{medal:0,time:null};if(medal>old.medal||(success&&(!old.time||elapsed<old.time))){const crownGain=Math.max(0,medal-Math.max(3,old.medal));this.profile.v12.trials[trial.id]={medal:Math.max(old.medal,medal),time:old.time?Math.min(old.time,elapsed):elapsed};if(crownGain){this.profile.v12.totalCrowns+=crownGain;this.addXP?.(150*crownGain,"Crown trial mastery");v3Toast(this,"Crown mastery",`${trial.name} completed at the highest rating.`);}this.saveManager.saveProfile(true);}this.v12TrialActive=null;this.renderV12Trials();this.renderV12Mastery();}return result;};
+
+    Game.prototype.renderV12Settings=function(){const s=this.settings;for(const [id,val] of Object.entries({"v12-control-preset":s.v12ControlPreset,"v12-font-scale":s.v12FontScale,"v12-angular":s.v12Angular,"v12-radial":s.v12Radial,"v12-damping":s.v12Damping,"v12-apex":s.v12Apex,"v12-game-speed":s.v12GameSpeed})){const n=document.getElementById(id);if(n)n.value=String(val);}const c=document.getElementById("v12-hazard-captions");if(c)c.checked=s.v12HazardCaptions;for(const [id,val] of Object.entries({"v12-font-value":s.v12FontScale.toFixed(2),"v12-angular-value":s.v12Angular.toFixed(2),"v12-radial-value":s.v12Radial.toFixed(2),"v12-damping-value":s.v12Damping.toFixed(2),"v12-apex-value":s.v12Apex.toFixed(1)})){const n=document.getElementById(id);if(n)n.textContent=val;}document.documentElement.style.setProperty("--v12-font-scale",String(s.v12FontScale));};
+    Game.prototype.readV12Settings=function(save=true){const val=(id,fallback)=>Number(document.getElementById(id)?.value??fallback);this.settings.v12ControlPreset=document.getElementById("v12-control-preset")?.value||this.settings.v12ControlPreset;this.settings.v12FontScale=clamp(val("v12-font-scale",1),.85,1.35);this.settings.v12Angular=clamp(val("v12-angular",1),.55,1.65);this.settings.v12Radial=clamp(val("v12-radial",1),.55,1.65);this.settings.v12Damping=clamp(val("v12-damping",1),.55,1.8);this.settings.v12Apex=clamp(val("v12-apex",1),0,1.6);this.settings.v12GameSpeed=clamp(val("v12-game-speed",1),.72,1);this.settings.v12HazardCaptions=Boolean(document.getElementById("v12-hazard-captions")?.checked);this.renderV12Settings();if(save)this.saveManager.saveSettings();};
+    Game.prototype.applyV12Preset=function(id){const presets={precise:{a:1.2,r:1.12,d:.8,x:.45},balanced:{a:1,r:1,d:1,x:1},smooth:{a:.9,r:.9,d:1.3,x:1.15},touch:{a:.82,r:.92,d:1.18,x:1.25}};const p=presets[id];this.settings.v12ControlPreset=id;if(p){this.settings.v12Angular=p.a;this.settings.v12Radial=p.r;this.settings.v12Damping=p.d;this.settings.v12Apex=p.x;}this.renderV12Settings();this.saveManager.saveSettings();};
+
+    const v12PlayerUpdateBase=Player.prototype.update;
+    Player.prototype.update=function(dt){const g=this.game,s=g.settings,oldSensitivity=s.sensitivity,oldA=g.input.angularAxis,oldR=g.input.radialAxis,apex=Math.abs(this.verticalVelocity)<2.25?1+s.v12Apex*.14:1;g.input.angularAxis=oldA*s.v12Angular*apex;g.input.radialAxis=oldR*s.v12Radial*apex;s.sensitivity=1;try{const result=v12PlayerUpdateBase.call(this,dt);if(!oldA)this.angularVelocity*=Math.exp(-(s.v12Damping-1)*2.4*dt);if(!oldR)this.radialVelocity*=Math.exp(-(s.v12Damping-1)*2.4*dt);if(g.v12Event?.kind==="apex"&&Math.abs(this.verticalVelocity)<2.5){this.angularVelocity*=1+dt*.14;this.radialVelocity*=1+dt*.1;}if(g.v12Event?.kind==="sanctuary"&&this.airborne)this.verticalVelocity+=.18*dt;return result;}finally{g.input.angularAxis=oldA;g.input.radialAxis=oldR;s.sensitivity=oldSensitivity;}};
+
+    function v12BuildIdentity(game){const dominant=game.v10DominantArchetype?.()||"Unshaped";const arts=[...(game.v9Arts||[])].length,res=[...(game.v10Resonances||[])].length,key=[...(game.v6Keystones||[])].length;return{name:dominant,copy:`${arts} Art${arts===1?"":"s"} · ${res} Resonance${res===1?"":"s"} · ${key} Keystone${key===1?"":"s"}`};}
+    Game.prototype.renderV12Build=function(){const hud=document.getElementById("v12-build-hud");if(!hud)return;const identity=v12BuildIdentity(this),visible=this.state==="playing"&&(Object.values(this.upgrades||{}).some(Boolean)||identity.copy!=="0 Arts · 0 Resonances · 0 Keystones");hud.classList.toggle("visible",visible);hud.querySelector("strong").textContent=`${identity.name} path`;hud.querySelector("span").textContent=identity.copy;};
+
+    Game.prototype.v12EventForBiome=function(biome){const list=V12_EVENTS[biome],index=hashString(`${this.currentSeed}:${biome}:v12-event`)%list.length;return list[index];};
+    Game.prototype.startV12Event=function(biome){if(this.mode==="practice"||this.v9TrialActive||this.v12EventBiomes?.has(biome))return;this.v12EventBiomes||=new Set();this.v12EventBiomes.add(biome);const def=this.v12EventForBiome(biome);this.v12Event={...def,biome,startHeight:this.player.maxHeight,endHeight:(biome+1)*50-3};this.profile.v12.events[def.id]=(this.profile.v12.events[def.id]||0)+1;v12UnlockStory(this,["origin","engine","prism-memory","temple-pilgrims","void-truth"][biome]);const hud=document.getElementById("v12-event-hud");if(hud){hud.querySelector("strong").textContent=def.name;hud.querySelector("span").textContent=def.copy;hud.classList.add("visible");}v3Toast(this,def.name,def.copy);this.showV10Caption?.(def.name);this.audio.playV9Motif?.("sequence",biome);this.saveManager.saveProfile();};
+    Game.prototype.updateV12Event=function(){const event=this.v12Event,hud=document.getElementById("v12-event-hud");if(!event){hud?.classList.remove("visible");return;}if(this.player.maxHeight>=event.endHeight||this.state!=="playing"){this.v12Event=null;hud?.classList.remove("visible");}};
+    Game.prototype.applyV12LandingEvent=function(grade,platform){const e=this.v12Event;if(!e)return;if(e.kind==="controlledFlow"&&["perfect","clean","momentum"].includes(grade))this.addFlow(2,"Stonewake");else if(e.kind==="momentumReward"&&grade==="momentum")this.landingScore+=8;else if(e.kind==="perfectCharge"&&grade==="perfect")this.shieldFragments=Math.min(9,(this.shieldFragments||0)+1);else if(e.kind==="momentumScore"&&grade==="momentum")this.landingScore+=15;else if(e.kind==="crystalFlow"&&this.runCrystals>0&&this.runCrystals%5===0&&this.v12LastBloomCrystal!==this.runCrystals){this.v12LastBloomCrystal=this.runCrystals;this.addFlow(8,"Crystal Bloom");}else if(e.kind==="cleanScore"&&["perfect","clean"].includes(grade))this.landingScore+=7;else if(e.kind==="echoGrace"&&grade==="repeated")this.v6Flow=Math.max(this.v6Flow||0,18);else if(e.kind==="routeReward"&&platform?.routeType)this.landingScore+=10;};
+
+    Game.prototype.updateV12Director=function(){const recent=(this.v10SequenceRuns?Object.values(this.v10SequenceRuns):[]).slice(-6),unstable=(this.stats.recoveries||0)+(this.stats.edge||0)*.5,controlled=(this.stats.perfect||0)+(this.stats.clean||0)+(this.stats.momentumLandings||0);const ratio=controlled/Math.max(1,this.stats.platforms||1);this.v12Director={authoredChance:ratio>.72?.9:.82,preferRelief:unstable>3&&ratio<.5,preferAdvanced:ratio>.82&&(this.v6Flow||0)>55&&!this.v12Event};};
+
     const v12SetupUIBase=Game.prototype.setupUI;
-    Game.prototype.setupUI=function(){const result=v12SetupUIBase.call(this);this.profile=v12EnsureProfile(this.profile);this.saveManager.profile=this.profile;v12AddUI(this);this.renderV12All();this.syncV12Settings();return result;};
+    Game.prototype.setupUI=function(){const result=v12SetupUIBase.call(this);v12SetupUI(this);return result;};
     const v12RefreshMenuBase=Game.prototype.refreshMenu;
-    Game.prototype.refreshMenu=function(){const result=v12RefreshMenuBase.call(this);this.renderV12All?.();return result;};
-    const v12ReadSettingsBase=Game.prototype.readSettingsUI;
-    Game.prototype.readSettingsUI=function(){v12ReadSettingsBase.call(this);this.readV12Settings?.();};
-    const v12SyncSettingsBase=Game.prototype.syncSettingsUI;
-    Game.prototype.syncSettingsUI=function(){v12SyncSettingsBase.call(this);this.syncV12Settings?.();};
+    Game.prototype.refreshMenu=function(){const result=v12RefreshMenuBase.call(this);this.renderV12All();return result;};
     const v12ApplySettingsBase=Game.prototype.applySettings;
-    Game.prototype.applySettings=function(){v12ApplySettingsBase.call(this);document.body.classList.toggle("v12-dyslexia",this.settings.fontMode==="readable");if(this.settings.v12ControlPreset&&this.settings.v12ControlPreset!=="custom"){const preset=V12_CONTROL_PRESETS[this.settings.v12ControlPreset];if(preset)this.settings.apexAssist=preset.apexAssist;}return this.settings;};
-    const v12CloseSettingsBase=Game.prototype.closeSettings;
-    Game.prototype.closeSettings=function(){this.readV12Settings?.();const result=v12CloseSettingsBase.call(this);this.applySettings();this.saveManager.saveSettings();return result;};
-    const v12ResetRunBase=Game.prototype.resetRun;
-    Game.prototype.resetRun=function(menuPreview=false){const result=v12ResetRunBase.call(this,menuPreview);if(!menuPreview){this.buildV12RunEvents();if(this.settings.extraRescue&&this.mode==="ascension"&&!this.v7ExpeditionActive)this.upgrades.rescue=Math.max(1,this.upgrades.rescue||0);}return result;};
+    Game.prototype.applySettings=function(){this.settings=v12EnsureSettings(this.settings);const result=v12ApplySettingsBase.call(this);document.documentElement.style.setProperty("--v12-font-scale",String(this.settings.v12FontScale));document.body.classList.toggle("v12-low-effects",this.settings.v12AdaptiveEffects&&((this.settings.quality==="Low")||(this.v9RenderScale||1)<.78));return result;};
     const v12StartRunBase=Game.prototype.startRun;
-    Game.prototype.startRun=function(){this.profile=v12EnsureProfile(this.profile);this.v12EndingResult=null;const assistMode=["ascension","practice","custom"].includes(this.mode)&&!this.v7ExpeditionActive&&!this.v9TrialActive&&!this.activeContract;this.v12AssistedRun=assistMode&&((this.settings.gameSpeedAssist||1)<.999||Boolean(this.settings.extraRescue)||(this.settings.assistInvulnerability||1)>1.001);const result=v12StartRunBase.call(this);if(this.mode!=="practice")this.profile.v12.firstRunComplete=true;this.saveManager.saveProfile();return result;};
+    Game.prototype.startRun=function(){this.profile=v12EnsureProfile(this.profile);this.v12Event=null;this.v12EventBiomes=new Set();this.v12Director={authoredChance:.84};this.v12SequenceRunStart=new Map();this.v12BossStart=null;this.v12LastBloomCrystal=-1;this.v12Assisted=false;this.v12TrialSequenceConsumed=false;const result=v12StartRunBase.call(this);this.renderV12Build();return result;};
     const v12UpdatePlayingBase=Game.prototype.updatePlaying;
-    Game.prototype.updatePlaying=function(dt){const assistAllowed=["ascension","practice","custom"].includes(this.mode)&&!this.v7ExpeditionActive&&!this.v9TrialActive&&!this.activeContract,scaled=dt*(assistAllowed?(this.settings.gameSpeedAssist||1):1);const result=v12UpdatePlayingBase.call(this,scaled);if(this.state!=="playing")return result;for(const item of this.v12EventSchedule||[])if(!item.done&&this.player.maxHeight>=item.trigger){this.startV12Event(item);break;}this.updateV12Event(scaled);this.unlockV12Story();this.v12BuildHUDTimer=(this.v12BuildHUDTimer||0)-scaled;if(this.v12BuildHUDTimer<=0){this.v12BuildHUDTimer=.4;this.updateV12BuildHUD();}this.v12AudioBeat-=scaled;if(this.v12AudioBeat<=0&&(this.flow||0)>=50){this.v12AudioBeat=(this.skyflowTimer||0)>0?.42:.72;const biome=v9BiomeIndex(this.player.maxHeight),base=[220,277,330,392,185][biome];this.audio.tone?.(base*((this.flow||0)>=75?1.5:1),.08,{volume:.018,type:"sine"});}return result;};
+    Game.prototype.updatePlaying=function(dt){const competitive=this.v7ExpeditionActive||this.v9TrialActive||["daily","time"].includes(this.mode)||Boolean(this.v6ContractActive);const speed=competitive?1:(this.settings.v12GameSpeed||1);this.v12Assisted=speed<.999;const result=v12UpdatePlayingBase.call(this,dt*speed);this.updateV12Director();const biome=v12BiomeForHeight(this.player.maxHeight);if(this.player.maxHeight>=V12_ACT_STARTS[biome]+8)this.startV12Event(biome);this.updateV12Event();this.renderV12Build();return result;};
     const v12LandBase=Game.prototype.landPlayer;
-    Game.prototype.landPlayer=function(platform,quality,grade){const result=v12LandBase.call(this,platform,quality,grade);const event=this.v12ActiveEvent;if(event){if(event.effect==="flow"&&["perfect","clean","momentum"].includes(grade))this.addFlow(grade==="perfect"?8:4,event.name);if(event.effect==="momentum"&&grade==="momentum")this.power.highBounce=Math.max(this.power.highBounce,3);if(event.effect==="song"&&["perfect","clean","momentum"].includes(grade)){this.v12Song++;if(this.v12Song%4===0){this.shieldFragments=(this.shieldFragments||0)+1;this.addFlow(6,"Shard Song");}}if(event.effect==="echo"&&grade==="perfect")this.addFlow(10,"Memory Echo");}return result;};
-    const v12CrystalCollectBase=Crystal.prototype.collect;
-    Crystal.prototype.collect=function(){if(this.state==="collected")return;const event=this.game.v12ActiveEvent,before=this.game.crystalScore;const result=v12CrystalCollectBase.call(this);if(event?.effect==="crystal"){const bonus=Math.max(10,this.game.crystalScore-before);this.game.crystalScore+=bonus;this.game.addFlow?.(3,"Crystal Bloom");}return result;};
-    const v12DamageBase=Game.prototype.damagePlayer;
-    Game.prototype.damagePlayer=function(reason){const result=v12DamageBase.call(this,reason),assistAllowed=["ascension","practice","custom"].includes(this.mode)&&!this.v7ExpeditionActive&&!this.v9TrialActive&&!this.activeContract;if(this.player&&assistAllowed)this.player.invulnerability*=this.settings.assistInvulnerability||1;return result;};
-    const v12ChooseTemplateBase=ChunkGenerator.prototype.chooseTemplate;
-    ChunkGenerator.prototype.chooseTemplate=function(){const standardized=["daily"].includes(this.game.mode)||this.game.v7ExpeditionActive||this.game.v9TrialActive||this.game.activeContract||this.game.mode==="custom";if(!standardized&&this.game.state==="playing"){const unstable=(this.game.stats?.recoveries||0)+(this.game.stats?.rescues||0)*2;if(unstable>=3&&this.recentTemplates.slice(-2).every(x=>x!=="gentleSpiral")){this.recentTemplates.push("gentleSpiral");return "gentleSpiral";}}return v12ChooseTemplateBase.call(this);};
+    Game.prototype.landPlayer=function(player,platform){const beforePerfect=this.stats.perfect||0,beforeClean=this.stats.clean||0,beforeMomentum=this.stats.momentumLandings||0,beforeEdge=this.stats.edge||0,beforeRecovery=this.stats.recoveries||0,result=v12LandBase.call(this,player,platform);let grade="clean";if((this.stats.perfect||0)>beforePerfect)grade="perfect";else if((this.stats.momentumLandings||0)>beforeMomentum)grade="momentum";else if((this.stats.edge||0)>beforeEdge)grade="edge";else if((this.stats.recoveries||0)>beforeRecovery)grade="recovery";else if((this.stats.clean||0)>beforeClean)grade="clean";this.applyV12LandingEvent(grade,platform);if(platform?.v9Sequence&&v12SequenceDef(platform.v9Sequence)){const def=v12SequenceDef(platform.v9Sequence),entry=this.profile.v12.mastery[def.id];const key=`${platform.chunkId}:${def.id}`,state=this.v12SequenceRunStart.get(key)||{seen:new Set(),start:this.runTime,controlled:0,total:0};const idx=Math.max(0,Number(platform.v9SequenceIndex)||0);state.seen.add(idx);state.total++;if(["perfect","clean","momentum"].includes(grade))state.controlled++;this.v12SequenceRunStart.set(key,state);const sequenceLength=Math.max(1,Number(platform.v10SequenceLength)||def.types.length);if(idx>=sequenceLength-1&&state.seen.size>=sequenceLength){const controlled=state.controlled/Math.max(1,state.total),elapsed=Math.max(.001,this.runTime-state.start);let medal=1;if(controlled>=.8)medal=2;if(controlled>=.93&&grade!=="edge")medal=3;if(controlled>=.98&&elapsed<=def.types.length*3.1)medal=4;const gain=Math.max(0,medal-entry.medal);entry.clears++;entry.medal=Math.max(entry.medal,medal);entry.bestControlled=Math.max(entry.bestControlled,controlled);entry.bestTime=entry.bestTime?Math.min(entry.bestTime,elapsed):elapsed;if(gain){if(medal===4)this.profile.v12.totalCrowns++;v3Toast(this,`${medal===4?"Crown":"Mastery"} sequence rating`,`${def.name} · ${Math.round(controlled*100)}% controlled`);this.addXP?.(gain*45,"V12 sequence mastery");}this.saveManager.saveProfile();this.renderV12Mastery();}}
+      return result;};
+
+    function v12UnlockStory(game,id){if(game.profile.v12.story[id])return;game.profile.v12.story[id]=true;const item=V12_STORY.find(x=>x.id===id);if(item){v3Toast(game,"Spire Archive discovered",item.title);game.audio.playV9Motif?.("reward",item.biome);game.saveManager.saveProfile();game.renderV12Mastery();}}
+    const v12BossStartBase=V3BossController.prototype.start;
+    V3BossController.prototype.start=function(def){const result=v12BossStartBase.call(this,def);if(this.active){this.game.v12BossStart={id:def.id,time:this.game.runTime,recoveries:this.game.stats.recoveries||0,perfect:this.game.stats.perfect||0};const biome=Math.max(0,V3_BOSSES.findIndex(x=>x.id===def.id));v12UnlockStory(this.game,["sentinel-oath","warden-purpose","heart-song","seraph-watch","void-truth"][biome]);this.game.v12Event=null;document.getElementById("v12-event-hud")?.classList.remove("visible");}return result;};
+    const v12BossUpdateBase=V3BossController.prototype.update;
+    V3BossController.prototype.update=function(dt){const prior=this.active?.id,start=this.game.v12BossStart,result=v12BossUpdateBase.call(this,dt);if(prior&&!this.active&&start?.id===prior){const time=Math.max(.001,this.game.runTime-start.time),recoveries=(this.game.stats.recoveries||0)-start.recoveries,perfect=(this.game.stats.perfect||0)-start.perfect,entry=this.game.profile.v12.bossMastery[prior]||{clears:0,best:null,clean:false,mastery:false};entry.clears++;entry.best=entry.best?Math.min(entry.best,time):time;entry.clean=entry.clean||recoveries===0;entry.mastery=entry.mastery||(recoveries===0&&perfect>=3&&time<125);this.game.profile.v12.bossMastery[prior]=entry;this.game.saveManager.saveProfile();this.game.renderV12Mastery();this.game.v12BossStart=null;}return result;};
+
     const v12FinishRunBase=Game.prototype.finishRun;
-    Game.prototype.finishRun=function(success=false){if(this.state==="gameover")return;const ending=this.resolveV12Ending(success);const result=v12FinishRunBase.call(this,success);this.v12EndingResult=ending;const panel=document.getElementById("v12-ending");if(panel){panel.hidden=!ending&&!this.v12AssistedRun;if(ending){document.getElementById("v12-ending-name").textContent=ending.name;document.getElementById("v12-ending-copy").textContent=ending.copy;}else if(this.v12AssistedRun){document.getElementById("v12-ending-name").textContent="Assisted ascent";document.getElementById("v12-ending-copy").textContent="Assistance was active for this run. Progression is preserved, while standardized competitive modes remain unassisted.";}}this.renderV12All();this.saveManager.saveProfile(true);return result;};
-    const v12SetStateBase=Game.prototype.setState;
-    Game.prototype.setState=function(state){const result=v12SetStateBase.call(this,state);if(state!=="playing"){document.getElementById("v12-event-hud")?.classList.remove("visible");document.getElementById("v12-build-hud")?.classList.remove("visible");}return result;};
-    const v12RenderV9NextBase=Game.prototype.renderV9Next;
-    Game.prototype.renderV9Next=function(){const title=document.getElementById("v9-next-title"),copy=document.getElementById("v9-next-copy"),resume=this.profile.v6?.ascensionResume,uncleared=V12_TRIALS.find(t=>(this.profile.v9.trials[t.id]?.medal||0)<1);if(!title||!copy)return v12RenderV9NextBase.call(this);if(resume){title.textContent=`Continue ${V12_BIOMES[v9BiomeIndex(resume.height||0)]}`;copy.textContent=`Resume at ${Math.floor(resume.height||0)} m with the stored build, splits and guardian progress.`;this.v9Recommended={type:"resume"};}else if(!this.profile.v12.endings.first){title.textContent="Complete the definitive Ascension";copy.textContent="Climb five structured acts, discover the Spire Archive and open the crown.";this.v9Recommended={type:"ascension"};}else if(uncleared){title.textContent=`Mastery Trial · ${uncleared.name}`;copy.textContent=uncleared.copy;this.v9Recommended={type:"trial",trial:uncleared};}else{title.textContent="Pursue the True Crown";copy.textContent="Raise biome mastery, recover all five relics and complete Ascendant or Spiremaster.";this.v9Recommended={type:"ascension"};}};
+    Game.prototype.finishRun=function(success=false){const mode=this.mode,result=v12FinishRunBase.call(this,success);if(mode==="ascension"&&success&&!this.v7ExpeditionActive){const diff=this.v6Difficulty||this.profile.v6?.ascensionDifficulty||"climber";this.profile.v12.campaign[diff]=(this.profile.v12.campaign[diff]||0)+1;const allRelics=V3_BOSSES.every(b=>this.profile.progression.relics.includes(b.relic));let ending=diff==="spiremaster"?"spiremaster":diff==="ascendant"&&allRelics?"true-crown":"first-ascent";if(!this.profile.v12.endings[ending]){this.profile.v12.endings[ending]=true;v12UnlockStory(this,"crown");v3Toast(this,ending==="spiremaster"?"Spiremaster ending":"Crown ending unlocked",ending==="true-crown"?"The five relics answer the Living Crown.":"The Spire records a completed ascent.");}this.saveManager.saveProfile(true);}this.renderV12All();return result;};
 
+    const v12ChooseUpgradeBase=Game.prototype.chooseUpgrade;
+    Game.prototype.chooseUpgrade=function(def){const result=v12ChooseUpgradeBase.call(this,def);this.renderV12Build();return result;};
+    const v12ChooseArtBase=Game.prototype.chooseV9Art;
+    Game.prototype.chooseV9Art=function(art){const result=v12ChooseArtBase.call(this,art);this.renderV12Build();return result;};
+    const v12ChooseKeyBase=Game.prototype.chooseV6Keystone;
+    Game.prototype.chooseV6Keystone=function(def){const result=v12ChooseKeyBase.call(this,def);this.renderV12Build();return result;};
 
-    // ---------------------------------------------------------------------
-    // Skyspire v12.0.0 — final compatibility and persistence safeguards
-    // ---------------------------------------------------------------------
-    const v12SanitizeGhostBase = v52SanitizeGhost;
-    v52SanitizeGhost = function(data, mode) {
-      const ghost = v12SanitizeGhostBase(data, mode);
-      if (!ghost) return null;
-      ghost.ruleset = typeof data?.ruleset === "string" ? data.ruleset : "";
-      return ghost;
-    };
+    const v12AudioUpdateBase=AudioManager.prototype.updateV9;
+    AudioManager.prototype.updateV9=function(dt,game){const result=v12AudioUpdateBase?.call(this,dt,game);if(!this.context||!this.themeOscillator)return result;const flow=clamp((game.v6Flow||0)/100,0,1),momentum=clamp((game.v6MomentumChain||0)/10,0,1),boss=game.bossController?.active?1:0,target=(this.currentTheme?.ambient||110)*(1+flow*.18+momentum*.08+boss*.12);this.themeOscillator.frequency.setTargetAtTime(target,this.context.currentTime,.25);this.themeGain?.gain.setTargetAtTime(.015+flow*.012+boss*.01,this.context.currentTime,.3);return result;};
 
-    const v12GhostResetBase = V3GhostSystem.prototype.reset;
-    V3GhostSystem.prototype.reset = function() {
-      v12GhostResetBase.call(this);
-      if (this.playback?.ruleset !== V12_RULESET) {
-        this.playback = null;
-        this.mesh.visible = false;
-        this.game.v9GhostResolvedSource = null;
-      }
-    };
-
-    const v12GhostSaveBase = V3GhostSystem.prototype.save;
-    V3GhostSystem.prototype.save = function(score, height, success) {
-      const mode = this.game.mode;
-      const before = this.game.profile.ghosts?.[mode];
-      const result = v12GhostSaveBase.call(this, score, height, success);
-      const after = this.game.profile.ghosts?.[mode];
-      if (after && after !== before) after.ruleset = V12_RULESET;
-      return result;
-    };
-
-    Game.prototype.exportV9Ghost = async function() {
-      const mode = this.mode;
-      const data = v52SanitizeGhost(this.profile.ghosts?.[mode], mode);
-      if (!data || data.ruleset !== V12_RULESET) {
-        return this.v9Modal.showMessage("No compatible ghost available", `Complete a recordable ${MODE_CONFIG[mode]?.name || mode} run in Skyspire v12 before exporting.`);
-      }
-      const payload = btoa(unescape(encodeURIComponent(JSON.stringify({v:3,ruleset:V12_RULESET,mode,ghost:data}))));
-      await v9Copy(payload);
-      await this.v9Modal.open({title:"Ghost code copied",copy:`Share this ${MODE_CONFIG[mode]?.name || mode} v12 ghost. Seed and ruleset compatibility remain enforced.`,input:true,value:payload,cancel:"",confirm:"Close"});
-    };
-
-    Game.prototype.importV9Ghost = async function() {
-      const code = await this.v9Modal.open({title:"Import friend ghost",copy:"Paste a compatible Skyspire v12 ghost code.",input:true,confirm:"Import"});
-      if (!code) return;
-      try {
-        const data = JSON.parse(decodeURIComponent(escape(atob(code.trim()))));
-        if (data.v !== 3 || data.ruleset !== V12_RULESET || !MODE_CONFIG[data.mode]) throw new Error();
-        const ghost = v52SanitizeGhost({...data.ghost, ruleset:V12_RULESET}, data.mode);
-        if (!ghost) throw new Error();
-        ghost.ruleset = V12_RULESET;
-        this.profile.v9.friendGhosts[data.mode] = ghost;
-        this.profile.v9.ghostSource = "friend";
-        this.saveManager.saveProfile(true);
-        this.renderV91GhostTools();
-        v3Toast(this, "Friend ghost imported", `${MODE_CONFIG[data.mode].name} · ${ghost.frames.length} frames`);
-      } catch {
-        await this.v9Modal.showMessage("Incompatible ghost", "The code is invalid or was recorded under a different Skyspire ruleset.");
-      }
-    };
-
-    const v12ReadProfileSlotsBase = v1102ReadProfileSlots;
-    v1102ReadProfileSlots = function() {
-      const slots = v12ReadProfileSlotsBase();
-      let raw = [];
-      try { raw = JSON.parse(localStorage.getItem(V91_PROFILE_SLOTS_KEY) || "[]"); } catch {}
-      for (let index = 0; index < slots.length; index++) {
-        if (slots[index] && v12Plain(raw?.[index]?.profile?.v12)) {
-          slots[index].profile.v12 = v12SanitizeProfileSection(raw[index].profile.v12);
-        }
-      }
-      return slots;
-    };
-
-    Game.prototype.saveV9ProfileSlot = async function(index) {
-      const slots = v1102ReadProfileSlots(), existing = slots[index];
-      if (existing && !await this.v9Modal.open({title:`Replace profile slot ${index + 1}?`,copy:"The stored profile in this slot will be overwritten.",danger:true,confirm:"Replace"})) return;
-      const profile = v1102SanitizeProfile(v1102Clone(this.profile));
-      profile.v12 = v12SanitizeProfileSection(this.profile?.v12);
-      slots[index] = {time:Date.now(),name:`Profile ${index + 1}`,profile,settings:Object.assign(v1102Clone(this.settings) || {}, {keybinds:v1102SanitizeKeybinds(this.settings.keybinds)})};
-      while (slots.length < 3) slots.push(null);
-      v1102WriteProfileSlots(slots);
-      this.renderV91ProfileSlots();
-      v3Toast(this, "Profile stored", `Slot ${index + 1}`);
-    };
+    window.SkyspireV12={version:V12_VERSION,ruleset:V12_RULESET,sequences:V12_SEQUENCE_LIBRARY,trials:V12_TRIALS,events:V12_EVENTS,story:V12_STORY};
 
 
     Game.tempPosition = new THREE.Vector3();
