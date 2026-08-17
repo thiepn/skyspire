@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
 <meta content="#081523" name="theme-color"/>
-<title>Skyspire v12.10.1 — Clean Onboarding</title>
+<title>Skyspire v13.10.2 — Stability Audit</title>
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#081426">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -10518,7 +10518,7 @@ body[data-v11-state="playing"] .hud-item strong{font-size:.82rem!important;color
           if(game.mode==="ascension"&&resume&&!resume.hidden)document.getElementById("v6-resume-button")?.click();
           else document.getElementById("start-button")?.click();
         });
-        let wanted="ascension";try{const stored=localStorage.getItem("skyspireLastModeV123");if(directModes.includes(stored))wanted=stored;}catch{}
+        let wanted="endless";try{const stored=localStorage.getItem("skyspireLastModeV123");if(directModes.includes(stored))wanted=stored;}catch{}
         const card=document.querySelector(`#mode-grid [data-mode="${wanted}"]`);if(card)card.click();else game.mode=wanted;
       }
       v123SyncQuickPlay(game);
@@ -11458,8 +11458,28 @@ body[data-v11-state="playing"] .hud-item strong{font-size:.82rem!important;color
           if(!this.transitionReachable(previous,finalSpec)||!v125ClearOf(finalSpec,occupied)){
             const placed=v125Placement(this,previous,finalSpec,occupied,direction,Boolean(finalSpec.checkpoint));
             if(placed)finalSpec={...finalSpec,...placed};
-            else if(finalSpec.checkpoint)throw new Error("Skyspire checkpoint placement failed safely");
-            else{
+            else if(finalSpec.checkpoint){
+              /* Mandatory milestones may arrive immediately after a boss,
+                 landmark, or fork convergence. Older layers could leave only
+                 ~1.35 m of vertical clearance, then throw and permanently stop
+                 generation. Retry the exact milestone with progressively
+                 slimmer footprints and, only when necessary, a sub-half-metre
+                 upward clearance offset. This preserves reachability and never
+                 commits an overlapping mandatory platform. */
+              let rescued=null;
+              const targetY=Number(finalSpec.topY)||previous.topY+1.5;
+              for(const lift of [0,.12,.24,.36,.48]){
+                const y=Math.max(targetY+lift,previous.topY+1.46);
+                for(const width of [Math.min(Number(finalSpec.width)||4.1,3.7),3.4,3.1,2.9]){
+                  const probe={...finalSpec,topY:y,width,depth:Math.min(Number(finalSpec.depth)||2.7,2.5),type:"static",amplitude:0,boostLevel:0,motionAxis:"angle"};
+                  rescued=v125Placement(this,previous,probe,occupied,direction,true)||v125Placement(this,previous,probe,occupied,-direction,true);
+                  if(rescued)break;
+                }
+                if(rescued)break;
+              }
+              if(rescued)finalSpec={...finalSpec,...rescued,checkpoint:true,type:"static",amplitude:0,boostLevel:0};
+              else throw new Error("Skyspire checkpoint placement failed after validated rescue");
+            }else{
               const emergency=v125Placement(this,previous,{...finalSpec,type:"static",amplitude:0,boostLevel:0,topY:previous.topY+1.42,width:3.25,depth:2.4},occupied,direction,false);
               if(!emergency)throw new Error("Skyspire route continuity placement failed safely");
               finalSpec={...finalSpec,...emergency};
@@ -11928,7 +11948,7 @@ body[data-v11-state="playing"] .hud-item strong{font-size:.82rem!important;color
           v126ActivateDetail("play-pane");
         });
         home.querySelectorAll("[data-v126-pane]").forEach(button=>button.addEventListener("click",()=>v126ActivateDetail(button.dataset.v126Pane)));
-        let wanted="ascension";try{const saved=localStorage.getItem("skyspireLastModeV126")||localStorage.getItem("skyspireLastModeV123");if(v126ModeIds().includes(saved))wanted=saved;}catch{}
+        let wanted="endless";try{const saved=localStorage.getItem("skyspireLastModeV126")||localStorage.getItem("skyspireLastModeV123");if(v126ModeIds().includes(saved))wanted=saved;}catch{}
         v126SelectMode(game,wanted);
       }
       v126MarkLegacy(panel);v126SyncHome(game);v126ActivateHome();
@@ -14383,6 +14403,3094 @@ window.addEventListener("DOMContentLoaded", () => {
   labelled();removeDeadUI();
   window.addEventListener("DOMContentLoaded",setup,{once:true});
   if(document.readyState!=="loading")setTimeout(setup,0);
+})();
+</script>
+
+<style id="v13-paths-style">
+/* Skyspire v13.0 — Paths of Ascension */
+:root{
+  --v13-safe:#8fd9df;
+  --v13-velocity:#e5bf69;
+  --v13-treasure:#78d6c6;
+  --v13-precision:#d8edf1;
+  --v13-chaos:#b89bdc;
+}
+/* Route choice lives in the world. No new gameplay cards or meters. */
+body[data-v11-state="playing"] #v13-route-banner,
+body[data-v11-state="dying"] #v13-route-banner{display:none!important}
+#checkpoint-overlay.v13-breakthrough .panel{width:min(590px,100%)!important}
+#checkpoint-overlay.v13-breakthrough #checkpoint-title{font-size:clamp(1.8rem,7vw,2.7rem)!important}
+#checkpoint-overlay.v13-breakthrough .subtitle{max-width:520px;margin-inline:auto}
+#upgrade-grid.v13-upgrade-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+#upgrade-grid.v13-upgrade-grid button{
+  min-height:126px!important;padding:14px!important;text-align:left!important;border-radius:15px!important;
+  background:rgba(255,255,255,.035)!important;border:1px solid rgba(213,229,225,.13)!important;
+  color:#eef5f1!important;box-shadow:none!important;
+}
+#upgrade-grid.v13-upgrade-grid button:hover{border-color:rgba(225,193,113,.42)!important;background:rgba(225,193,113,.055)!important}
+#upgrade-grid.v13-upgrade-grid .v13-archetype{display:block;margin-bottom:6px;color:#d8bd79;font-size:.58rem;font-weight:900;letter-spacing:.13em;text-transform:uppercase}
+#upgrade-grid.v13-upgrade-grid strong{display:block;margin-bottom:6px;font-size:.8rem}
+#upgrade-grid.v13-upgrade-grid small{display:block;color:#9dafb0;font-size:.67rem;line-height:1.42}
+#upgrade-grid.v13-upgrade-grid em{display:block;margin-top:9px;color:#d9e5e1;font-size:.59rem;font-style:normal}
+/* Results answer what happened, then get out of the way. */
+#gameover-overlay.v13-results #score-breakdown,
+#gameover-overlay.v13-results #run-timeline,
+#gameover-overlay.v13-results #breakdown,
+#gameover-overlay.v13-results #result-missions,
+#gameover-overlay.v13-results h3{display:none!important}
+#gameover-overlay.v13-results .grade{margin-top:8px}
+#v13-run-summary{margin:13px auto 17px;max-width:620px;padding:12px 14px;border:1px solid rgba(213,229,225,.1);border-radius:13px;background:rgba(255,255,255,.025);color:#9dafb0;font-size:.72rem;line-height:1.55;text-align:center}
+#v13-run-summary strong{color:#edf5f1}
+@media(max-width:700px){#upgrade-grid.v13-upgrade-grid{grid-template-columns:1fr}#upgrade-grid.v13-upgrade-grid button{min-height:94px!important}}
+</style>
+<script id="v13-paths-of-ascension">
+(() => {
+  "use strict";
+  const VERSION="13.0.0";
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const wrap=a=>Math.atan2(Math.sin(a),Math.cos(a));
+  const delta=(a,b)=>wrap(b-a);
+  const ROUTES={
+    safe:{name:"Safe",routeType:"safe",color:0x8fd9df},
+    velocity:{name:"Velocity",routeType:"fast",color:0xe5bf69},
+    treasure:{name:"Treasure",routeType:"treasure",color:0x78d6c6},
+    precision:{name:"Precision",routeType:"skill",color:0xd8edf1},
+    chaos:{name:"Chaos",routeType:"secret",color:0xb89bdc}
+  };
+  const UPGRADES=[
+    {id:"vectorControl",arch:"Aerialist",name:"Vector Control",max:3,desc:["Steering responds faster after every landing.","Stronger steering response and cleaner reversals.","Maximum steering response during difficult sequences."]},
+    {id:"deepCut",arch:"Aerialist",name:"Deep Cut",max:3,desc:["Clean direction reversals preserve extra momentum.","Reversals preserve more launch momentum.","Perfect reversals create a small launch pulse."]},
+    {id:"perfectFlight",arch:"Aerialist",name:"Perfect Flight",max:3,desc:["Perfect-zone tolerance increases slightly.","Perfect-zone tolerance increases further.","Perfects also stabilize lateral momentum."]},
+    {id:"launchAmplifier",arch:"Vanguard",name:"Launch Amplifier",max:3,desc:["Boost pads launch slightly higher.","Boost pads gain another launch step.","Level-3 pads reach their maximum safe launch."]},
+    {id:"chainReactor",arch:"Vanguard",name:"Chain Reactor",max:3,desc:["Consecutive boost pads build launch energy.","Boost chains build energy faster.","Three-pad chains gain a finisher pulse."]},
+    {id:"terminalVelocity",arch:"Vanguard",name:"Terminal Velocity",max:3,desc:["Velocity-route finishers launch higher.","Velocity clears gain more Flow and speed.","Clean Velocity clears become major launch events."]},
+    {id:"treasureSense",arch:"Pathfinder",name:"Treasure Sense",max:3,desc:["Treasure-route clears grant an extra crystal.","Treasure routes grant more crystals and score.","Treasure clears can grant two bonus crystals."]},
+    {id:"calculatedRisk",arch:"Pathfinder",name:"Calculated Risk",max:3,desc:["Precision and Chaos clears score more.","Hard-route Flow rewards increase.","Clean hard routes receive a major payoff."]},
+    {id:"adaptation",arch:"Pathfinder",name:"Adaptation",max:3,desc:["Changing route type grants a small momentum bonus.","Route changes grant more Flow.","Alternating routes also improves steering briefly."]},
+    {id:"secondWind",arch:"Guardian",name:"Second Wind",max:3,desc:["Gain an automatic recovery charge.","Breakthroughs refresh Second Wind.","Route clears can occasionally refresh it."]},
+    {id:"stableFooting",arch:"Guardian",name:"Stable Footing",max:3,desc:["Edge catches shed less lateral momentum.","Edge catches stabilize quickly.","Clutch landings preserve most of your rhythm."]},
+    {id:"sanctuary",arch:"Guardian",name:"Sanctuary",max:3,desc:["Safe routes build shield fragments.","Safe routes build fragments faster.","Two strong Safe clears can restore a shield."]}
+  ];
+  const BOSSES=[
+    {at:250,name:"The Lift",types:["elevator","bounce","moving","bounce"]},
+    {at:500,name:"Storm Gate",types:["moving","conveyor","rotating","moving"]},
+    {at:750,name:"Fracture Crossing",types:["slippery","collapse","moving","slippery"]},
+    {at:1000,name:"Crown Trial",types:["bounce","rotating","conveyor","collapse","moving"]}
+  ];
+  function metaLoad(){try{return JSON.parse(localStorage.getItem("skyspireV13Meta")||"{}")||{};}catch{return {};}}
+  function metaSave(meta){try{localStorage.setItem("skyspireV13Meta",JSON.stringify(meta));}catch{}}
+  function routePool(height){
+    if(height<100)return ["safe","velocity","precision"];
+    if(height<300)return ["safe","velocity","precision","treasure"];
+    return ["safe","velocity","precision","treasure","chaos"];
+  }
+  function chooseTwo(game,rng,height,last,build={}){
+    const pool=routePool(height);
+    const linkNext={safe:"velocity",velocity:"precision",precision:"treasure",treasure:"chaos",chaos:"safe"};
+    const affinity=(build.launchAmplifier||build.chainReactor||build.terminalVelocity)?"velocity":(build.treasureSense?"treasure":((build.calculatedRisk||build.perfectFlight)?"precision":((build.secondWind||build.sanctuary)?"safe":"")));
+    const pairKey=p=>p.slice().sort().join(">");
+    const presets=[
+      ["safe","velocity"],["safe","precision"],["velocity","precision"],
+      ["safe","treasure"],["velocity","treasure"],["precision","treasure"],
+      ["safe","chaos"],["velocity","chaos"],["precision","chaos"],["treasure","chaos"]
+    ].filter(p=>p.every(r=>pool.includes(r)));
+    if(!presets.length){const a=rng.pick(pool,pool[0]),b=rng.pick(pool.filter(r=>r!==a),pool[1]||pool[0]);return [a,b];}
+    const mastery=game?.v131?.mastery||{};
+    const next=last&&linkNext[last]&&pool.includes(linkNext[last])?linkNext[last]:"";
+    const previousOffer=game?.v133?.lastOfferKey||"";
+    const weighted=[];
+    for(const pair of presets){
+      let weight=1;
+      const key=pairKey(pair);
+      if(affinity&&pair.includes(affinity))weight+=1.4;
+      if(last&&pair.includes(last))weight+=1.05; // double down on mastery
+      if(next&&pair.includes(next))weight+=1.8; // or pivot into a route link
+      if(last&&next&&pair.includes(last)&&pair.includes(next))weight+=2.4;
+      if(pair.includes("safe")&&pair.includes("chaos"))weight+=height>320?1.25:.15;
+      if(pair.includes("velocity")&&pair.includes("precision"))weight+=1.05;
+      if(pair.includes("treasure")&&pair.includes("chaos"))weight+=height>420?.8:0;
+      if(last&&mastery[last]>=2&&pair.includes(last))weight+=.65;
+      if(previousOffer&&key===previousOffer)weight*=.24;
+      weighted.push([pair,Math.max(.05,weight)]);
+    }
+    let total=weighted.reduce((n,x)=>n+x[1],0),roll=rng.next()*total,chosen=weighted[0][0];
+    for(const [pair,w] of weighted){roll-=w;if(roll<=0){chosen=pair;break;}}
+    const ordered=rng.chance(.5)?chosen:[chosen[1],chosen[0]];
+    return ordered.slice();
+  }
+  function routeWidth(route,height){
+    const tail=clamp(height/1200,0,1);
+    if(route==="safe")return 3.35-.45*tail;
+    if(route==="velocity")return 2.75-.35*tail;
+    if(route==="treasure")return 2.8-.4*tail;
+    if(route==="precision")return 2.42-.35*tail;
+    return 2.55-.45*tail;
+  }
+  function routeTypeFor(route,index,height,rng,modifier){
+    if(route==="safe")return index%4===2&&height>180?"moving":"static";
+    if(route==="velocity")return index%3===1?"conveyor":index%3===2?"bounce":"static";
+    if(route==="treasure")return index%3===1&&height>180?"moving":"static";
+    if(route==="precision")return index%3===1?"slippery":height>320&&index%4===2?"moving":"static";
+    const types=height>600?["moving","rotating","conveyor","collapse","bounce"]:["moving","rotating","conveyor","static"];
+    let type=types[index%types.length];
+    if(modifier==="fragile"&&index%2===1)type="collapse";
+    if(modifier==="charged"&&index===2)type="bounce";
+    return type;
+  }
+  function modifierFor(game,route,height,exclude=""){
+    if(height<600||route==="safe")return "";
+    const meta=game.v13?.meta||{};
+    const unlocked=new Set(meta.modifiers||[]);
+    const compatibility={
+      velocity:["accelerated","windborne","charged"],
+      treasure:["bountiful","fragile","windborne","charged"],
+      precision:["razor","windborne","fragile","charged"],
+      chaos:["accelerated","windborne","fragile","charged","razor"]
+    };
+    const candidates=(compatibility[route]||[]).filter(id=>unlocked.has(id)&&id!==exclude);
+    if(!candidates.length)return "";
+    const chance=height>1500?.62:height>1000?.48:.28;
+    return game.rng.chance(chance+(route==="chaos"?.08:0))?game.rng.pick(candidates,""):"";
+  }
+  function bossForHeight(height){
+    if(height<250||height%250!==0)return null;
+    const direct=BOSSES.find(x=>x.at===height);if(direct)return direct;
+    const cycle=BOSSES[(Math.floor(height/250)-1)%BOSSES.length];
+    return {...cycle,at:height,name:`${cycle.name} · Tier ${Math.floor(height/1000)+1}`};
+  }
+  function setup(){
+    const game=window.skyspireGame;
+    if(!game){setTimeout(setup,20);return;}
+    if(game.v13Installed)return;
+    game.v13Installed=true;
+    const GameProto=game.constructor.prototype;
+    const GenProto=game.generator.constructor.prototype;
+    const PlayerProto=game.player.constructor.prototype;
+    const legacySpawn=GenProto.spawnChunk;
+    const legacyReset=GameProto.resetRun;
+    const legacyLand=GameProto.landPlayer;
+    const legacyLandingQuality=GameProto.landingQuality;
+    const legacyPlayerUpdate=PlayerProto.update;
+    const legacySetState=GameProto.setState;
+    const legacyGameOver=GameProto.gameOver;
+
+    function initState(g){
+      g.v13={
+        build:Object.fromEntries(UPGRADES.map(u=>[u.id,0])),meta:metaLoad(),
+        currentRoute:"",lastRoute:"",routeHistory:[],routeQualities:[],segmentCounter:0,
+        cleanRoute:true,boostChain:0,sanctuaryFragments:0,lastSteerSign:0,bestRoute:"",performance:0,
+        routeCounts:{safe:0,velocity:0,treasure:0,precision:0,chaos:0},lastDeathRoute:""
+      };
+      const gen=g.generator;
+      if(gen){gen.v13Segments=new Map();gen.v13NextForkY=28;gen.v13LastForkRoute="";}
+    }
+    initState(game);
+
+    /* Superseded one-platform side branches are disabled. v13 forks own route choice. */
+    GenProto.addRouteBranch=function(){return null;};
+    GenProto.addRiskyBranch=function(){return null;};
+
+    function makePlatformSpec(entry,route,branchSign,index,count,height,modifier){
+      const progress=(index+1)/count;
+      const peak=Math.sin(progress*Math.PI);
+      const returnBias=index===count-1?.47:.24;
+      const relative=branchSign*(returnBias+peak*(.42+(height>500?.08:0)));
+      const adaptive=clamp(game.v13?.performance||0,-.1,.1);
+      const rise=(1.55+Math.min(.22,height/5000)+(route==="velocity"&&index===2?.16:0))*(1+adaptive*.08);
+      let type=routeTypeFor(route,index,height,game.rng,modifier);
+      if(modifier==="windborne"&&index%2===1)type="conveyor";
+      if(modifier==="fragile"&&index%2===1&&route!=="safe")type="collapse";
+      if(modifier==="charged"&&index===Math.floor(count/2))type="bounce";
+      if(modifier==="bountiful"&&route==="treasure"&&index%2===1)type=height>900?"moving":"static";
+      if(modifier==="razor"&&index%2===1)type=route==="chaos"?"rotating":"slippery";
+      const boostLevel=type==="bounce"?clamp(1+Math.floor(height/350)+(modifier==="charged"?1:0),1,3):0;
+      const speed=(.72+Math.min(.55,height/1400))*(modifier==="accelerated"?1.24:1);
+      const amplitude=type==="elevator"?.46:type==="moving"?.22:type==="rotating"?.28:0;
+      let width=(routeWidth(route,height)+(index===0?.18:0))*(1-adaptive*.08);
+      if(modifier==="bountiful")width*=.94;
+      if(modifier==="razor")width*=.86;
+      return {
+        angle:entry.angle+relative*(1+adaptive*.06),
+        radius:entry.radius,
+        topY:entry.topY+rise*(index+1),
+        width,depth:route==="precision"?2.02:2.22,
+        type,boostLevel,speed,amplitude,motionAxis:"angle",
+        primaryRoute:false,riskyRoute:route!=="safe",routeType:ROUTES[route].routeType,
+        shapeFamily:route==="velocity"?"beam":route==="precision"?"circle":"slab"
+      };
+    }
+
+    GenProto.spawnV13Fork=function(){
+      const entry=this.lastPrimaryPlatform;if(!entry)return legacySpawn.call(this);
+      const height=entry.topY;
+      const decisionLast=this.game.v132?.lastCleared||this.game.v13?.lastRoute||this.v13LastForkRoute||"";
+      const [routeA,routeB]=chooseTwo(this.game,this.game.rng,height,decisionLast,this.game.v13?.build||{});
+      const modifierA=modifierFor(this.game,routeA,height),modifierB=modifierFor(this.game,routeB,height,modifierA);
+      const count=height<180?4:height<600?5:6;
+      const chunk=this.createChunk("v13RouteFork");
+      const id=++this.game.v13.segmentCounter;
+      const segment={id,chunk,entry,routeA,routeB,modifierA,modifierB,a:[],b:[],convergence:null,committed:"",rewarded:false};
+      const branchBuild=(route,sign,modifier,key)=>{
+        let previous={angle:entry.angle,radius:entry.radius,topY:entry.topY,width:entry.width,depth:entry.depth,type:entry.type,amplitude:entry.amplitude||0,motionAxis:entry.motionAxis||"angle"};
+        for(let i=0;i<count;i++){
+          let spec=makePlatformSpec(entry,route,sign,i,count,height,modifier);
+          /* Keep each branch independently reachable from its own previous beat. */
+          let tries=0;
+          while(!this.transitionReachable(previous,spec)&&tries<6){
+            spec={...spec,angle:previous.angle+sign*Math.max(.22,Math.abs(delta(previous.angle,spec.angle))*.82),topY:previous.topY+Math.max(1.48,(spec.topY-previous.topY)*.88),width:Math.max(spec.width,2.55),amplitude:(spec.amplitude||0)*.7};
+            tries++;
+          }
+          if(!this.transitionReachable(previous,spec)){
+            spec={...spec,angle:previous.angle+sign*.22,topY:previous.topY+1.46,width:Math.max(spec.width,3.0),depth:Math.max(spec.depth,2.28),type:"static",boostLevel:0,amplitude:0,speed:.72};
+          }
+          const p=this.addPlatform(chunk,spec);
+          p.v13SegmentId=id;p.v13Branch=key;p.v13Route=route;p.v13Modifier=modifier;p.v13Beat=i;p.v13BeatCount=count;
+          segment[key].push(p);
+          if(route==="treasure")this.addCrystal(chunk,p,true,i%2?"right":"left");
+          else if(route==="precision"&&i===count-2&&this.game.rng.chance(.5))this.addCrystal(chunk,p,true,"center");
+          previous={angle:p.angle,radius:p.radius,topY:p.topY,width:p.width,depth:p.depth,type:p.type,amplitude:p.amplitude||0,motionAxis:p.motionAxis||"angle"};
+        }
+      };
+      branchBuild(routeA,1,modifierA,"a");branchBuild(routeB,-1,modifierB,"b");
+      const mergeBranch=(key,sign)=>{
+        let end=segment[key].at(-1),guard=0,target=entry.angle+sign*.24;
+        while(end&&Math.abs(delta(end.angle,target))>.34&&guard<3){
+          const step=clamp(delta(end.angle,target),-.27,.27);
+          const p=this.addPlatform(chunk,{angle:end.angle+step,radius:entry.radius,topY:end.topY+1.42,width:3.05,depth:2.3,type:"static",primaryRoute:false,riskyRoute:true,routeType:end.routeType||ROUTES[key==="a"?routeA:routeB].routeType});
+          p.v13SegmentId=id;p.v13Branch=key;p.v13Route=key==="a"?routeA:routeB;p.v13Modifier=key==="a"?modifierA:modifierB;p.v13Beat=segment[key].length;p.v13BeatCount=count+2;segment[key].push(p);end=p;guard++;
+        }
+      };
+      mergeBranch("a",1);mergeBranch("b",-1);
+      let endA=segment.a.at(-1),endB=segment.b.at(-1);
+      /* Keep both branch exits within one ordinary jump of the same merge height. */
+      const syncBranch=(key)=>{let end=segment[key].at(-1),other=key==="a"?segment.b.at(-1):segment.a.at(-1),guard=0;while(other.topY-end.topY>.45&&guard<3){const p=this.addPlatform(chunk,{angle:end.angle,radius:end.radius,topY:end.topY+Math.min(1.42,other.topY-end.topY),width:3.05,depth:2.3,type:"static",primaryRoute:false,riskyRoute:true,routeType:end.routeType});p.v13SegmentId=id;p.v13Branch=key;p.v13Route=key==="a"?routeA:routeB;p.v13Beat=segment[key].length;segment[key].push(p);end=p;guard++;}};
+      if(endA.topY<endB.topY)syncBranch("a");else if(endB.topY<endA.topY)syncBranch("b");
+      endA=segment.a.at(-1);endB=segment.b.at(-1);
+      const finalY=Math.max(endA.topY,endB.topY)+1.44;
+      const convergenceSpec={angle:entry.angle,radius:entry.radius,topY:finalY,width:Math.max(2.85,3.25-height/3500),depth:2.35,type:"static",primaryRoute:false,routeType:"safe"};
+      /* The symmetric branches finish near the entrance meridian. If moving
+         envelopes make the merge marginal, calm the final beat and shorten the
+         rise rather than creating an extra rescue platform. */
+      if(!this.transitionReachable(endA,convergenceSpec)||!this.transitionReachable(endB,convergenceSpec)){
+        endA.amplitude=0;endB.amplitude=0;convergenceSpec.width=3.85;convergenceSpec.topY=Math.max(endA.topY,endB.topY)+1.44;
+      }
+      const convergence=this.addPlatform(chunk,convergenceSpec);
+      convergence.primaryRoute=true;convergence.v13Convergence=true;convergence.v13SegmentId=id;convergence.v13Route="convergence";
+      segment.convergence=convergence;
+      this.primaryPlatformCount+=1;this.lastAngle=convergence.angle;this.lastRadius=convergence.radius;this.highest=Math.max(this.highest,convergence.topY);this.lastPrimaryPlatform=convergence;chunk.exitY=this.highest;
+      this.chunks.push(chunk);this.v13Segments.set(id,segment);this.v13LastForkRoute=routeA;
+      this.v13NextForkY=this.highest+this.game.rng.range(25,36);
+      return chunk;
+    };
+
+    GenProto.spawnV13Boss=function(target,boss){
+      const chunk=this.createChunk(`v13Boss-${boss.name.replace(/\W+/g,"-").toLowerCase()}`);
+      let previous=this.lastPrimaryPlatform;if(!previous)return legacySpawn.call(this);
+      const remaining=Math.max(2,target-previous.topY),steps=clamp(Math.ceil(remaining/1.68),5,12);
+      const rise=remaining/steps;const baseSign=(Math.floor(target/250)%2)?1:-1;
+      for(let i=1;i<steps;i++){
+        const type=boss.types[(i-1)%boss.types.length];const sign=i%2?baseSign:-baseSign;
+        const spec={
+          angle:previous.angle+sign*(.31+Math.min(.14,target/6000)),radius:previous.radius,topY:Math.min(target-1.35,previous.topY+rise),
+          width:Math.max(2.32,2.9-target/4500),depth:2.18,type,boostLevel:type==="bounce"?clamp(1+Math.floor(target/500),1,3):0,
+          speed:.82+Math.min(.48,target/1800),amplitude:type==="elevator"?.46:type==="moving"?.24:type==="rotating"?.3:0,motionAxis:"angle",primaryRoute:true,routeType:"secret"
+        };
+        const p=this.addPlatform(chunk,spec);p.v13Boss=boss.name;p.v13BossBeat=i;
+        previous=p;
+      }
+      const finish=this.addPlatform(chunk,{angle:previous.angle+baseSign*.34,radius:previous.radius,topY:target,width:4.05,depth:2.7,type:"static",checkpoint:true,primaryRoute:true,routeType:"secret"});
+      finish.v13BossFinish=boss.name;finish.v13BossHeight=target;
+      this.addCrystal(chunk,finish,false,"left");this.nextCheckpoint=target+50;this.chunks.push(chunk);
+      return chunk;
+    };
+
+    GenProto.spawnChunk=function(){
+      const mode=this.game.mode;
+      const specialMode=mode==="practice"||Boolean(this.game.v9TrialActive);
+      if(specialMode)return legacySpawn.call(this);
+      const checkpoint=this.nextCheckpoint;
+      const boss=bossForHeight(checkpoint);
+      if(boss&&this.highest+18>=checkpoint)return this.spawnV13Boss(checkpoint,boss);
+      if(this.highest+18>=checkpoint)return legacySpawn.call(this);
+      if(this.highest>=(this.v13NextForkY||28)&&checkpoint-this.highest>20)return this.spawnV13Fork();
+      return legacySpawn.call(this);
+    };
+
+    function commitRoute(g,platform){
+      const id=platform.v13SegmentId,gen=g.generator,segment=gen?.v13Segments?.get(id);if(!segment||segment.committed)return;
+      segment.committed=platform.v13Branch;const chosen=platform.v13Branch,other=chosen==="a"?"b":"a";
+      const removed=new Set(segment[other]);
+      for(const p of removed){p.active=false;p.group.visible=false;if(p.hazard?.group)p.hazard.group.visible=false;try{p.destroy?.();}catch{}}
+      if(segment.chunk){
+        segment.chunk.platforms=segment.chunk.platforms.filter(p=>!removed.has(p));
+        segment.chunk.crystals=segment.chunk.crystals.filter(c=>{if(removed.has(c.platform)){try{c.destroy?.();}catch{}return false;}return true;});
+        segment.chunk.powerUps=segment.chunk.powerUps.filter(x=>{if(removed.has(x.platform)){try{x.destroy?.();}catch{}return false;}return true;});
+      }
+      segment[other]=[];
+      const route=segment[chosen=== "a"?"routeA":"routeB"];
+      g.v13.currentRoute=route;g.v13.cleanRoute=true;g.v13.routeQualities=[];
+      g.v13.routeCounts[route]=(g.v13.routeCounts[route]||0)+1;
+    }
+    function rewardRoute(g,segment){
+      if(!segment||segment.rewarded||!segment.committed)return;segment.rewarded=true;
+      const route=segment[segment.committed==="a"?"routeA":"routeB"],modifier=segment[segment.committed==="a"?"modifierA":"modifierB"];
+      const build=g.v13.build,avg=g.v13.routeQualities.length?g.v13.routeQualities.reduce((a,b)=>a+b,0)/g.v13.routeQualities.length:.5;
+      const clean=g.v13.cleanRoute&&avg>=.42;let score=clean?36:18,flow=clean?5:2;
+      if(route==="safe"){
+        flow+=2;const need=Math.max(2,4-(build.sanctuary||0));if(build.sanctuary){g.v13.sanctuaryFragments++;if(g.v13.sanctuaryFragments>=need){g.v13.sanctuaryFragments=0;g.power.shield=Math.min(3,(g.power.shield||0)+1);}}
+      }else if(route==="velocity"){
+        const level=build.terminalVelocity||0;g.player.verticalVelocity=Math.max(g.player.verticalVelocity,11.15+level*.28+(clean?.18:0));flow+=3+level;
+      }else if(route==="treasure"){
+        const bonus=(build.treasureSense||0)>=3?2:(build.treasureSense||0)>=1?1:0;g.runCrystals+=bonus;g.crystalScore+=bonus*18;score+=20+bonus*10;
+      }else if(route==="precision"){
+        const risk=build.calculatedRisk||0;score+=Math.floor(34*avg)+risk*16;flow+=risk*2;
+      }else if(route==="chaos"){
+        const risk=build.calculatedRisk||0;score+=42+risk*18;flow+=4+risk*2;
+      }
+      if(modifier){score+=18;flow+=2;}
+      if((build.adaptation||0)&&g.v13.lastRoute&&g.v13.lastRoute!==route){score+=12*(build.adaptation||0);flow+=2*(build.adaptation||0);g.player.angularVelocity*=1.04+.02*(build.adaptation||0);}
+      if((build.secondWind||0)>=3&&clean&&g.rng.chance(.18))g.power.doubleJump=1;
+      g.landingScore+=score;g.addFlow?.(flow,`${ROUTES[route].name} clear`);
+      const routeTone={safe:520,velocity:760,treasure:900,precision:660,chaos:430}[route]||600;g.audio?.tone?.(routeTone,.11,{volume:.035,endFrequency:routeTone*1.18});
+      g.v13.lastRoute=route;g.v13.routeHistory.push(route);g.v13.currentRoute="";g.v13.routeQualities=[];
+      if(clean)g.particles?.emit?.(g.player.centerPosition,route==="velocity"?"bounce":route==="chaos"?"void":"crystal",10,{spread:.7,up:1});
+    }
+
+    GameProto.landingQuality=function(player,platform){
+      const base=legacyLandingQuality.call(this,player,platform);const level=this.v13?.build?.perfectFlight||0;
+      return clamp(base+level*.022,0,1);
+    };
+
+    GameProto.landPlayer=function(player,platform){
+      const beforeHeight=this.lastLandingHeight||0,preSign=Math.sign(player.angularVelocity||0);
+      const result=legacyLand.call(this,player,platform);
+      if(!this.v13)return result;
+      if(platform.v13SegmentId&&platform.v13Branch){
+        commitRoute(this,platform);const q=this.landingQuality(player,platform);this.v13.routeQualities.push(q);if(q<.32)this.v13.cleanRoute=false;
+      }
+      if(platform.v13Convergence){const segment=this.generator?.v13Segments?.get(platform.v13SegmentId);rewardRoute(this,segment);}
+      if(platform.v13BossFinish){
+        const meta=this.v13.meta;meta.bosses=meta.bosses||{};meta.bosses[platform.v13BossHeight]=true;
+        meta.modifiers=Array.isArray(meta.modifiers)?meta.modifiers:[];
+        const unlock={250:"accelerated",500:"windborne",750:"fragile",1000:"charged",1250:"bountiful",1500:"razor"}[platform.v13BossHeight];if(unlock&&!meta.modifiers.includes(unlock))meta.modifiers.push(unlock);
+        metaSave(meta);this.landingScore+=120+Math.floor(platform.v13BossHeight*.08);this.addFlow?.(14,"Traversal trial");
+      }
+      const build=this.v13.build,quality=this.landingQuality(player,platform);
+      /* Mild ±10% performance adaptation; height remains the dominant curve. */
+      const performanceTarget=quality>.78?.10:quality<.28?-.10:0;this.v13.performance=this.v13.performance*.88+performanceTarget*.12;
+      if((build.launchAmplifier||0)&&platform.type==="bounce")player.verticalVelocity=Math.min(14.2,player.verticalVelocity+(build.launchAmplifier||0)*.16);
+      if(platform.type==="bounce")this.v13.boostChain++;else this.v13.boostChain=0;
+      if((build.chainReactor||0)&&this.v13.boostChain>1)player.verticalVelocity=Math.min(14.2,player.verticalVelocity+Math.min(.5,(this.v13.boostChain-1)*.08*(build.chainReactor||0)));
+      const sign=Math.sign(this.game?.input?.angularAxis||player.angularVelocity||0);
+      if((build.deepCut||0)&&this.v13.lastSteerSign&&sign&&sign!==this.v13.lastSteerSign&&quality>.48)player.verticalVelocity=Math.min(14.2,player.verticalVelocity+.07*(build.deepCut||0)+(quality>.82?.07:0));
+      if(sign)this.v13.lastSteerSign=sign;
+      if((build.stableFooting||0)&&quality<.28){player.angularVelocity*=1-.12*(build.stableFooting||0);}
+      return result;
+    };
+
+    PlayerProto.update=function(dt){
+      const result=legacyPlayerUpdate.call(this,dt);const level=this.game?.v13?.build?.vectorControl||0;
+      if(level&&this.game.state==="playing"){
+        const axis=this.game.input?.angularAxis||0;if(axis)this.angularVelocity=clamp(this.angularVelocity+axis*level*.0065*dt*60,-1.55,1.55);
+      }
+      return result;
+    };
+
+    function renderBreakthrough(g,height){
+      g.setState("checkpoint");const overlay=document.getElementById("checkpoint-overlay"),title=document.getElementById("checkpoint-title"),grid=document.getElementById("upgrade-grid"),subtitle=overlay?.querySelector(".subtitle");
+      overlay?.classList.add("v13-breakthrough");if(title)title.textContent=`Breakthrough · ${height} m`;if(subtitle)subtitle.textContent="Choose one direction for this run. Upgrades have three meaningful levels.";
+      if(!grid)return;grid.className="grid v13-upgrade-grid";grid.innerHTML="";
+      const valid=UPGRADES.filter(u=>(g.v13.build[u.id]||0)<u.max);const choices=g.upgradeRng?.shuffle?g.upgradeRng.shuffle(valid).slice(0,3):valid.slice(0,3);
+      if(!choices.length){const b=document.createElement("button");b.textContent="Continue · +100 score";b.onclick=()=>{g.landingScore+=100;g.setState("playing");};grid.appendChild(b);return;}
+      for(const u of choices){
+        const level=g.v13.build[u.id]||0,b=document.createElement("button");b.type="button";b.innerHTML=`<span class="v13-archetype">${u.arch}</span><strong>${u.name}</strong><small>${u.desc[level]}</small><em>Level ${level+1} / ${u.max}</em>`;
+        b.onclick=()=>{if(g.state!=="checkpoint")return;g.v13.build[u.id]=Math.min(u.max,level+1);if(u.id==="secondWind")g.power.doubleJump=1;if((g.v13.build.secondWind||0)>=2)g.power.doubleJump=1;g.audio.play("upgrade");g.setState("playing");};grid.appendChild(b);
+      }
+    }
+
+    GameProto.openCheckpoint=function(platform){
+      const height=Math.round(platform?.topY||this.player.maxHeight||0);
+      this.stats.cleanCheckpointReached ||= this.stats.recoveries===0&&this.stats.shieldHits===0;
+      const terminal=(this.mode==="time"&&height>=200)||(this.mode==="ascension"&&height>=250)||(this.mode==="custom"&&(this.customRules?.victoryHeight||0)>0&&height>=this.customRules.victoryHeight);
+      if(terminal){this.landingScore+=40;this.addFlow?.(5,"Final approach");return undefined;}
+      if(height%100===0)return renderBreakthrough(this,height);
+      /* 50 m checkpoints are pacing beats, not forced menus. */
+      this.landingScore+=20;this.addFlow?.(3,"Checkpoint");
+      if((this.v13?.build?.secondWind||0)>=2)this.power.doubleJump=1;
+      return undefined;
+    };
+
+    GameProto.resetRun=function(...args){
+      /* Initialize v13 before legacy reset pre-generates the tower, otherwise
+         early forks exist visually but lose their segment registry. */
+      initState(this);
+      if(this.generator){this.generator.v13Segments=new Map();this.generator.v13NextForkY=28;}
+      return legacyReset.apply(this,args);
+    };
+
+    GameProto.setState=function(next,...rest){
+      const result=legacySetState.call(this,next,...rest);
+      if(next!=="checkpoint")document.getElementById("checkpoint-overlay")?.classList.remove("v13-breakthrough");
+      if(next==="gameover")setTimeout(()=>renderResults(this),0);
+      return result;
+    };
+
+    function renderResults(g){
+      const overlay=document.getElementById("gameover-overlay");if(!overlay)return;overlay.classList.add("v13-results");
+      let summary=document.getElementById("v13-run-summary");if(!summary){summary=document.createElement("div");summary.id="v13-run-summary";document.getElementById("gameover-cause")?.after(summary);}
+      const hist=g.v13?.routeHistory||[],counts=g.v13?.routeCounts||{};let best="None",bestCount=0;for(const [key,count] of Object.entries(counts))if(count>bestCount){bestCount=count;best=ROUTES[key]?.name||key;}
+      const build=g.v13?.build||{},top=Object.entries(build).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,2).map(([id,v])=>`${UPGRADES.find(u=>u.id===id)?.name||id} ${v}`).join(" · ")||"Unshaped";
+      summary.innerHTML=`<strong>${Math.floor(g.player?.maxHeight||0)} m</strong> · Best route: <strong>${best}</strong> · Build: <strong>${top}</strong>`;
+      const restart=document.getElementById("restart-button");if(restart)restart.textContent="Climb again";
+    }
+
+    /* Keep the tiny existing line useful: height + committed route, no new HUD. */
+    function hudLoop(){
+      try{
+        const g=window.skyspireGame,el=document.getElementById("v1210-height");if(g&&el&&(g.state==="playing"||g.state==="dying")){
+          const h=Math.floor(Math.max(0,g.player?.maxHeight||0)),route=g.v13?.currentRoute;el.textContent=route?`${h} m · ${ROUTES[route].name.toUpperCase()}`:`${h} m · ASCENT`;
+        }
+      }catch{}requestAnimationFrame(hudLoop);
+    }
+    requestAnimationFrame(hudLoop);
+
+    /* Menu/version copy */
+    const applyLabels=()=>{
+      document.title=`Skyspire v${VERSION} — Paths of Ascension`;
+      const brand=document.querySelector("#v126-home .v126-brand p");if(brand)brand.textContent="Choose a path. Master its challenge. Shape a different ascent every run.";
+      const chip=document.getElementById("v11-release-chip");if(chip)chip.textContent=`v${VERSION}`;
+      const eyebrow=document.querySelector("#menu-overlay>.panel>.eyebrow");if(eyebrow)eyebrow.textContent=`v${VERSION} · Paths of Ascension`;
+    };
+    applyLabels();
+    const labelGuard=setInterval(applyLabels,80);setTimeout(()=>{clearInterval(labelGuard);applyLabels();},2400);
+    window.SkyspireV13={version:VERSION,routes:ROUTES,upgrades:UPGRADES,bosses:BOSSES};
+  }
+  if(document.readyState==="loading")window.addEventListener("DOMContentLoaded",()=>setTimeout(setup,0),{once:true});else setTimeout(setup,0);
+})();
+</script>
+
+<style id="v13-1-route-depth-style">
+/* Skyspire v13.1 — Route Depth. Gameplay stays clear; route readability lives in-world. */
+#checkpoint-overlay.v131-breakthrough .panel{width:min(600px,100%)!important}
+#checkpoint-overlay.v131-breakthrough #upgrade-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+#checkpoint-overlay.v131-breakthrough #upgrade-grid button{min-height:126px;text-align:left;padding:14px;border-radius:14px;background:rgba(255,255,255,.025)!important;border:1px solid rgba(205,221,216,.12)!important;box-shadow:none!important;color:#eef5f2!important}
+#checkpoint-overlay.v131-breakthrough #upgrade-grid button:hover{background:rgba(224,194,119,.055)!important;border-color:rgba(224,194,119,.38)!important;transform:translateY(-1px)}
+#checkpoint-overlay.v131-breakthrough .v131-choice-note{display:block;margin-top:8px;color:#9fb0ad;font-size:.6rem;letter-spacing:.04em}
+@media(max-width:700px){#checkpoint-overlay.v131-breakthrough #upgrade-grid{grid-template-columns:1fr}#checkpoint-overlay.v131-breakthrough #upgrade-grid button{min-height:92px}}
+</style>
+<script id="v13-1-route-depth">
+(() => {
+  "use strict";
+  const VERSION="13.1.0";
+  const ROMAN=["","I","II","III"];
+  const ROUTE_COLORS={safe:0x8fd9df,velocity:0xe5bf69,treasure:0x78d6c6,precision:0xd8edf1,chaos:0xb89bdc};
+  const ROUTE_ARCH={safe:"Guardian",velocity:"Vanguard",treasure:"Pathfinder",precision:"Aerialist",chaos:"Pathfinder"};
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+  function setup(){
+    const g=window.skyspireGame;
+    if(!g?.v13Installed||!window.SkyspireV13){setTimeout(setup,30);return;}
+    if(g.v131Installed)return;
+    g.v131Installed=true;
+    const GameProto=g.constructor.prototype;
+    const GenProto=g.generator.constructor.prototype;
+    const oldSpawnFork=GenProto.spawnV13Fork;
+    const oldLand=GameProto.landPlayer;
+    const oldLandingQuality=GameProto.landingQuality;
+    const oldReset=GameProto.resetRun;
+    const oldOpenCheckpoint=GameProto.openCheckpoint;
+    const oldSetState=GameProto.setState;
+    const UPGRADES=window.SkyspireV13.upgrades||[];
+
+    function initRun(game){
+      game.v131={
+        mastery:{safe:0,velocity:0,treasure:0,precision:0,chaos:0},
+        surgeJumps:0,surgeStrength:0,precisionFocus:0,precisionBonus:0,
+        chaosCharge:0,safeCharge:0,lastBossBoon:"",bossBoons:0
+      };
+    }
+    initRun(g);
+
+    function sharedRouteMaterial(game,route){
+      const hex=ROUTE_COLORS[route]||0xd8edf1;
+      return game.resources.basic(`v131-route-${route}`,{color:hex,transparent:true,opacity:.58,depthWrite:false,side:THREE.DoubleSide});
+    }
+
+    function addEntryGate(game,platform,route){
+      if(!platform?.group||platform.group.getObjectByName?.("v131RouteGate"))return;
+      const mat=sharedRouteMaterial(game,route);
+      const gate=new THREE.Group();gate.name="v131RouteGate";
+      const geom=game.resources.geometries.support;
+      for(const side of [-1,1]){
+        const post=new THREE.Mesh(geom,mat);post.scale.set(.035,.52,.035);post.position.set(side*.68,.58,-.16);gate.add(post);
+      }
+      const top=new THREE.Mesh(geom,mat);top.scale.set(route==="precision"?.9:1.38,.028,.035);top.position.set(0,1.09,-.16);
+      if(route==="velocity")top.rotation.z=-.12;
+      if(route==="chaos")top.rotation.z=.16;
+      gate.add(top);
+      if(route==="treasure"){
+        const gem=new THREE.Mesh(game.resources.geometries.crystal,mat);gem.scale.setScalar?.(.42);gem.position.set(0,1.09,-.16);gate.add(gem);
+      }else if(route==="safe"||route==="precision"){
+        const ring=new THREE.Mesh(game.resources.geometries.platformRim,mat);ring.scale.setScalar?.(route==="safe"?.34:.27);ring.position.set(0,1.09,-.16);gate.add(ring);
+      }
+      platform.group.add(gate);
+    }
+
+    function tintPlatform(platform,route,index){
+      const hex=ROUTE_COLORS[route]||0xd8edf1;
+      if(platform?.indicator?.material){
+        platform.indicator.material.color?.setHex?.(hex);
+        platform.indicator.material.opacity=index<2?.58:.34;
+      }
+      if(index===0)addEntryGate(g,platform,route);
+    }
+
+    GenProto.spawnV13Fork=function(...args){
+      const before=this.game.v13?.segmentCounter||0;
+      const result=oldSpawnFork.apply(this,args);
+      const after=this.game.v13?.segmentCounter||0;
+      if(after>before){
+        const segment=this.v13Segments?.get(after);
+        if(segment){
+          segment.a?.forEach((p,i)=>tintPlatform(p,segment.routeA,i));
+          segment.b?.forEach((p,i)=>tintPlatform(p,segment.routeB,i));
+        }
+      }
+      return result;
+    };
+
+    function updateMastery(game,route){
+      const state=game.v131;if(!state||!route)return 0;
+      for(const key of Object.keys(state.mastery))if(key!==route)state.mastery[key]=Math.max(0,state.mastery[key]-1);
+      state.mastery[route]=Math.min(3,(state.mastery[route]||0)+1);
+      return state.mastery[route];
+    }
+
+    function applyRouteAfterglow(game,route,level,clean,avg,modifier){
+      const state=game.v131;if(!state)return;
+      if(route==="safe"){
+        state.safeCharge+=1+level+(clean?1:0);
+        if(state.safeCharge>=6){state.safeCharge-=6;game.power.shield=Math.min(3,(game.power.shield||0)+1);game.audio?.play?.("shield");}
+      }else if(route==="velocity"){
+        state.surgeJumps=Math.max(state.surgeJumps,1+level);
+        state.surgeStrength=.08+level*.07+(clean?.05:0);
+      }else if(route==="treasure"){
+        const bonus=clean?Math.max(1,level):Math.max(0,level-1);
+        game.runCrystals+=bonus;game.crystalScore+=bonus*16;
+        game.power.magnet=Math.max(game.power.magnet||0,2.8+level*1.1);
+      }else if(route==="precision"){
+        state.precisionFocus=Math.max(state.precisionFocus,1+level);
+        state.precisionBonus=.012+level*.018+(avg>.78?.012:0);
+      }else if(route==="chaos"){
+        state.chaosCharge=Math.max(state.chaosCharge,1+level);
+      }
+      if(game.generator){
+        if(route==="chaos")game.generator.v13NextForkY+=6;
+        else if(route==="safe")game.generator.v13NextForkY=Math.max(game.generator.highest+20,game.generator.v13NextForkY-3);
+      }
+      if(modifier&&clean)game.landingScore+=8*level;
+    }
+
+    function favoredArchetype(game){
+      const counts=game.v13?.routeCounts||{};let best="safe",n=-1;
+      for(const [route,count] of Object.entries(counts))if(count>n){best=route;n=count;}
+      return ROUTE_ARCH[best]||"Aerialist";
+    }
+
+    function grantBossBoon(game){
+      const arch=favoredArchetype(game),build=game.v13?.build||{};
+      const pool=UPGRADES.filter(u=>u.arch===arch&&(build[u.id]||0)<u.max);
+      if(!pool.length)return;
+      const min=Math.min(...pool.map(u=>build[u.id]||0));
+      const candidates=pool.filter(u=>(build[u.id]||0)===min);
+      const u=game.rng?.pick?.(candidates,candidates[0])||candidates[0];if(!u)return;
+      build[u.id]=Math.min(u.max,(build[u.id]||0)+1);
+      if(u.id==="secondWind")game.power.doubleJump=1;
+      game.v131.lastBossBoon=u.name;game.v131.bossBoons++;
+      game.landingScore+=45;game.addFlow?.(5,"Trial mastery");
+      game.particles?.emit?.(game.player.centerPosition,"bounce",16,{spread:.75,up:1.25});
+      game.audio?.play?.("milestone");
+    }
+
+    GameProto.landingQuality=function(player,platform){
+      const base=oldLandingQuality.call(this,player,platform);
+      const state=this.v131;
+      return state?.precisionFocus>0?clamp(base+(state.precisionBonus||0),0,1):base;
+    };
+
+    GameProto.landPlayer=function(player,platform){
+      let pending=null;
+      if(platform?.v13Convergence){
+        const segment=this.generator?.v13Segments?.get(platform.v13SegmentId);
+        if(segment?.committed){
+          const route=segment[segment.committed==="a"?"routeA":"routeB"];
+          const modifier=segment[segment.committed==="a"?"modifierA":"modifierB"];
+          const qs=(this.v13?.routeQualities||[]).slice();
+          const avg=qs.length?qs.reduce((a,b)=>a+b,0)/qs.length:.5;
+          pending={route,modifier,avg,clean:Boolean(this.v13?.cleanRoute)&&avg>=.42};
+        }
+      }
+      const bossFinish=Boolean(platform?.v13BossFinish);
+      const result=oldLand.call(this,player,platform);
+      const state=this.v131;
+      if(state){
+        if(state.surgeJumps>0&&!platform?.v13Convergence){
+          player.verticalVelocity=Math.min(14.2,Math.max(player.verticalVelocity,10.65)+(state.surgeStrength||0));state.surgeJumps--;
+        }
+        if(state.precisionFocus>0&&!platform?.v13Convergence)state.precisionFocus--;
+        if(state.chaosCharge>0&&!platform?.v13Convergence){this.landingScore+=8;this.addFlow?.(1.25,"Chaos afterglow");state.chaosCharge--;}
+      }
+      if(pending){
+        const level=updateMastery(this,pending.route);
+        applyRouteAfterglow(this,pending.route,level,pending.clean,pending.avg,pending.modifier);
+      }
+      if(bossFinish)grantBossBoon(this);
+      return result;
+    };
+
+    function chooseBreakthroughs(game){
+      const build=game.v13?.build||{},valid=UPGRADES.filter(u=>(build[u.id]||0)<u.max);
+      if(valid.length<=3)return valid;
+      const preferred=favoredArchetype(game),choices=[];
+      const takeFrom=(pool)=>{if(!pool.length)return;pool.sort((a,b)=>(build[a.id]||0)-(build[b.id]||0));const low=build[pool[0].id]||0;const candidates=pool.filter(u=>(build[u.id]||0)===low);const pick=game.upgradeRng?.pick?.(candidates,candidates[0])||game.rng?.pick?.(candidates,candidates[0])||candidates[0];if(pick&&!choices.includes(pick))choices.push(pick);};
+      takeFrom(valid.filter(u=>u.arch===preferred));
+      const arches=["Aerialist","Vanguard","Pathfinder","Guardian"].filter(a=>a!==preferred);
+      arches.sort((a,b)=>{
+        const av=valid.filter(u=>u.arch===a).reduce((s,u)=>s+(build[u.id]||0),0),bv=valid.filter(u=>u.arch===b).reduce((s,u)=>s+(build[u.id]||0),0);return av-bv;
+      });
+      for(const arch of arches){if(choices.length>=3)break;takeFrom(valid.filter(u=>u.arch===arch));}
+      if(choices.length<3)for(const u of valid)if(!choices.includes(u)&&choices.push(u)>=3)break;
+      return choices.slice(0,3);
+    }
+
+    function renderBreakthrough(game,height){
+      game.setState("checkpoint");
+      const overlay=document.getElementById("checkpoint-overlay"),title=document.getElementById("checkpoint-title"),grid=document.getElementById("upgrade-grid"),subtitle=overlay?.querySelector(".subtitle");
+      overlay?.classList.add("v13-breakthrough","v131-breakthrough");if(title)title.textContent=`Breakthrough · ${height} m`;if(subtitle)subtitle.textContent="Strengthen your current direction or diversify the run.";
+      if(!grid)return;grid.className="grid v13-upgrade-grid";grid.innerHTML="";
+      const choices=chooseBreakthroughs(game);
+      if(!choices.length){const b=document.createElement("button");b.textContent="Continue · +100 score";b.onclick=()=>{game.landingScore+=100;game.setState("playing");};grid.appendChild(b);return;}
+      const preferred=favoredArchetype(game);
+      for(const u of choices){
+        const level=game.v13.build[u.id]||0,b=document.createElement("button");b.type="button";
+        b.innerHTML=`<span class="v13-archetype">${u.arch}</span><strong>${u.name}</strong><small>${u.desc[level]}</small><em>Level ${level+1} / ${u.max}</em>${u.arch===preferred?'<span class="v131-choice-note">Current-run synergy</span>':''}`;
+        b.onclick=()=>{if(game.state!=="checkpoint")return;game.v13.build[u.id]=Math.min(u.max,level+1);if(u.id==="secondWind")game.power.doubleJump=1;if((game.v13.build.secondWind||0)>=2)game.power.doubleJump=1;game.audio.play("upgrade");game.setState("playing");};grid.appendChild(b);
+      }
+    }
+
+    GameProto.openCheckpoint=function(platform){
+      const height=Math.round(platform?.topY||this.player.maxHeight||0);
+      const terminal=(this.mode==="time"&&height>=200)||(this.mode==="ascension"&&height>=250)||(this.mode==="custom"&&(this.customRules?.victoryHeight||0)>0&&height>=this.customRules.victoryHeight);
+      if(!terminal&&height>0&&height%100===0){
+        this.stats.cleanCheckpointReached ||= this.stats.recoveries===0&&this.stats.shieldHits===0;
+        return renderBreakthrough(this,height);
+      }
+      return oldOpenCheckpoint.call(this,platform);
+    };
+
+    GameProto.resetRun=function(...args){
+      const result=oldReset.apply(this,args);initRun(this);return result;
+    };
+
+    GameProto.setState=function(next,...rest){
+      const result=oldSetState.call(this,next,...rest);
+      if(next!=="checkpoint")document.getElementById("checkpoint-overlay")?.classList.remove("v131-breakthrough");
+      if(next==="gameover")setTimeout(()=>{
+        const summary=document.getElementById("v13-run-summary"),state=this.v131;if(!summary||!state)return;
+        const mastered=Object.entries(state.mastery).sort((a,b)=>b[1]-a[1])[0];
+        const mastery=mastered?.[1]?` · Route mastery: <strong>${mastered[0][0].toUpperCase()+mastered[0].slice(1)} ${ROMAN[mastered[1]]}</strong>`:"";
+        const boon=state.lastBossBoon?` · Trial boon: <strong>${state.lastBossBoon}</strong>`:"";
+        if(!summary.dataset.v131){summary.innerHTML+=mastery+boon;summary.dataset.v131="1";}
+      },25);
+      return result;
+    };
+
+    function hudLoop(){
+      try{
+        const game=window.skyspireGame,el=document.getElementById("v1210-height");
+        if(game&&el&&(game.state==="playing"||game.state==="dying")){
+          const h=Math.floor(Math.max(0,game.player?.maxHeight||0)),route=game.v13?.currentRoute,level=route?(game.v131?.mastery?.[route]||0):0;
+          el.textContent=route?`${h} m · ${route.toUpperCase()}${level?` ${ROMAN[level]}`:""}`:`${h} m · ASCENT`;
+        }
+      }catch{}requestAnimationFrame(hudLoop);
+    }
+    requestAnimationFrame(hudLoop);
+
+    const applyLabels=()=>{
+      document.title=`Skyspire v${VERSION} — Route Depth`;
+      const brand=document.querySelector("#v126-home .v126-brand p");if(brand)brand.textContent="Choose a route, build mastery, carry its momentum into what comes next.";
+      const chip=document.getElementById("v11-release-chip");if(chip)chip.textContent=`v${VERSION}`;
+      const eyebrow=document.querySelector("#menu-overlay>.panel>.eyebrow");if(eyebrow)eyebrow.textContent=`v${VERSION} · Route Depth`;
+      if(window.SkyspireV13)window.SkyspireV13.version=VERSION;
+    };
+    applyLabels();const guard=setInterval(applyLabels,100);setTimeout(()=>{clearInterval(guard);applyLabels();},2600);
+    window.SkyspireV131={version:VERSION};
+  }
+  if(document.readyState==="loading")window.addEventListener("DOMContentLoaded",()=>setTimeout(setup,0),{once:true});else setTimeout(setup,0);
+})();
+</script>
+
+<style id="v13-2-ascendant-links-style">
+/* Skyspire v13.2 — Ascendant Links. No new persistent gameplay UI. */
+#checkpoint-overlay.v132-breakthrough .v132-build-note{display:block;margin-top:7px;color:#9fb0ad;font-size:.59rem;line-height:1.35}
+#gameover-overlay.v13-results #v13-run-summary .v132-result{color:#c9d9d5}
+</style>
+<script id="v13-2-ascendant-links">
+(() => {
+  "use strict";
+  const VERSION="13.2.0";
+  const ROMAN=["","I","II","III"];
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const LINKS={
+    "safe>velocity":{name:"Slingshot",kind:"burst"},
+    "velocity>precision":{name:"Brake Line",kind:"focus"},
+    "precision>treasure":{name:"Gemline",kind:"gem"},
+    "treasure>chaos":{name:"Gambit",kind:"gambit"},
+    "chaos>safe":{name:"Reset",kind:"reset"}
+  };
+  const ROUTE_COLORS={safe:0x8fd9df,velocity:0xe5bf69,treasure:0x78d6c6,precision:0xd8edf1,chaos:0xb89bdc};
+
+  function setup(){
+    const g=window.skyspireGame;
+    if(!g?.v131Installed||!window.SkyspireV13){setTimeout(setup,30);return;}
+    if(g.v132Installed)return;
+    g.v132Installed=true;
+    const GameProto=g.constructor.prototype;
+    const GenProto=g.generator.constructor.prototype;
+    const PlatformProto=g.generator?.lastPrimaryPlatform?.constructor?.prototype || g.player?.game?.generator?.lastPrimaryPlatform?.constructor?.prototype;
+    const oldSpawnFork=GenProto.spawnV13Fork;
+    const oldSpawnBoss=GenProto.spawnV13Boss;
+    const oldLand=GameProto.landPlayer;
+    const oldLandingQuality=GameProto.landingQuality;
+    const oldReset=GameProto.resetRun;
+    const oldSetState=GameProto.setState;
+    const oldOpenCheckpoint=GameProto.openCheckpoint;
+
+    function initRun(game){
+      game.v132={
+        lastCleared:"",lastLink:"",linkUntil:0,links:0,linkChain:0,bestLinkChain:0,
+        burstJumps:0,burstTarget:0,focusJumps:0,focusBonus:0,gambitJumps:0,calmJumps:0,
+        crownJumps:0,bossClears:0,signatureClears:0,lastBoss:""
+      };
+      const summary=document.getElementById("v13-run-summary");
+      if(summary){delete summary.dataset.v131;delete summary.dataset.v132;}
+    }
+    initRun(g);
+
+    function makePulsePad(platform,tier){
+      if(!platform?.group)return;
+      tier=clamp(Math.floor(tier||1),1,3);
+      platform.v1212PulsePad=true;platform.v1212PulseTier=Math.max(platform.v1212PulseTier||0,tier);
+      if(platform.v1212PulseRing)return;
+      const mat=platform.game.resources.basic(`v132-pulse-${tier}`,{
+        color:ROUTE_COLORS.precision,transparent:true,opacity:.34,depthWrite:false,side:THREE.DoubleSide
+      }).clone();
+      platform.ownedMaterials?.push?.(mat);
+      const ring=new THREE.Mesh(platform.game.resources.geometries.ring,mat);
+      ring.rotation.x=-Math.PI/2;ring.position.y=platform.thickness*.64+.018;
+      ring.userData.v1212Base=.48+tier*.07;ring.scale.set(ring.userData.v1212Base,ring.userData.v1212Base,1);
+      platform.group.add(ring);platform.v1212PulseRing=ring;
+    }
+
+    function addBoostRing(platform,newLevel){
+      if(!platform||platform.type!=="bounce")return;
+      const old=clamp(Math.floor(platform.boostLevel||1),1,3),level=clamp(Math.floor(newLevel||old),1,3);
+      if(level<=old)return;
+      platform.boostLevel=level;
+      const group=platform.v124BoostVisual;
+      if(!group||!Array.isArray(platform.v124BoostRings))return;
+      const color=level===3?0xd69bed:0xf0c86d;
+      while(platform.v124BoostRings.length<level){
+        const index=platform.v124BoostRings.length;
+        const mat=platform.game.resources.basic(`v132-boost-${level}-${platform.chunkId}-${platform.topY}-${index}`,{
+          color,transparent:true,opacity:.7,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending
+        }).clone();
+        platform.ownedMaterials?.push?.(mat);
+        const ring=new THREE.Mesh(platform.game.resources.geometries.ring,mat);
+        ring.rotation.x=-Math.PI/2;ring.position.y=platform.thickness*.64+.012+index*.008;
+        const size=.72+index*.32;ring.scale.set(size,size,1);ring.userData.phase=index/level*Math.PI*2;
+        group.add(ring);platform.v124BoostRings.push(ring);
+      }
+    }
+
+    function mastery(game,route){return clamp(game.v131?.mastery?.[route]||0,0,3);}
+
+    function enrichBranch(generator,segment,key,route){
+      const list=segment?.[key]||[];if(!list.length)return;
+      const level=mastery(generator.game,route),mid=list[Math.floor(list.length/2)],last=list.at(-1);
+      if(route==="precision"){
+        makePulsePad(mid,clamp(1+Math.floor((mid?.topY||0)/450)+(level>=2?1:0),1,3));
+        if(level>=3&&list.length>4)makePulsePad(list[Math.max(1,list.length-2)],3);
+      }else if(route==="velocity"){
+        const boosts=list.filter(p=>p.type==="bounce");
+        if(boosts.length)boosts[Math.floor(boosts.length/2)].v132VelocityBeat=true;
+      }else if(route==="treasure"){
+        if(level>=2&&mid)generator.addCrystal(segment.chunk,mid,true,"opposite");
+        if(level>=3&&last)generator.addCrystal(segment.chunk,last,true,"opposite");
+      }else if(route==="safe"){
+        if(level>=3&&last&&!last.hazard&&generator.game.rng.chance(.58))generator.addPowerUp(segment.chunk,last,"shield","center");
+      }else if(route==="chaos"){
+        if(mid)mid.v132ChaosBeat=true;
+        if(level>=3&&list.length>3)list[Math.max(1,list.length-2)].v132ChaosBeat=true;
+      }
+    }
+
+    GenProto.spawnV13Fork=function(...args){
+      const before=this.game.v13?.segmentCounter||0;
+      const result=oldSpawnFork.apply(this,args);
+      const after=this.game.v13?.segmentCounter||0;
+      if(after>before){
+        const segment=this.v13Segments?.get(after);
+        if(segment){enrichBranch(this,segment,"a",segment.routeA);enrichBranch(this,segment,"b",segment.routeB);}
+      }
+      return result;
+    };
+
+    function bossBeatPlatforms(chunk){return (chunk?.platforms||[]).filter(p=>p.v13Boss&&!p.v13BossFinish).sort((a,b)=>(a.v13BossBeat||0)-(b.v13BossBeat||0));}
+    GenProto.spawnV13Boss=function(target,boss){
+      const chunk=oldSpawnBoss.call(this,target,boss);if(!chunk)return chunk;
+      const beats=bossBeatPlatforms(chunk),tier=Math.max(1,Math.floor(target/1000)+1);
+      for(let i=0;i<beats.length;i++){
+        const p=beats[i];p.v132BossTarget=target;p.v132BossIndex=i;p.v132BossCount=beats.length;
+        if(target%1000===250){
+          p.v132LiftBeat=true;
+        }else if(target%1000===500){
+          p.v132StormBeat=true;
+        }else if(target%1000===750){
+          p.v132FractureBeat=true;
+        }else if(target%1000===0){
+          p.v132CrownBeat=true;
+        }
+      }
+      const finish=(chunk.platforms||[]).find(p=>p.v13BossFinish);if(finish)finish.v132BossTarget=target;
+      return chunk;
+    };
+
+    function linkEffect(game,from,to,clean){
+      const state=game.v132;if(!state||!clean||!from||from===to){if(state)state.linkChain=0;return false;}
+      const link=LINKS[`${from}>${to}`];
+      if(!link){state.linkChain=0;return false;}
+      state.links++;state.linkChain++;state.bestLinkChain=Math.max(state.bestLinkChain,state.linkChain);
+      state.lastLink=link.name;state.linkUntil=performance.now()+1800;
+      const level=Math.max(1,mastery(game,to));
+      if(link.kind==="burst"){
+        state.burstJumps=Math.max(state.burstJumps,2+Math.floor(level/2));state.burstTarget=11.25+level*.16;
+      }else if(link.kind==="focus"){
+        state.focusJumps=Math.max(state.focusJumps,3);state.focusBonus=Math.max(state.focusBonus,.025+level*.012);
+      }else if(link.kind==="gem"){
+        game.runCrystals+=1;game.crystalScore+=20;game.power.magnet=Math.max(game.power.magnet||0,3.5+level*.55);
+      }else if(link.kind==="gambit"){
+        state.gambitJumps=Math.max(state.gambitJumps,3+Math.floor(level/2));
+      }else if(link.kind==="reset"){
+        if(game.power.shield<3)game.power.shield+=1;else game.power.doubleJump=1;
+        state.calmJumps=Math.max(state.calmJumps,2+level);
+      }
+      game.landingScore+=18+level*6;game.addFlow?.(2.5+level*.5,"Route link");
+      const tone={burst:780,focus:680,gem:930,gambit:470,reset:560}[link.kind]||700;
+      game.audio?.tone?.(tone,.12,{volume:.04,endFrequency:tone*1.18});
+      game.particles?.emit?.(game.player.centerPosition,link.kind==="gambit"?"void":link.kind==="burst"?"bounce":"crystal",9,{spread:.55,up:.85});
+      return true;
+    }
+
+    function signatureEffect(game,route,level,clean){
+      if(level<3||!clean)return;
+      const state=game.v132;state.signatureClears++;
+      if(route==="safe")state.calmJumps=Math.max(state.calmJumps,3);
+      else if(route==="velocity"){state.burstJumps=Math.max(state.burstJumps,3);state.burstTarget=Math.max(state.burstTarget,11.65);}
+      else if(route==="treasure"){game.runCrystals+=1;game.crystalScore+=18;}
+      else if(route==="precision"){state.focusJumps=Math.max(state.focusJumps,3);state.focusBonus=Math.max(state.focusBonus,.05);}
+      else if(route==="chaos")state.gambitJumps=Math.max(state.gambitJumps,3);
+    }
+
+    GameProto.landingQuality=function(player,platform){
+      const base=oldLandingQuality.call(this,player,platform),state=this.v132;
+      return state?.focusJumps>0?clamp(base+(state.focusBonus||0),0,1):base;
+    };
+
+    GameProto.landPlayer=function(player,platform){
+      let completed=null;
+      if(platform?.v13Convergence){
+        const segment=this.generator?.v13Segments?.get(platform.v13SegmentId);
+        if(segment?.committed){
+          const route=segment[segment.committed==="a"?"routeA":"routeB"];
+          const qs=(this.v13?.routeQualities||[]).slice(),avg=qs.length?qs.reduce((a,b)=>a+b,0)/qs.length:.5;
+          completed={route,previous:this.v132?.lastCleared||"",clean:Boolean(this.v13?.cleanRoute)&&avg>=.42,avg};
+        }
+      }
+      const bossFinish=Boolean(platform?.v13BossFinish),bossTarget=platform?.v132BossTarget||platform?.v13BossHeight||0;
+      const result=oldLand.call(this,player,platform);
+      const state=this.v132;if(!state)return result;
+
+      if(!platform?.v13Convergence){
+        if(state.burstJumps>0){player.verticalVelocity=Math.min(14.2,Math.max(player.verticalVelocity,state.burstTarget||11.35));state.burstJumps--;}
+        if(state.focusJumps>0)state.focusJumps--;
+        if(state.gambitJumps>0){this.landingScore+=8;this.addFlow?.(.75,"Gambit");state.gambitJumps--;}
+        if(state.calmJumps>0){player.angularVelocity*=.82;state.calmJumps--;}
+        if(state.crownJumps>0){player.verticalVelocity=Math.min(14.2,Math.max(player.verticalVelocity,10.85+.08*state.crownJumps));state.crownJumps--;}
+        if(platform?.v132ChaosBeat){const q=this.landingQuality(player,platform);if(q>.48){this.landingScore+=10;this.addFlow?.(1.5,"Chaos beat");}}
+        if(platform?.v132VelocityBeat){const q=this.landingQuality(player,platform);if(q>.55){this.landingScore+=8;this.addFlow?.(1.1,"Velocity beat");}}
+        if(platform?.v132LiftBeat&&platform.type==="elevator")this.addFlow?.(.8,"Lift rhythm");
+        if(platform?.v132StormBeat){const sign=(platform.v13BossBeat||1)%2?1:-1;player.angularVelocity=clamp(player.angularVelocity+sign*.04,-1.55,1.55);}
+        if(platform?.v132FractureBeat&&platform.type==="collapse")platform.timer=Math.max(platform.timer||0,.12);
+        if(platform?.v132CrownBeat){const q=this.landingQuality(player,platform);if(q>.72){this.landingScore+=7;this.addFlow?.(.9,"Crown rhythm");}}
+      }
+
+      if(completed){
+        const level=mastery(this,completed.route);
+        const linked=linkEffect(this,completed.previous,completed.route,completed.clean);
+        signatureEffect(this,completed.route,level,completed.clean);
+        state.lastCleared=completed.route;
+        if(!completed.clean||!linked)state.linkChain=0;
+        if(this.generator&&completed.clean&&this.player.maxHeight>500)this.generator.v13NextForkY=Math.max(this.generator.highest+20,this.generator.v13NextForkY-2.5);
+      }
+      if(bossFinish){
+        state.bossClears++;state.lastBoss=platform.v13BossFinish||"Traversal Trial";state.crownJumps=Math.max(state.crownJumps,4);
+        state.lastLink=`${state.lastBoss} cleared`;state.linkUntil=performance.now()+2000;
+        if(this.generator)this.generator.v13NextForkY=Math.max(this.generator.v13NextForkY,this.generator.highest+18);
+      }
+      return result;
+    };
+
+    GameProto.openCheckpoint=function(platform){
+      const result=oldOpenCheckpoint.call(this,platform);
+      if(this.state==="checkpoint"&&Math.round(platform?.topY||0)%100===0)document.getElementById("checkpoint-overlay")?.classList.add("v132-breakthrough");
+      return result;
+    };
+
+    GameProto.resetRun=function(...args){
+      const result=oldReset.apply(this,args);initRun(this);return result;
+    };
+
+    GameProto.setState=function(next,...rest){
+      const result=oldSetState.call(this,next,...rest);
+      if(next!=="checkpoint")document.getElementById("checkpoint-overlay")?.classList.remove("v132-breakthrough");
+      if(next==="gameover")setTimeout(()=>{
+        const summary=document.getElementById("v13-run-summary"),state=this.v132;if(!summary||!state)return;
+        summary.querySelectorAll?.(".v132-result")?.forEach?.(n=>n.remove());
+        const extra=document.createElement("span");extra.className="v132-result";
+        extra.innerHTML=` · Links: <strong>${state.links}</strong>${state.bestLinkChain>1?` · Best chain: <strong>${state.bestLinkChain}</strong>`:""}${state.bossClears?` · Trials: <strong>${state.bossClears}</strong>`:""}`;
+        summary.appendChild(extra);summary.dataset.v132="1";
+      },40);
+      return result;
+    };
+
+    function hudLoop(){
+      try{
+        const game=window.skyspireGame,el=document.getElementById("v1210-height"),state=game?.v132;
+        if(game&&el&&state&&(game.state==="playing"||game.state==="dying")&&state.linkUntil>performance.now()){
+          const h=Math.floor(Math.max(0,game.player?.maxHeight||0));el.textContent=`${h} m · ${state.lastLink.toUpperCase()}`;
+        }
+      }catch{}requestAnimationFrame(hudLoop);
+    }
+    requestAnimationFrame(hudLoop);
+
+    const applyLabels=()=>{
+      document.title=`Skyspire v${VERSION} — Ascendant Links`;
+      const brand=document.querySelector("#v126-home .v126-brand p");if(brand)brand.textContent="Chain routes, unlock signature mechanics, and break through distinct traversal trials.";
+      const chip=document.getElementById("v11-release-chip");if(chip)chip.textContent=`v${VERSION}`;
+      const eyebrow=document.querySelector("#menu-overlay>.panel>.eyebrow");if(eyebrow)eyebrow.textContent=`v${VERSION} · Ascendant Links`;
+      if(window.SkyspireV13)window.SkyspireV13.version=VERSION;
+      if(window.SkyspireV131)window.SkyspireV131.version=VERSION;
+    };
+    applyLabels();const guard=setInterval(applyLabels,100);setTimeout(()=>{clearInterval(guard);applyLabels();},2800);
+    window.SkyspireV132={version:VERSION,links:LINKS};
+  }
+
+  if(document.readyState==="loading")window.addEventListener("DOMContentLoaded",()=>setTimeout(setup,0),{once:true});else setTimeout(setup,0);
+})();
+</script>
+
+
+<style id="v13-3-strategic-crossroads-style">
+/* Skyspire v13.3 — Strategic Crossroads. Route stakes stay in-world; no new HUD panels. */
+#checkpoint-overlay.v133-breakthrough .v131-choice-note{color:#d8bd79!important}
+</style>
+<script id="v13-3-strategic-crossroads">
+(() => {
+  "use strict";
+  const VERSION="13.3.0";
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const NEXT={safe:"velocity",velocity:"precision",precision:"treasure",treasure:"chaos",chaos:"safe"};
+  const COUNTER_LINKS={
+    "safe>treasure":{name:"Provision",kind:"provision"},
+    "treasure>safe":{name:"Secure",kind:"secure"},
+    "precision>velocity":{name:"Release",kind:"release"},
+    "velocity>chaos":{name:"Overclock",kind:"overclock"},
+    "chaos>precision":{name:"Discipline",kind:"discipline"}
+  };
+  const MOD_COLORS={accelerated:0xf2c56d,windborne:0x8fd9df,fragile:0xe58b78,charged:0xc69be8,bountiful:0x78d6c6,razor:0xeaf8ff};
+
+  function setup(){
+    const g=window.skyspireGame;
+    if(!g?.v132Installed||!window.SkyspireV132){setTimeout(setup,30);return;}
+    if(g.v133Installed)return;
+    g.v133Installed=true;
+    const GameProto=g.constructor.prototype;
+    const GenProto=g.generator.constructor.prototype;
+    const oldSpawnFork=GenProto.spawnV13Fork;
+    const oldLand=GameProto.landPlayer;
+    const oldReset=GameProto.resetRun;
+    const oldSetState=GameProto.setState;
+    const oldOpenCheckpoint=GameProto.openCheckpoint;
+
+    function initRun(game){
+      game.v133={
+        lastOfferKey:"",offers:0,strategicOffers:0,counterLinks:0,bestCounterChain:0,counterChain:0,
+        modifierClears:0,cleanModifierClears:0,lastDecision:"",lastModifier:"",lastUnlock:""
+      };
+    }
+    initRun(g);
+
+    function addMark(platform,modifier){
+      if(!platform?.group||!modifier||platform.v133ModifierMark)return;
+      const game=platform.game,hex=MOD_COLORS[modifier]||0xd8edf1;
+      const mat=game.resources.basic(`v133-mod-${modifier}`,{color:hex,transparent:true,opacity:.56,depthWrite:false,side:THREE.DoubleSide}).clone();
+      platform.ownedMaterials?.push?.(mat);
+      const mark=new THREE.Group();mark.name="v133ModifierMark";
+      const support=game.resources.geometries.support;
+      if(modifier==="charged"){
+        const ring=new THREE.Mesh(game.resources.geometries.platformRim,mat);ring.rotation.x=Math.PI/2;ring.position.set(0,1.34,-.18);ring.scale.setScalar?.(.34);mark.add(ring);
+      }else if(modifier==="bountiful"){
+        const gem=new THREE.Mesh(game.resources.geometries.crystal,mat);gem.position.set(0,1.32,-.18);gem.scale.setScalar?.(.38);mark.add(gem);
+      }else if(modifier==="razor"){
+        for(const side of [-1,1]){const bar=new THREE.Mesh(support,mat);bar.scale.set(.018,.42,.025);bar.position.set(side*.22,1.28,-.18);mark.add(bar);}
+      }else if(modifier==="fragile"){
+        for(const side of [-1,1]){const bar=new THREE.Mesh(support,mat);bar.scale.set(.22,.025,.025);bar.position.set(side*.29,1.3,-.18);bar.rotation.z=side*.26;mark.add(bar);}
+      }else if(modifier==="windborne"){
+        for(let i=-1;i<=1;i++){const bar=new THREE.Mesh(support,mat);bar.scale.set(.24,.018,.018);bar.position.set(i*.25,1.24+Math.abs(i)*.08,-.18);bar.rotation.z=-.12;mark.add(bar);}
+      }else if(modifier==="accelerated"){
+        for(let i=0;i<2;i++){const bar=new THREE.Mesh(support,mat);bar.scale.set(.3,.02,.02);bar.position.set((i-.5)*.36,1.27,-.18);bar.rotation.z=-.24;mark.add(bar);}
+      }
+      platform.group.add(mark);platform.v133ModifierMark=mark;
+    }
+
+    function decisionLabel(segment,last){
+      const pair=[segment.routeA,segment.routeB];
+      if(last&&pair.includes(last)&&pair.includes(NEXT[last]))return "Mastery or Link";
+      if(pair.includes("safe")&&pair.includes("chaos"))return "Stability or Risk";
+      if(pair.includes("velocity")&&pair.includes("precision"))return "Speed or Control";
+      if(pair.includes("treasure"))return "Ascent or Reward";
+      return "Crossroads";
+    }
+
+    GenProto.spawnV13Fork=function(...args){
+      const before=this.game.v13?.segmentCounter||0,last=this.game.v132?.lastCleared||this.game.v13?.lastRoute||"";
+      const result=oldSpawnFork.apply(this,args),after=this.game.v13?.segmentCounter||0;
+      if(after>before){
+        const segment=this.v13Segments?.get(after);
+        if(segment){
+          const key=[segment.routeA,segment.routeB].sort().join(">");
+          this.game.v133.lastOfferKey=key;this.game.v133.offers++;
+          segment.v133Decision=decisionLabel(segment,last);this.game.v133.lastDecision=segment.v133Decision;
+          if(segment.v133Decision!=="Crossroads")this.game.v133.strategicOffers++;
+          const a=segment.a?.[0],b=segment.b?.[0];if(a)addMark(a,segment.modifierA);if(b)addMark(b,segment.modifierB);
+        }
+      }
+      return result;
+    };
+
+    function applyCounterLink(game,from,to,clean){
+      const link=COUNTER_LINKS[`${from}>${to}`],state=game.v133;if(!state||!link||!clean)return false;
+      state.counterLinks++;state.counterChain++;state.bestCounterChain=Math.max(state.bestCounterChain,state.counterChain);
+      if(link.kind==="provision"){
+        game.runCrystals+=1;game.crystalScore+=18;game.power.magnet=Math.max(game.power.magnet||0,3.2);
+      }else if(link.kind==="secure"){
+        if((game.power.shield||0)<3)game.power.shield+=1;else game.addFlow?.(2,"Secure");
+      }else if(link.kind==="release"){
+        if(game.v132){game.v132.burstJumps=Math.max(game.v132.burstJumps,2);game.v132.burstTarget=Math.max(game.v132.burstTarget,11.35);}
+      }else if(link.kind==="overclock"){
+        if(game.v132)game.v132.gambitJumps=Math.max(game.v132.gambitJumps,2);game.addFlow?.(2.5,"Overclock");
+      }else if(link.kind==="discipline"){
+        if(game.v132){game.v132.focusJumps=Math.max(game.v132.focusJumps,2);game.v132.focusBonus=Math.max(game.v132.focusBonus,.032);}
+      }
+      game.landingScore+=20;game.addFlow?.(1.5,"Route link");
+      if(game.v132){game.v132.lastLink=link.name;game.v132.linkUntil=performance.now()+1500;}
+      game.audio?.tone?.(720,.1,{volume:.032,endFrequency:860});
+      return true;
+    }
+
+    function rewardModifier(game,segment,route,modifier,clean,avg){
+      if(!segment||segment.v133Rewarded||!modifier)return;segment.v133Rewarded=true;
+      const state=game.v133;state.modifierClears++;if(clean)state.cleanModifierClears++;state.lastModifier=modifier;
+      let score=0,flow=0;
+      if(modifier==="accelerated"){score=clean?28:16;flow=clean?4:2;if(clean&&game.v132){game.v132.burstJumps=Math.max(game.v132.burstJumps,1);game.v132.burstTarget=Math.max(game.v132.burstTarget,11.2);}}
+      else if(modifier==="windborne"){score=clean?34:18;flow=clean?5:2;}
+      else if(modifier==="fragile"){score=clean?52:20;flow=clean?6:2;}
+      else if(modifier==="charged"){score=clean?36:18;flow=clean?4:2;if(clean){game.runCrystals+=1;game.crystalScore+=16;}}
+      else if(modifier==="bountiful"){score=clean?44:22;flow=3;const crystals=clean?2:1;game.runCrystals+=crystals;game.crystalScore+=crystals*20;}
+      else if(modifier==="razor"){score=24+Math.floor(avg*48)+(clean?18:0);flow=clean?5:2;}
+      game.landingScore+=score;game.addFlow?.(flow,`${modifier} clear`);
+    }
+
+    GameProto.landPlayer=function(player,platform){
+      let completed=null;
+      if(platform?.v13Convergence){
+        const segment=this.generator?.v13Segments?.get(platform.v13SegmentId);
+        if(segment?.committed){
+          const route=segment[segment.committed==="a"?"routeA":"routeB"],modifier=segment[segment.committed==="a"?"modifierA":"modifierB"];
+          const qs=(this.v13?.routeQualities||[]).slice(),avg=qs.length?qs.reduce((a,b)=>a+b,0)/qs.length:.5;
+          completed={segment,route,modifier,previous:this.v132?.lastCleared||"",clean:Boolean(this.v13?.cleanRoute)&&avg>=.42,avg};
+        }
+      }
+      const bossHeight=platform?.v13BossFinish?(platform.v13BossHeight||platform.v132BossTarget||0):0;
+      const result=oldLand.call(this,player,platform);
+      if(completed){
+        const originalLinked=Boolean(window.SkyspireV132?.links?.[`${completed.previous}>${completed.route}`]);
+        if(!originalLinked){const linked=applyCounterLink(this,completed.previous,completed.route,completed.clean);if(!linked&&this.v133)this.v133.counterChain=0;}
+        rewardModifier(this,completed.segment,completed.route,completed.modifier,completed.clean,completed.avg);
+      }
+      if(bossHeight>=1250){
+        const unlock=bossHeight===1250?"bountiful":bossHeight===1500?"razor":"";
+        if(unlock&&this.v13?.meta){
+          const mods=Array.isArray(this.v13.meta.modifiers)?this.v13.meta.modifiers:(this.v13.meta.modifiers=[]);
+          if(!mods.includes(unlock)){mods.push(unlock);this.v133.lastUnlock=unlock;try{localStorage.setItem("skyspireV13Meta",JSON.stringify(this.v13.meta));}catch{}}
+        }
+      }
+      return result;
+    };
+
+    GameProto.openCheckpoint=function(platform){
+      const result=oldOpenCheckpoint.call(this,platform);
+      if(this.state==="checkpoint"&&Math.round(platform?.topY||0)%100===0)document.getElementById("checkpoint-overlay")?.classList.add("v133-breakthrough");
+      return result;
+    };
+
+    GameProto.resetRun=function(...args){
+      /* Initialize before the older reset pre-generates forks. v13.1/v13.2
+         normally reset after legacy generation, so clear them first to prevent
+         a new run inheriting the previous run's route mastery or last link. */
+      this.v131=null;this.v132=null;initRun(this);
+      const result=oldReset.apply(this,args);if(!this.v133)initRun(this);return result;
+    };
+
+    GameProto.setState=function(next,...rest){
+      const result=oldSetState.call(this,next,...rest);
+      if(next!=="checkpoint")document.getElementById("checkpoint-overlay")?.classList.remove("v133-breakthrough");
+      if(next==="gameover")setTimeout(()=>{
+        const summary=document.getElementById("v13-run-summary"),state=this.v133;if(!summary||!state)return;
+        summary.querySelectorAll?.(".v133-result")?.forEach?.(n=>n.remove());
+        const extra=document.createElement("span");extra.className="v133-result";
+        extra.innerHTML=` · Crossroads: <strong>${state.offers}</strong>${state.modifierClears?` · Modified: <strong>${state.modifierClears}</strong>`:""}${state.counterLinks?` · Links+: <strong>${state.counterLinks}</strong>`:""}`;
+        summary.appendChild(extra);
+      },50);
+      return result;
+    };
+
+    const applyLabels=()=>{
+      document.title=`Skyspire v${VERSION} — Strategic Crossroads`;
+      const brand=document.querySelector("#v126-home .v126-brand p");if(brand)brand.textContent="Choose between mastery, route links, and high-stakes modifiers as the ascent evolves.";
+      const chip=document.getElementById("v11-release-chip");if(chip)chip.textContent=`v${VERSION}`;
+      const eyebrow=document.querySelector("#menu-overlay>.panel>.eyebrow");if(eyebrow)eyebrow.textContent=`v${VERSION} · Strategic Crossroads`;
+      if(window.SkyspireV13)window.SkyspireV13.version=VERSION;if(window.SkyspireV131)window.SkyspireV131.version=VERSION;if(window.SkyspireV132)window.SkyspireV132.version=VERSION;
+    };
+    applyLabels();const guard=setInterval(applyLabels,100);setTimeout(()=>{clearInterval(guard);applyLabels();},3000);
+    window.SkyspireV133={version:VERSION,counterLinks:COUNTER_LINKS,modifierColors:MOD_COLORS};
+  }
+
+  if(document.readyState==="loading")window.addEventListener("DOMContentLoaded",()=>setTimeout(setup,0),{once:true});else setTimeout(setup,0);
+})();
+</script>
+
+
+
+<style id="v13-4-ascent-arcs-style">
+/* Skyspire v13.4 — Ascent Arcs. Long-run depth without gameplay-screen clutter. */
+#gameover-overlay.v13-results #v13-run-summary .v134-result{color:#c9d9d5}
+</style>
+<script id="v13-4-ascent-arcs">
+(() => {
+  "use strict";
+  const VERSION="13.4.0";
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const HARD=new Set(["velocity","precision","chaos"]);
+  const ROUTE_COLORS={safe:0x8fd9df,velocity:0xe5bf69,treasure:0x78d6c6,precision:0xd8edf1,chaos:0xb89bdc};
+  const CHAPTERS=[
+    {at:0,name:"Lower Spire",gap:[27,35],crest:1},
+    {at:500,name:"Highworks",gap:[25,33],crest:1.08},
+    {at:1000,name:"Crownward",gap:[23,31],crest:1.16},
+    {at:1500,name:"Upper Crown",gap:[22,29],crest:1.24},
+    {at:2200,name:"Endless Crown",gap:[21,28],crest:1.32}
+  ];
+
+  function chapterAt(height){let c=CHAPTERS[0];for(const x of CHAPTERS)if(height>=x.at)c=x;return c;}
+  function dominantRoute(game){
+    const counts=game.v13?.routeCounts||{};let best="safe",n=-1;
+    for(const route of ["safe","velocity","treasure","precision","chaos"]){const v=counts[route]||0;if(v>n){n=v;best=route;}}
+    return best;
+  }
+  function setup(){
+    const g=window.skyspireGame;
+    if(!g?.v133Installed||!window.SkyspireV133){setTimeout(setup,30);return;}
+    if(g.v134Installed)return;
+    g.v134Installed=true;
+    const GameProto=g.constructor.prototype;
+    const GenProto=g.generator.constructor.prototype;
+    const PlayerProto=g.player.constructor.prototype;
+    const oldSpawnFork=GenProto.spawnV13Fork;
+    const oldSpawnBoss=GenProto.spawnV13Boss;
+    const oldLand=GameProto.landPlayer;
+    const oldReset=GameProto.resetRun;
+    const oldSetState=GameProto.setState;
+    const oldPlayerUpdate=PlayerProto.update;
+
+    function initRun(game){
+      game.v134={
+        chain:[],cleanRoutes:0,crests:0,lastCrest:"",specialistCrests:0,versatileCrests:0,pressureCrests:0,recoveryCrests:0,
+        agilityJumps:0,agilityBonus:0,bossTarget:0,bossVariant:"",bossRoute:"",bossHits:0,bossHighQuality:0,bossPerfects:0,
+        bossClears:0,lastBossGrade:"",restUntil:0,lastChapter:"Lower Spire",chapterChanges:0,highRiskGenerated:0
+      };
+    }
+    initRun(g);
+
+    function crestEffect(game,type,route,avg){
+      const s=game.v134;if(!s)return;
+      const ch=chapterAt(game.player?.maxHeight||0),scale=ch.crest||1;
+      s.crests++;s.lastCrest=type;
+      const v132=game.v132;
+      if(type==="Specialist"){
+        s.specialistCrests++;
+        if(route==="safe"){
+          if((game.power.shield||0)<3)game.power.shield+=1;else if(v132)v132.calmJumps=Math.max(v132.calmJumps,3);
+        }else if(route==="velocity"&&v132){v132.burstJumps=Math.max(v132.burstJumps,3);v132.burstTarget=Math.max(v132.burstTarget,11.55+.08*scale);}
+        else if(route==="treasure"){const crystals=scale>=1.24?3:2;game.runCrystals+=crystals;game.crystalScore+=crystals*20;game.power.magnet=Math.max(game.power.magnet||0,4.2);}
+        else if(route==="precision"&&v132){v132.focusJumps=Math.max(v132.focusJumps,4);v132.focusBonus=Math.max(v132.focusBonus,.052+.006*(scale-1));}
+        else if(route==="chaos"&&v132){v132.gambitJumps=Math.max(v132.gambitJumps,4);game.addFlow?.(3.5*scale,"Chaos crest");}
+      }else if(type==="Versatile"){
+        s.versatileCrests++;s.agilityJumps=Math.max(s.agilityJumps,4);s.agilityBonus=Math.max(s.agilityBonus,.035+.008*(scale-1));
+        game.runCrystals+=1;game.crystalScore+=20;game.addFlow?.(4.5*scale,"Versatility crest");
+      }else if(type==="Pressure"){
+        s.pressureCrests++;game.landingScore+=Math.floor(70*scale);game.addFlow?.(7*scale,"Pressure crest");
+        if(v132){v132.burstJumps=Math.max(v132.burstJumps,2);v132.focusJumps=Math.max(v132.focusJumps,2);v132.gambitJumps=Math.max(v132.gambitJumps,2);}
+      }else if(type==="Recovery"){
+        s.recoveryCrests++;
+        if((game.power.shield||0)<3)game.power.shield+=1;else game.power.doubleJump=1;
+        if(v132)v132.calmJumps=Math.max(v132.calmJumps,3);game.addFlow?.(3.5*scale,"Recovery crest");
+      }
+      game.landingScore+=Math.floor((24+avg*26)*scale);
+      const tone={Specialist:760,Versatile:860,Pressure:520,Recovery:610}[type]||700;
+      game.audio?.tone?.(tone,.13,{volume:.038,endFrequency:tone*1.22});
+      game.particles?.emit?.(game.player.centerPosition,type==="Pressure"?"void":type==="Specialist"&&route==="velocity"?"bounce":"crystal",12,{spread:.62,up:1.05});
+    }
+
+    function recordRoute(game,route,clean,avg){
+      const s=game.v134;if(!s)return;
+      if(!clean){s.chain=[];return;}
+      s.cleanRoutes++;s.chain.push({route,avg});if(s.chain.length>3)s.chain.shift();
+      if(s.chain.length<3)return;
+      const routes=s.chain.map(x=>x.route),set=new Set(routes),mean=s.chain.reduce((n,x)=>n+x.avg,0)/3;
+      let type="";
+      if(set.size===1)type="Specialist";
+      else if(set.size===3)type="Versatile";
+      else if(routes.every(r=>HARD.has(r)))type="Pressure";
+      else if(routes.includes("safe")&&routes.some(r=>HARD.has(r)))type="Recovery";
+      if(type){crestEffect(game,type,routes.at(-1),mean);s.chain=[];}
+    }
+
+    function addBossAccent(platform,route){
+      if(!platform?.group||platform.v134BossAccent)return;
+      const color=ROUTE_COLORS[route]||0xd8edf1,game=platform.game;
+      const mat=game.resources.basic(`v134-boss-${route}`,{color,transparent:true,opacity:.42,depthWrite:false,side:THREE.DoubleSide}).clone();
+      platform.ownedMaterials?.push?.(mat);
+      const ring=new THREE.Mesh(game.resources.geometries.platformRim,mat);ring.rotation.x=Math.PI/2;ring.position.y=platform.thickness*.68+.02;
+      ring.scale.setScalar?.(.72);platform.group.add(ring);platform.v134BossAccent=ring;
+    }
+
+    function bossVariantName(target,route){
+      const family=target%1000;
+      const names={
+        250:{safe:"Counterweight Lift",velocity:"Express Lift",treasure:"Cargo Lift",precision:"Needle Lift",chaos:"Broken Lift"},
+        500:{safe:"Eye of the Storm",velocity:"Tailwind Gate",treasure:"Crystal Squall",precision:"Needle Wind",chaos:"Black Gale"},
+        750:{safe:"Stable Fracture",velocity:"Falling Sprint",treasure:"Gem Fault",precision:"Glass Crossing",chaos:"Shatter Run"},
+        0:{safe:"Crown Sanctuary",velocity:"Crown Rush",treasure:"Crown Vault",precision:"Crown Needle",chaos:"Crown Collapse"}
+      };
+      return names[family]?.[route]||"Ascendant Trial";
+    }
+
+    GenProto.spawnV13Boss=function(target,boss){
+      const route=dominantRoute(this.game),chunk=oldSpawnBoss.call(this,target,boss);if(!chunk)return chunk;
+      const variant=bossVariantName(target,route),beats=(chunk.platforms||[]).filter(p=>p.v13Boss&&!p.v13BossFinish).sort((a,b)=>(a.v13BossBeat||0)-(b.v13BossBeat||0));
+      for(let i=0;i<beats.length;i++){
+        const p=beats[i];p.v134BossVariant=variant;p.v134BossRoute=route;p.v134BossTarget=target;p.v134BossBeatIndex=i;
+        if(i===0||i===beats.length-1)addBossAccent(p,route);
+        if(route==="treasure"&&i>0&&i%3===0)this.addCrystal(chunk,p,true,i%2?"left":"right");
+      }
+      const finish=(chunk.platforms||[]).find(p=>p.v13BossFinish);if(finish){finish.v134BossVariant=variant;finish.v134BossRoute=route;finish.v134BossTarget=target;addBossAccent(finish,route);}
+      this.game.v134.restUntil=Math.max(this.game.v134.restUntil,target+30+Math.min(10,target/250));
+      this.v13NextForkY=Math.max(this.v13NextForkY||0,this.game.v134.restUntil);
+      return chunk;
+    };
+
+    GenProto.spawnV13Fork=function(...args){
+      const before=this.game.v13?.segmentCounter||0,result=oldSpawnFork.apply(this,args),after=this.game.v13?.segmentCounter||0;
+      if(after>before){
+        const segment=this.v13Segments?.get(after),height=this.highest||0,ch=chapterAt(height);if(!segment)return result;
+        segment.v134Chapter=ch.name;
+        const risk=(segment.routeA==="chaos"?2:HARD.has(segment.routeA)?1:0)+(segment.routeB==="chaos"?2:HARD.has(segment.routeB)?1:0);
+        if(risk>=2)this.game.v134.highRiskGenerated++;
+        let lo=ch.gap[0],hi=ch.gap[1];if(risk>=3){lo+=4;hi+=5;}else if(risk===2){lo+=2;hi+=3;}else if(segment.routeA==="safe"||segment.routeB==="safe"){lo-=1;hi-=1;}
+        if(this.game.v134.restUntil>height){lo=Math.max(lo,30);hi=Math.max(hi,38);}
+        this.v13NextForkY=Math.max(height+lo,height+this.game.rng.range(lo,hi));
+        if(ch.name!==this.game.v134.lastChapter){this.game.v134.lastChapter=ch.name;this.game.v134.chapterChanges++;}
+      }
+      return result;
+    };
+
+    GameProto.landPlayer=function(player,platform){
+      let completed=null,bossBeat=null,bossFinish=null;
+      if(platform?.v13Convergence){
+        const segment=this.generator?.v13Segments?.get(platform.v13SegmentId);
+        if(segment?.committed){
+          const route=segment[segment.committed==="a"?"routeA":"routeB"],qs=(this.v13?.routeQualities||[]).slice(),avg=qs.length?qs.reduce((a,b)=>a+b,0)/qs.length:.5;
+          completed={route,clean:Boolean(this.v13?.cleanRoute)&&avg>=.42,avg};
+        }
+      }
+      if(platform?.v134BossVariant&&!platform?.v13BossFinish)bossBeat={variant:platform.v134BossVariant,route:platform.v134BossRoute,target:platform.v134BossTarget||platform.v13BossHeight||0,index:platform.v134BossBeatIndex||0};
+      if(platform?.v13BossFinish)bossFinish={variant:platform.v134BossVariant||platform.v13BossFinish||"Traversal Trial",route:platform.v134BossRoute||dominantRoute(this),target:platform.v134BossTarget||platform.v13BossHeight||0};
+      const result=oldLand.call(this,player,platform),s=this.v134;if(!s)return result;
+
+      if(s.agilityJumps>0&&!platform?.v13Convergence){s.agilityJumps--;player.angularVelocity=clamp(player.angularVelocity*(1+(s.agilityBonus||0)),-1.55,1.55);}
+      if(completed)recordRoute(this,completed.route,completed.clean,completed.avg);
+
+      if(bossBeat){
+        if(s.bossTarget!==bossBeat.target){s.bossTarget=bossBeat.target;s.bossVariant=bossBeat.variant;s.bossRoute=bossBeat.route;s.bossHits=0;s.bossHighQuality=0;s.bossPerfects=0;}
+        const q=this.landingQuality(player,platform);s.bossHits++;if(q>=.58)s.bossHighQuality++;if(q>=.82)s.bossPerfects++;
+        if(bossBeat.route==="safe")player.angularVelocity*=.88;
+        else if(bossBeat.route==="velocity"&&q>=.5)player.verticalVelocity=Math.min(14.2,Math.max(player.verticalVelocity,10.92));
+        else if(bossBeat.route==="precision"&&q>=.72){this.landingScore+=9;this.addFlow?.(.9,"Trial precision");}
+        else if(bossBeat.route==="chaos"&&q>=.5){this.landingScore+=7;this.addFlow?.(.7,"Trial pressure");}
+        else if(bossBeat.route==="treasure"&&bossBeat.index>0&&bossBeat.index%3===0){this.landingScore+=8;}
+      }
+      if(bossFinish){
+        const hits=Math.max(1,s.bossHits),ratio=s.bossHighQuality/hits,perfectRatio=s.bossPerfects/hits;
+        const grade=ratio>=.82&&perfectRatio>=.35?"Crowned":ratio>=.68?"Mastered":ratio>=.5?"Cleared":"Survived";
+        s.bossClears++;s.lastBossGrade=`${bossFinish.variant} · ${grade}`;
+        if(grade==="Crowned"){
+          this.landingScore+=110;this.addFlow?.(8,"Crowned trial");
+          if(this.v132){this.v132.crownJumps=Math.max(this.v132.crownJumps,6);this.v132.focusJumps=Math.max(this.v132.focusJumps,2);}
+        }else if(grade==="Mastered"){
+          this.landingScore+=65;this.addFlow?.(5,"Mastered trial");if(this.v132)this.v132.crownJumps=Math.max(this.v132.crownJumps,5);
+        }else if(grade==="Cleared")this.landingScore+=30;
+        s.restUntil=Math.max(s.restUntil,bossFinish.target+34);
+        if(this.generator)this.generator.v13NextForkY=Math.max(this.generator.v13NextForkY||0,s.restUntil);
+        s.bossTarget=0;s.bossHits=0;s.bossHighQuality=0;s.bossPerfects=0;
+      }
+      return result;
+    };
+
+    PlayerProto.update=function(dt){
+      const result=oldPlayerUpdate.call(this,dt),s=this.game?.v134;
+      if(s?.agilityJumps>0&&this.game.state==="playing"){
+        const axis=this.game.input?.angularAxis||0;if(axis)this.angularVelocity=clamp(this.angularVelocity+axis*(s.agilityBonus||0)*.045*dt*60,-1.55,1.55);
+      }
+      return result;
+    };
+
+    GameProto.resetRun=function(...args){
+      this.v134=null;initRun(this);const result=oldReset.apply(this,args);if(!this.v134)initRun(this);return result;
+    };
+
+    GameProto.setState=function(next,...rest){
+      const result=oldSetState.call(this,next,...rest);
+      if(next==="gameover")setTimeout(()=>{
+        const summary=document.getElementById("v13-run-summary"),s=this.v134;if(!summary||!s)return;
+        summary.querySelectorAll?.(".v134-result")?.forEach?.(n=>n.remove());
+        const extra=document.createElement("span");extra.className="v134-result";
+        extra.innerHTML=` · Crests: <strong>${s.crests}</strong>${s.lastCrest?` · Last crest: <strong>${s.lastCrest}</strong>`:""}${s.lastBossGrade?` · Trial: <strong>${s.lastBossGrade}</strong>`:""}`;
+        summary.appendChild(extra);
+      },70);
+      return result;
+    };
+
+    const applyLabels=()=>{
+      document.title=`Skyspire v${VERSION} — Ascent Arcs`;
+      const brand=document.querySelector("#v126-home .v126-brand p");if(brand)brand.textContent="Build route patterns, earn ascent crests, and face traversal trials shaped by the run you created.";
+      const chip=document.getElementById("v11-release-chip");if(chip)chip.textContent=`v${VERSION}`;
+      const eyebrow=document.querySelector("#menu-overlay>.panel>.eyebrow");if(eyebrow)eyebrow.textContent=`v${VERSION} · Ascent Arcs`;
+      if(window.SkyspireV13)window.SkyspireV13.version=VERSION;if(window.SkyspireV131)window.SkyspireV131.version=VERSION;if(window.SkyspireV132)window.SkyspireV132.version=VERSION;if(window.SkyspireV133)window.SkyspireV133.version=VERSION;
+    };
+    applyLabels();const guard=setInterval(applyLabels,100);setTimeout(()=>{clearInterval(guard);applyLabels();},3200);
+    window.SkyspireV134={version:VERSION,chapters:CHAPTERS};
+  }
+  if(document.readyState==="loading")window.addEventListener("DOMContentLoaded",()=>setTimeout(setup,0),{once:true});else setTimeout(setup,0);
+})();
+</script>
+
+
+<style id="v13-5-flowcraft-style">
+/* Skyspire v13.5 — Flowcraft. Traversal expression with no additional gameplay HUD. */
+#gameover-overlay.v13-results #v13-run-summary .v135-result{color:#c8d9d4}
+</style>
+<script id="v13-5-flowcraft">
+(() => {
+  "use strict";
+  const VERSION="13.5.0";
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const TECHNIQUE_META=Object.freeze({
+    "Apex Cut":{score:15,flow:1.5,tone:760,kind:"crystal"},
+    "Brake Catch":{score:13,flow:1.25,tone:590,kind:"land"},
+    "Rail Ride":{score:14,flow:1.4,tone:820,kind:"bounce"},
+    "Counter-Carve":{score:17,flow:1.7,tone:540,kind:"land"},
+    "Ice Carve":{score:18,flow:1.8,tone:680,kind:"crystal"},
+    "Moving Catch":{score:16,flow:1.6,tone:720,kind:"wind"},
+    "Pulse Thread":{score:20,flow:2.1,tone:920,kind:"bounce"},
+    "Quickstep":{score:16,flow:1.5,tone:630,kind:"debris"}
+  });
+
+  function setup(){
+    const g=window.skyspireGame;
+    if(!g?.v134Installed||!window.SkyspireV134){setTimeout(setup,30);return;}
+    if(g.v135Installed)return;
+    g.v135Installed=true;
+    const GameProto=g.constructor.prototype;
+    const PlayerProto=g.player.constructor.prototype;
+    const oldLand=GameProto.landPlayer;
+    const oldPlayerUpdate=PlayerProto.update;
+    const oldReset=GameProto.resetRun;
+    const oldSetState=GameProto.setState;
+
+    function initRun(game){
+      game.v135={
+        jump:null,
+        techniques:0,
+        techniqueCounts:{},
+        lastTechnique:"",
+        techniqueWindow:[],
+        weaves:0,
+        flowcraftJumps:0,
+        flowcraftStrength:0,
+        routeTechniqueCounts:new Map(),
+        routeTechniqueClears:0,
+        bossTarget:0,
+        bossTechniques:0,
+        bestBrake:0,
+        apexCuts:0
+      };
+    }
+    initRun(g);
+
+    function beginJump(game,player){
+      const axis=game.input?.angularAxis||0;
+      game.v135.jump={
+        lastAxis:axis||0,
+        lastVy:player.verticalVelocity||0,
+        apexCut:0,
+        brakeTime:0,
+        brakeQuality:0,
+        peakAngular:Math.abs(player.angularVelocity||0),
+        startedAt:game.runTime||0
+      };
+    }
+
+    function registerTechnique(game,name,platform,quality){
+      const state=game.v135,meta=TECHNIQUE_META[name];
+      if(!state||!meta)return;
+      state.techniques++;
+      state.lastTechnique=name;
+      state.techniqueCounts[name]=(state.techniqueCounts[name]||0)+1;
+      game.landingScore+=meta.score+Math.floor(clamp(quality,0,1)*7);
+      game.addFlow?.(meta.flow,name);
+      game.audio?.tone?.(meta.tone,.075,{volume:.026,endFrequency:meta.tone*1.12});
+      game.particles?.emit?.(game.player.centerPosition,meta.kind,5,{spread:.34,up:.45,sizeMin:2.5,sizeMax:5.5,lifeMin:.2,lifeMax:.4});
+
+      if(platform?.v13SegmentId){
+        const id=platform.v13SegmentId;
+        state.routeTechniqueCounts.set(id,(state.routeTechniqueCounts.get(id)||0)+1);
+      }
+
+      state.techniqueWindow.push(name);
+      if(state.techniqueWindow.length>4)state.techniqueWindow.shift();
+      const distinct=new Set(state.techniqueWindow);
+      if(state.techniqueWindow.length>=3&&distinct.size>=3){
+        state.weaves++;
+        state.techniqueWindow=[];
+        state.flowcraftJumps=Math.max(state.flowcraftJumps,4);
+        state.flowcraftStrength=Math.max(state.flowcraftStrength,.075);
+        game.landingScore+=42;
+        game.addFlow?.(4,"Flow weave");
+        game.audio?.tone?.(980,.11,{volume:.035,endFrequency:1240});
+        game.particles?.emit?.(game.player.centerPosition,"crystal",9,{spread:.55,up:.85,sizeMin:3,sizeMax:6});
+      }
+    }
+
+    function platformTangentialSpeed(platform){
+      if(!platform?.velocity)return 0;
+      const tangentX=-Math.sin(platform.angle||0),tangentZ=Math.cos(platform.angle||0);
+      return (platform.velocity.x||0)*tangentX+(platform.velocity.z||0)*tangentZ;
+    }
+
+    function chooseTechnique(game,player,platform,quality,jump,axis,preAngular){
+      if(!platform||platform.recovery||platform.checkpoint)return "";
+      const absAngular=Math.abs(preAngular||0);
+      if(platform.type==="conveyor"&&quality>=.44){
+        const belt=Math.sign(platform.v1211kConveyorDir||1)||1;
+        if(axis===belt)return "Rail Ride";
+        if(axis===-belt)return "Counter-Carve";
+      }
+      if(platform.type==="slippery"&&quality>=.46&&jump?.brakeQuality>=.56)return "Ice Carve";
+      const moving=["moving","rotating","elevator","oneway"].includes(platform.type);
+      if(moving&&quality>=.66&&Math.abs(platformTangentialSpeed(platform))>=.10)return "Moving Catch";
+      if(platform.v1212PulsePad&&quality>=.8)return "Pulse Thread";
+      if(platform.type==="collapse"&&quality>=.72&&(jump?.brakeQuality>=.35||absAngular<=.42))return "Quickstep";
+      if(jump?.apexCut>=.62&&quality>=.54)return "Apex Cut";
+      if(jump?.brakeQuality>=.62&&quality>=.48)return "Brake Catch";
+      return "";
+    }
+
+    PlayerProto.update=function(dt){
+      const game=this.game,state=game?.v135;
+      if(!state)return oldPlayerUpdate.call(this,dt);
+      if(game.state==="playing"&&this.airborne&&!state.jump)beginJump(game,this);
+      const jump=state.jump;
+      const beforeVy=this.verticalVelocity||0;
+      const beforeAngular=this.angularVelocity||0;
+      const result=oldPlayerUpdate.call(this,dt);
+      if(game.state!=="playing"||!this.airborne||!jump)return result;
+
+      const axis=game.input?.angularAxis||0;
+      const vy=this.verticalVelocity||0;
+      const angular=this.angularVelocity||0;
+      jump.peakAngular=Math.max(jump.peakAngular||0,Math.abs(angular));
+
+      /* A deliberate direction change close to the apex is an Apex Cut. */
+      if(axis&&jump.lastAxis&&axis!==jump.lastAxis&&Math.abs(vy)<=2.45&&jump.apexCut<.01){
+        const precision=clamp(1-Math.abs(vy)/2.45,0,1);
+        jump.apexCut=precision;
+      }
+      if(axis)jump.lastAxis=axis;
+
+      /* Counter-steering while descending builds a Brake Catch. */
+      const angularSign=Math.sign(angular);
+      if(vy<-.65&&axis&&angularSign&&axis===-angularSign&&Math.abs(angular)>.13){
+        jump.brakeTime+=dt;
+        const timeQuality=clamp(jump.brakeTime/.22,0,1);
+        const reduction=jump.peakAngular>.01?clamp(1-Math.abs(angular)/jump.peakAngular,0,1):0;
+        jump.brakeQuality=Math.max(jump.brakeQuality,timeQuality*.68+reduction*.32);
+        state.bestBrake=Math.max(state.bestBrake,jump.brakeQuality);
+      }else jump.brakeTime=Math.max(0,jump.brakeTime-dt*.45);
+
+      /* Technique rewards improve response, never jump height or validated arcs. */
+      if(state.flowcraftJumps>0&&axis){
+        const strength=clamp(state.flowcraftStrength,.035,.095);
+        this.angularVelocity=clamp(this.angularVelocity+axis*strength*.0038*dt*60,-1.55,1.55);
+      }
+      jump.lastVy=vy;
+      return result;
+    };
+
+    GameProto.landPlayer=function(player,platform){
+      const state=this.v135;
+      if(!state)return oldLand.call(this,player,platform);
+      const jump=state.jump;
+      const quality=platform?this.landingQuality(player,platform):0;
+      const axis=this.input?.angularAxis||0;
+      const preAngular=player.angularVelocity||0;
+      const preSegment=platform?.v13SegmentId||0;
+      const bossTarget=platform?.v134BossTarget||platform?.v13BossHeight||0;
+      if(platform?.v13Boss&&!platform?.v13BossFinish&&bossTarget&&state.bossTarget!==bossTarget){state.bossTarget=bossTarget;state.bossTechniques=0;}
+      const technique=chooseTechnique(this,player,platform,quality,jump,axis,preAngular);
+      const result=oldLand.call(this,player,platform);
+
+      /* Platform-specific expression changes only lateral control. */
+      if(technique==="Counter-Carve")player.angularVelocity*=.80;
+      else if(technique==="Ice Carve")player.angularVelocity*=.84;
+      else if(technique==="Brake Catch")player.angularVelocity*=.90;
+      else if(technique==="Apex Cut"){
+        state.apexCuts++;
+        state.flowcraftJumps=Math.max(state.flowcraftJumps,3);
+        state.flowcraftStrength=Math.max(state.flowcraftStrength,.055+.025*(jump?.apexCut||0));
+      }else if(technique==="Moving Catch"){
+        state.flowcraftJumps=Math.max(state.flowcraftJumps,3);
+        state.flowcraftStrength=Math.max(state.flowcraftStrength,.052);
+      }else if(technique==="Rail Ride"){
+        state.flowcraftJumps=Math.max(state.flowcraftJumps,3);
+        state.flowcraftStrength=Math.max(state.flowcraftStrength,.05);
+      }
+
+      if(technique){
+        registerTechnique(this,technique,platform,quality);
+        if(platform?.v13Boss&&!platform?.v13BossFinish)state.bossTechniques++;
+      }
+
+      /* Reward expressive route clears without changing the branch physics. */
+      if(platform?.v13Convergence&&preSegment){
+        const n=state.routeTechniqueCounts.get(preSegment)||0;
+        if(n>=2){
+          state.routeTechniqueClears++;
+          this.landingScore+=18+Math.min(18,(n-2)*6);
+          this.addFlow?.(2+Math.min(2,n-2),"Expressive route");
+        }
+        state.routeTechniqueCounts.delete(preSegment);
+      }
+
+      /* Techniques inside a traversal trial add a small mastery payoff. */
+      if(platform?.v13BossFinish){
+        if(state.bossTechniques>=3){
+          this.landingScore+=55+Math.min(45,(state.bossTechniques-3)*9);
+          this.addFlow?.(4,"Flowcraft trial");
+          this.audio?.tone?.(860,.12,{volume:.032,endFrequency:1120});
+        }
+        state.bossTarget=0;state.bossTechniques=0;
+      }
+
+      if(state.flowcraftJumps>0)state.flowcraftJumps--;
+      if(state.flowcraftJumps<=0)state.flowcraftStrength=0;
+      state.jump=null;
+      return result;
+    };
+
+    GameProto.resetRun=function(...args){
+      this.v135=null;initRun(this);
+      const result=oldReset.apply(this,args);
+      if(!this.v135)initRun(this);
+      return result;
+    };
+
+    GameProto.setState=function(next,...rest){
+      const result=oldSetState.call(this,next,...rest);
+      if(next==="gameover")setTimeout(()=>{
+        const summary=document.getElementById("v13-run-summary"),s=this.v135;if(!summary||!s)return;
+        summary.querySelectorAll?.(".v135-result")?.forEach?.(n=>n.remove());
+        const extra=document.createElement("span");extra.className="v135-result";
+        extra.innerHTML=` · Techniques: <strong>${s.techniques}</strong> · Flow weaves: <strong>${s.weaves}</strong>`;
+        summary.appendChild(extra);
+      },90);
+      return result;
+    };
+
+    const applyLabels=()=>{
+      document.title=`Skyspire v${VERSION} — Flowcraft`;
+      const brand=document.querySelector("#v126-home .v126-brand p");if(brand)brand.textContent="Express the climb through apex cuts, counter-steering, moving catches, and clean route technique.";
+      const chip=document.getElementById("v11-release-chip");if(chip)chip.textContent=`v${VERSION}`;
+      const eyebrow=document.querySelector("#menu-overlay>.panel>.eyebrow");if(eyebrow)eyebrow.textContent=`v${VERSION} · Flowcraft`;
+      if(window.SkyspireV13)window.SkyspireV13.version=VERSION;
+      if(window.SkyspireV131)window.SkyspireV131.version=VERSION;
+      if(window.SkyspireV132)window.SkyspireV132.version=VERSION;
+      if(window.SkyspireV133)window.SkyspireV133.version=VERSION;
+      if(window.SkyspireV134)window.SkyspireV134.version=VERSION;
+    };
+    applyLabels();const guard=setInterval(applyLabels,100);setTimeout(()=>{clearInterval(guard);applyLabels();},3800);
+    window.SkyspireV135={version:VERSION,techniques:Object.keys(TECHNIQUE_META)};
+  }
+  if(document.readyState==="loading")window.addEventListener("DOMContentLoaded",()=>setTimeout(setup,0),{once:true});else setTimeout(setup,0);
+})();
+</script>
+
+<style id="v13-6-strata-style">
+/* Skyspire v13.6 — Strata of the Spire. World progression without HUD clutter. */
+#gameover-overlay.v13-results #v13-run-summary .v136-result{color:#c8d7d2}
+</style>
+<script id="v13-6-strata">
+(() => {
+  "use strict";
+  const VERSION="13.6.0";
+  const TAU=Math.PI*2;
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const REGIONS=Object.freeze([
+    {at:0,key:"stoneward",name:"Stoneward",short:"STONEWARD",templates:["gentleSpiral","alternate","staircase","bridge"],clouds:1,islands:1,
+      palette:{background:0x789dac,fog:0xaabfc5,tower:0x4c585b,detail:0xa08458,stone:0x727f82,top:0xc7c9c1,accent:0xe5bc6b,kinetic:0x7199a0,danger:0xb77e61,sun:0xffe3b5,hemi:0xdff5f1}},
+    {at:180,key:"gearworks",name:"Gearworks",short:"GEARWORKS",templates:["movingLesson","rotatingSequence","elevatorSequence","bridge"],clouds:.72,islands:.75,
+      palette:{background:0x667d86,fog:0x94a6a9,tower:0x303b3f,detail:0xb0784c,stone:0x59676a,top:0xb8beb8,accent:0xf0a45f,kinetic:0x7ba5aa,danger:0xc97055,sun:0xffd3a0,hemi:0xcce7e5}},
+    {at:420,key:"crystalReach",name:"Crystal Reach",short:"CRYSTAL",templates:["alternate","rotatingSequence","collapseRun","movingLesson"],clouds:.54,islands:.45,
+      palette:{background:0x4c6088,fog:0x7f91ae,tower:0x343f59,detail:0x7e91b0,stone:0x61729b,top:0xc2d1df,accent:0x86e5e7,kinetic:0x7896c5,danger:0xc17c90,sun:0xdff7ff,hemi:0xbfdaf6}},
+    {at:700,key:"skyCloister",name:"Sky Cloister",short:"CLOISTER",templates:["elevatorSequence","staircase","bridge","alternate"],clouds:.82,islands:.34,
+      palette:{background:0x89adbb,fog:0xc2d2d3,tower:0x77796e,detail:0xb89558,stone:0xa2a59b,top:0xe4e2d7,accent:0xe8ca75,kinetic:0x8aa5a2,danger:0xb87962,sun:0xffedc8,hemi:0xe6f4ef}},
+    {at:1000,key:"tempestCrown",name:"Tempest Crown",short:"TEMPEST",templates:["movingLesson","rotatingSequence","alternate","elevatorSequence"],clouds:1,islands:.16,
+      palette:{background:0x17313b,fog:0x31535a,tower:0x293f42,detail:0x7da49e,stone:0x415c5d,top:0xaac9c5,accent:0x9be6d9,kinetic:0x5b9693,danger:0xd17e67,sun:0xd8fff5,hemi:0xafdcd3}},
+    {at:1400,key:"astralForge",name:"Astral Forge",short:"FORGE",templates:["rotatingSequence","collapseRun","movingLesson","elevatorSequence"],clouds:.34,islands:.08,
+      palette:{background:0x171927,fog:0x313448,tower:0x353845,detail:0xb28f62,stone:0x505464,top:0xb8b9bf,accent:0xf0c37c,kinetic:0x8978a7,danger:0xd2685d,sun:0xffd79e,hemi:0xc8c7df}},
+    {at:1900,key:"endlessCrown",name:"Endless Crown",short:"CROWN",templates:["movingLesson","rotatingSequence","collapseRun","elevatorSequence","alternate"],clouds:.42,islands:0,
+      palette:{background:0x121626,fog:0x2b3148,tower:0x323647,detail:0x9d8a72,stone:0x4a5268,top:0xaeb8cc,accent:0xcab1e5,kinetic:0x7189b5,danger:0xc86d75,sun:0xe7dcff,hemi:0xb9cbed}}
+  ]);
+  const ENDLESS_VARIANTS=[
+    {accent:0xcab1e5,background:0x121626,fog:0x2b3148,detail:0x9d8a72,kinetic:0x7189b5,sun:0xe7dcff},
+    {accent:0x8edfd4,background:0x0e1d25,fog:0x25414a,detail:0x6e9c96,kinetic:0x548b8b,sun:0xd9fff4},
+    {accent:0xf0c77f,background:0x211820,fog:0x41313b,detail:0xb48b62,kinetic:0x8f718d,sun:0xffddaa}
+  ];
+
+  function regionAt(height){
+    let base=REGIONS[0];for(const r of REGIONS)if(height>=r.at)base=r;
+    if(base.key!=="endlessCrown")return {...base,tier:1,cycle:0};
+    const cycle=Math.floor(Math.max(0,height-base.at)/340),variant=ENDLESS_VARIANTS[cycle%ENDLESS_VARIANTS.length],tier=1+Math.floor(cycle/ENDLESS_VARIANTS.length);
+    return {...base,cycle,tier,name:`Endless Crown ${tier}`,palette:{...base.palette,...variant}};
+  }
+  function regionCategory(platform){
+    if(platform.checkpoint)return "checkpoint";
+    if(platform.type==="bounce")return "boost";
+    if(["moving","rotating","elevator","oneway","conveyor"].includes(platform.type))return "kinetic";
+    if(["collapse","fake","splitting","slippery"].includes(platform.type))return "fragile";
+    return "normal";
+  }
+  function hexColor(v){return new THREE.Color(v);}
+
+  function setup(){
+    const g=window.skyspireGame;
+    if(!g?.v135Installed||!window.SkyspireV135){setTimeout(setup,30);return;}
+    if(g.v136Installed)return;
+    g.v136Installed=true;
+    const GameProto=g.constructor.prototype;
+    const GenProto=g.generator.constructor.prototype;
+    const PlayerProto=g.player.constructor.prototype;
+    const oldChooseTemplate=GenProto.chooseTemplate;
+    const oldAddPlatform=GenProto.addPlatform;
+    const oldSpawnFork=GenProto.spawnV13Fork;
+    const oldSpawnBoss=GenProto.spawnV13Boss;
+    const oldLand=GameProto.landPlayer;
+    const oldPlayerUpdate=PlayerProto.update;
+    const oldReset=GameProto.resetRun;
+    const oldSetState=GameProto.setState;
+    const oldUpdatePlaying=GameProto.updatePlaying;
+    const oldUpdateTowerSegments=GameProto.updateTowerSegments;
+    const oldUpdateDecor=GameProto.updateDecor;
+
+    function initRun(game){
+      game.v136={currentKey:"",currentName:"Stoneward",regionsVisited:new Set(),regionChanges:0,gearLandings:0,prismLandings:0,stillLandings:0,gustLandings:0,forgeLandings:0,gustJumps:0,gustDir:0,controlJumps:0,controlBonus:0,lastRegionHeight:0};
+    }
+    initRun(g);
+
+    function platformMaterials(game,region,platform){
+      if(!platform?.baseMesh||platform.type==="disappear")return;
+      const p=region.palette,category=regionCategory(platform),skin=game.profile?.selected?.platform||"classic";
+      const glass=skin==="glass";
+      let base=p.stone,top=p.top,accent=p.accent,rough=.72,metal=.08;
+      if(category==="kinetic"){base=p.kinetic;rough=.38;metal=.42;}
+      else if(category==="fragile"){base=p.danger;rough=.68;metal=.05;}
+      else if(category==="checkpoint"){base=p.accent;top=p.top;rough=.46;metal=.16;}
+      else if(category==="boost"){base=p.accent;top=p.accent;rough=.34;metal=.18;}
+      if(glass){rough=.2;metal=.18;}
+      const suffix=`${region.key}-${region.cycle||0}-${category}-${skin}`;
+      const baseMat=game.resources.standard(`v136-base-${suffix}`,{color:base,roughness:rough,metalness:metal,transparent:glass,opacity:glass?.76:1,emissive:category==="boost"?accent:0x000000,emissiveIntensity:category==="boost"?.32:0});
+      const topMat=game.resources.standard(`v136-top-${suffix}`,{color:top,roughness:Math.max(.16,rough-.12),metalness:metal,transparent:glass,opacity:glass?.76:1,emissive:category==="checkpoint"||category==="boost"?accent:0x000000,emissiveIntensity:category==="boost"?.38:category==="checkpoint"?.16:0});
+      const rimMat=game.resources.basic(`v136-rim-${region.key}-${region.cycle||0}`,{color:accent,transparent:true,opacity:skin==="rune"?.46:.22,depthWrite:false});
+      platform.baseMesh.material=baseMat;platform.topMesh.material=topMat;
+      if(platform.rim)platform.rim.material=rimMat;
+      if(platform.indicator&&category!=="fragile")platform.indicator.material=rimMat;
+      platform.v136VisualRegion=region.key;
+    }
+
+    function traitFor(region,platform,index){
+      if(!platform||platform.checkpoint||platform.recovery||platform.v13Boss)return "";
+      const i=Math.max(1,index||1),key=region.key;
+      if(key==="gearworks"&&i%3===0)return "gear";
+      if(key==="crystalReach"&&i%3===1)return "prism";
+      if(key==="skyCloister"&&i%4===0)return "still";
+      if(key==="tempestCrown"&&i%3===0)return "gust";
+      if(key==="astralForge"&&i%3===1)return "forge";
+      if(key==="endlessCrown"){
+        const cycle=region.cycle%3;
+        if(cycle===0&&i%3===0)return "forge";
+        if(cycle===1&&i%3===0)return "gust";
+        if(cycle===2&&i%3===1)return "prism";
+      }
+      return "";
+    }
+
+    function applyStratum(platform,index){
+      if(!platform)return;
+      const region=regionAt(platform.topY||0);
+      platform.v136Region=region.key;platform.v136RegionName=region.name;
+      platform.v136Trait=traitFor(region,platform,index);
+      platformMaterials(platform.game,region,platform);
+    }
+
+    GenProto.chooseTemplate=function(){
+      if(this.game.mode==="practice"||this.game.v9TrialActive||this.v12TrialActive)return oldChooseTemplate.call(this);
+      const region=regionAt(this.highest||0),pool=region.templates||[];
+      if(!pool.length)return oldChooseTemplate.call(this);
+      let candidates=pool.slice();
+      const recent=this.recentTemplates||[];
+      if(recent.length){const last=recent.at(-1);candidates=candidates.filter(x=>x!==last);if(!candidates.length)candidates=pool.slice();}
+      const chosen=this.game.rng.pick(candidates,pool[0]);
+      recent.push(chosen);if(recent.length>5)recent.shift();this.recentTemplates=recent;
+      return chosen;
+    };
+
+    GenProto.addPlatform=function(chunk,spec){
+      const p=oldAddPlatform.call(this,chunk,spec);
+      applyStratum(p,this.primaryPlatformCount+(p?.primaryRoute===false?(chunk?.platforms?.length||0):0));
+      return p;
+    };
+
+    GenProto.spawnV13Fork=function(...args){
+      const result=oldSpawnFork.apply(this,args);
+      const segmentId=this.game.v13?.segmentCounter||0,segment=this.v13Segments?.get(segmentId);
+      if(segment){
+        [...(segment.a||[]),...(segment.b||[]),segment.convergence].filter(Boolean).forEach((p,i)=>applyStratum(p,i+1));
+        segment.v136Region=regionAt(segment.entry?.topY||this.highest||0).key;
+      }
+      return result;
+    };
+
+    GenProto.spawnV13Boss=function(target,boss){
+      const chunk=oldSpawnBoss.call(this,target,boss);
+      (chunk?.platforms||[]).forEach((p,i)=>applyStratum(p,i+1));
+      return chunk;
+    };
+
+    function createArchitecture(game){
+      if(game.v136Architecture?.length)return;
+      game.v136Architecture=[];
+      const geo=game.resources.geometries;
+      for(const segment of game.towerSegments||[]){
+        const root=new THREE.Group();root.name="v136-strata-architecture";segment.add(root);
+        const pieces=[];
+        for(let i=0;i<8;i++){
+          const mesh=new THREE.Mesh(geo.support,game.towerDetailMaterial);mesh.castShadow=false;mesh.receiveShadow=false;root.add(mesh);pieces.push(mesh);
+        }
+        root.userData.pieces=pieces;root.userData.key="";game.v136Architecture.push(root);
+      }
+    }
+
+    function archMaterial(game,region,accent=false){
+      const color=accent?region.palette.accent:region.palette.detail,metallic=region.key==="gearworks"||region.key==="astralForge";
+      return game.resources.standard(`v136-arch-${region.key}-${region.cycle||0}-${accent?1:0}`,{color,roughness:metallic?.36:.68,metalness:metallic?.48:.08,emissive:region.key==="endlessCrown"&&accent?color:0x000000,emissiveIntensity:region.key==="endlessCrown"&&accent?.16:0});
+    }
+
+    function setPiece(mesh,geometry,material,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0){
+      mesh.visible=true;mesh.geometry=geometry;mesh.material=material;mesh.position.set(x,y,z);mesh.scale.set(sx,sy,sz);mesh.rotation.set(rx,ry,rz);
+    }
+    function configureArchitecture(game,root,region){
+      const key=`${region.key}:${region.cycle||0}`;if(root.userData.key===key)return;root.userData.key=key;
+      const pieces=root.userData.pieces||[],geo=game.resources.geometries,mat=archMaterial(game,region,false),accent=archMaterial(game,region,true),R=5.22;
+      for(const p of pieces)p.visible=false;
+      if(region.key==="stoneward"){
+        pieces.forEach((p,i)=>{const a=i/8*TAU;setPiece(p,geo.support,i%2?accent:mat,Math.cos(a)*R,(i%4-1.5)*10,Math.sin(a)*R,.22,3.8,.34,0,-a,0);});
+      }else if(region.key==="gearworks"){
+        for(let i=0;i<3;i++)setPiece(pieces[i],geo.platformRim,accent,0,(i-1)*17,0,7.1,7.1,7.1,Math.PI/2,0,0);
+        for(let i=3;i<8;i++){const a=(i-3)/5*TAU;setPiece(pieces[i],geo.support,mat,Math.cos(a)*R,(i%2?9:-9),Math.sin(a)*R,.16,.18,2.2,0,-a,0);}
+      }else if(region.key==="crystalReach"){
+        pieces.forEach((p,i)=>{const a=i/8*TAU;setPiece(p,geo.crystal,i%2?accent:mat,Math.cos(a)*(R+.18),(i%4-1.5)*11,Math.sin(a)*(R+.18),.55,2.5+(i%3)*.35,.55,0,a*.5,(i%2?1:-1)*.18);});
+      }else if(region.key==="skyCloister"){
+        for(let i=0;i<6;i++){const a=i/6*TAU;setPiece(pieces[i],geo.cylinder,mat,Math.cos(a)*R,(i%2?10:-10),Math.sin(a)*R,.14,3.8,.14,0,0,0);}
+        setPiece(pieces[6],geo.support,accent,0,18,R,.95,.13,.18,0,0,0);setPiece(pieces[7],geo.support,accent,0,-18,-R,.95,.13,.18,0,0,0);
+      }else if(region.key==="tempestCrown"){
+        pieces.forEach((p,i)=>{const a=i/8*TAU;setPiece(p,geo.support,i%3===0?accent:mat,Math.cos(a)*(R+.08),(i%4-1.5)*12,Math.sin(a)*(R+.08),1.05,.10,.28,0,-a,(i%2?1:-1)*.42);});
+      }else if(region.key==="astralForge"){
+        for(let i=0;i<3;i++)setPiece(pieces[i],geo.platformRim,i===1?accent:mat,0,(i-1)*18,0,7.3,7.3,7.3,Math.PI/2,0,(i-1)*.08);
+        for(let i=3;i<8;i++){const a=(i-3)/5*TAU+.25;setPiece(pieces[i],geo.support,accent,Math.cos(a)*R,(i%2?11:-11),Math.sin(a)*R,.12,.12,2.5,0,-a,(i%2?1:-1)*.12);}
+      }else{
+        pieces.forEach((p,i)=>{const a=i/8*TAU;const useRing=i<2;if(useRing)setPiece(p,geo.platformRim,accent,0,(i?18:-18),0,7.2,7.2,7.2,Math.PI/2,0,i?.16:-.16);else setPiece(p,geo.crystal,i%2?accent:mat,Math.cos(a)*(R+.2),(i%3-1)*14,Math.sin(a)*(R+.2),.38,2.8,.38,0,a,(i%2?1:-1)*.16);});
+      }
+    }
+
+    function applyAtmosphere(game,height){
+      const region=regionAt(height),p=region.palette;
+      game.targetBackgroundColor?.setHex?.(p.background);game.targetFogColor?.setHex?.(p.fog);
+      if(game.targetTowerColor)game.targetTowerColor.copy(game.towerColorFor({tower:p.tower,detail:p.detail}));
+      if(game.targetDetailColor)game.targetDetailColor.copy(game.detailColorFor({tower:p.tower,detail:p.detail}));
+      if(game.sun?.color)game.sun.color.setHex(p.sun);if(game.hemi?.color)game.hemi.color.setHex(p.hemi);
+      if(game.sun)game.sun.intensity=region.key==="tempestCrown"?2.45:region.key==="crystalReach"?2.7:2.85;
+      if(game.hemi)game.hemi.intensity=region.key==="astralForge"||region.key==="endlessCrown"?1.72:2.0;
+      if(game.scene?.fog){game.scene.fog.near=region.key==="tempestCrown"?27:30;game.scene.fog.far=region.key==="tempestCrown"?102:region.key==="endlessCrown"?112:118;}
+      return region;
+    }
+
+    GameProto.updateTowerSegments=function(centerHeight){
+      const result=oldUpdateTowerSegments.call(this,centerHeight);createArchitecture(this);
+      for(let i=0;i<(this.towerSegments||[]).length;i++){
+        const segment=this.towerSegments[i],root=this.v136Architecture?.[i];if(!segment||!root)continue;
+        configureArchitecture(this,root,regionAt(segment.position.y||centerHeight));
+      }
+      return result;
+    };
+
+    GameProto.updateDecor=function(centerHeight,dt){
+      const result=oldUpdateDecor.call(this,centerHeight,dt),region=regionAt(centerHeight);
+      const qualityScale=this.settings?.quality==="Low"?.55:this.settings?.quality==="Medium"?.82:1;
+      const cloudKeep=Math.floor((this.clouds?.length||0)*region.clouds*qualityScale),islandKeep=Math.floor((this.islands?.length||0)*region.islands*qualityScale);
+      (this.clouds||[]).forEach((x,i)=>{x.visible=i<cloudKeep;});(this.islands||[]).forEach((x,i)=>{x.visible=i<islandKeep;});
+      return result;
+    };
+
+    GameProto.updatePlaying=function(dt){
+      const result=oldUpdatePlaying.call(this,dt);if(this.state!=="playing")return result;
+      const h=Math.max(0,this.player?.maxHeight||0),region=applyAtmosphere(this,h),state=this.v136;
+      if(state&&state.currentKey!==`${region.key}:${region.cycle||0}`){
+        state.currentKey=`${region.key}:${region.cycle||0}`;state.currentName=region.name;state.regionChanges++;state.regionsVisited.add(region.key);state.lastRegionHeight=h;
+        if(h>35)this.audio?.tone?.(region.palette.accent===0xf0c37c?520:680,.12,{volume:.025,endFrequency:820});
+      }
+      return result;
+    };
+
+    PlayerProto.update=function(dt){
+      const result=oldPlayerUpdate.call(this,dt),state=this.game?.v136;if(!state||this.game.state!=="playing")return result;
+      if(this.airborne&&state.gustJumps>0){
+        const region=regionAt(this.footY),strength=.52+Math.min(.16,(region.tier||1)*.025);this.angularVelocity=clamp(this.angularVelocity+state.gustDir*strength*dt,-1.58,1.58);
+      }
+      if(this.airborne&&state.controlJumps>0){const axis=this.game.input?.angularAxis||0;if(axis)this.angularVelocity=clamp(this.angularVelocity+axis*(state.controlBonus||.02)*dt*3.2,-1.58,1.58);}
+      return result;
+    };
+
+    GameProto.landPlayer=function(player,platform){
+      const trait=platform?.v136Trait||"",quality=platform?this.landingQuality(player,platform):0,region=regionAt(platform?.topY||player?.maxHeight||0);
+      const result=oldLand.call(this,player,platform),state=this.v136;if(!state)return result;
+      if(state.gustJumps>0)state.gustJumps--;
+      if(state.controlJumps>0)state.controlJumps--;
+      if(trait==="gear"){
+        state.gearLandings++;if(quality>=.45){player.angularVelocity=clamp(player.angularVelocity*1.09,-1.52,1.52);this.landingScore+=6;}
+      }else if(trait==="prism"){
+        state.prismLandings++;if(quality>=.7){player.angularVelocity*=.82;state.controlJumps=Math.max(state.controlJumps,2);state.controlBonus=Math.max(state.controlBonus,.028);this.addFlow?.(1.1,"Prism landing");}
+      }else if(trait==="still"){
+        state.stillLandings++;player.angularVelocity*=.58;if(quality>=.72)this.addFlow?.(.8,"Cloister landing");
+      }else if(trait==="gust"){
+        state.gustLandings++;state.gustJumps=Math.max(state.gustJumps,1);state.gustDir=Math.sin((platform.topY||0)*.37+(platform.angle||0)*2)>=0?1:-1;
+      }else if(trait==="forge"){
+        state.forgeLandings++;if(quality>=.52){state.controlJumps=Math.max(state.controlJumps,2);state.controlBonus=Math.max(state.controlBonus,.036);this.landingScore+=8;}
+      }
+      if(region.key==="endlessCrown"&&quality>=.82)this.landingScore+=2+Math.min(8,region.tier||1);
+      return result;
+    };
+
+    GameProto.resetRun=function(...args){
+      this.v136=null;initRun(this);const result=oldReset.apply(this,args);createArchitecture(this);if(!this.v136)initRun(this);return result;
+    };
+
+    GameProto.setState=function(next,...rest){
+      const result=oldSetState.call(this,next,...rest);
+      if(next==="gameover")setTimeout(()=>{
+        const summary=document.getElementById("v13-run-summary"),s=this.v136;if(!summary||!s)return;
+        summary.querySelectorAll?.(".v136-result")?.forEach?.(n=>n.remove());
+        const extra=document.createElement("span");extra.className="v136-result";
+        extra.innerHTML=` · Strata crossed: <strong>${s.regionsVisited.size}</strong> · Highest stratum: <strong>${s.currentName}</strong>`;summary.appendChild(extra);
+      },110);
+      return result;
+    };
+
+    createArchitecture(g);applyAtmosphere(g,0);g.updateTowerSegments?.(0);
+    const applyLabels=()=>{
+      document.title=`Skyspire v${VERSION} — Strata of the Spire`;
+      const brand=document.querySelector("#v126-home .v126-brand p");if(brand)brand.textContent="Climb through physically distinct strata where architecture, atmosphere, platform language, and traversal rules evolve with altitude.";
+      const chip=document.getElementById("v11-release-chip");if(chip)chip.textContent=`v${VERSION}`;
+      const eyebrow=document.querySelector("#menu-overlay>.panel>.eyebrow");if(eyebrow)eyebrow.textContent=`v${VERSION} · Strata of the Spire`;
+      for(const key of ["SkyspireV13","SkyspireV131","SkyspireV132","SkyspireV133","SkyspireV134","SkyspireV135"])if(window[key])window[key].version=VERSION;
+    };
+    applyLabels();const guard=setInterval(applyLabels,80);setTimeout(()=>{clearInterval(guard);applyLabels();},4500);
+    window.SkyspireV136={version:VERSION,regions:REGIONS.map(r=>({at:r.at,key:r.key,name:r.name})),regionAt};
+  }
+  if(document.readyState==="loading")window.addEventListener("DOMContentLoaded",()=>setTimeout(setup,0),{once:true});else setTimeout(setup,0);
+})();
+</script>
+
+<style id="v13-7-landmark-style">
+/* Skyspire v13.7 — Landmarks. World-space identity only; no gameplay HUD additions. */
+#gameover-overlay.v13-results #v13-run-summary .v137-result{color:#d9d0bc}
+</style>
+<script id="v13-7-landmarks">
+(() => {
+  "use strict";
+  const VERSION="13.7.0";
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const LANDMARKS=Object.freeze({
+    150:{key:"sunGate",name:"Sun Gate",region:"stoneward",accent:0xe6bd72,types:["static","static","bounce","static","static"],reward:"guard"},
+    350:{key:"grandOrrery",name:"Grand Orrery",region:"gearworks",accent:0xf0a45f,types:["rotating","moving","rotating","elevator","bounce"],reward:"flowcraft"},
+    550:{key:"prismCauseway",name:"Prism Causeway",region:"crystalReach",accent:0x86e5e7,types:["static","slippery","rotating","static","slippery"],reward:"precision"},
+    850:{key:"bellwalk",name:"Bellwalk",region:"skyCloister",accent:0xe8ca75,types:["static","elevator","static","elevator","static"],reward:"stillness"},
+    1150:{key:"stormNeedles",name:"Storm Needles",region:"tempestCrown",accent:0x9be6d9,types:["moving","conveyor","rotating","conveyor","bounce"],reward:"velocity"},
+    1550:{key:"hammerfall",name:"Hammerfall",region:"astralForge",accent:0xf0c37c,types:["rotating","collapse","conveyor","rotating","bounce"],reward:"agility"},
+    2150:{key:"crownObservatory",name:"Crown Observatory",region:"endlessCrown",accent:0xcab1e5,types:["moving","rotating","elevator","slippery","bounce"],reward:"crown"}
+  });
+
+  function setup(){
+    const g=window.skyspireGame;
+    if(!g?.v136Installed||!window.SkyspireV136){setTimeout(setup,30);return;}
+    if(g.v137Installed)return;
+    g.v137Installed=true;
+    const GameProto=g.constructor.prototype;
+    const GenProto=g.generator.constructor.prototype;
+    const oldSpawnChunk=GenProto.spawnChunk;
+    const oldLand=GameProto.landPlayer;
+    const oldReset=GameProto.resetRun;
+    const oldSetState=GameProto.setState;
+
+    function initRun(game){
+      game.v137={landmarks:0,cleared:new Set(),last:"",highest:"",observatories:0};
+    }
+    initRun(g);
+
+    function landmarkAtCheckpoint(target){
+      if(LANDMARKS[target])return {...LANDMARKS[target],at:target,tier:1};
+      if(target>2150&&(target-2150)%700===0){
+        const tier=1+Math.floor((target-2150)/700),base=LANDMARKS[2150];
+        return {...base,at:target,tier,name:`Crown Observatory · Tier ${tier}`};
+      }
+      return null;
+    }
+
+    function makeMat(game,def,opacity=.62,standard=false){
+      const key=`v137-${def.key}-${def.tier||1}-${standard?"std":"basic"}-${opacity}`;
+      if(standard)return game.resources.standard(key,{color:def.accent,roughness:.42,metalness:.28,emissive:def.accent,emissiveIntensity:.12});
+      return game.resources.basic(key,{color:def.accent,transparent:true,opacity,depthWrite:false,side:THREE.DoubleSide});
+    }
+
+    function addLandmarkVisual(platform,def,role="beat"){
+      if(!platform?.group||platform.group.getObjectByName?.(`v137-${role}`))return;
+      const game=platform.game,geo=game.resources.geometries,soft=makeMat(game,def,.42,false),solid=makeMat(game,def,.7,true);
+      const root=new THREE.Group();root.name=`v137-${role}`;root.userData.v137=true;
+      const add=(geometry,material,pos,scale,rot=[0,0,0])=>{
+        const m=new THREE.Mesh(geometry,material);m.position.set(...pos);m.scale.set(...scale);m.rotation.set(...rot);m.castShadow=false;m.receiveShadow=false;root.add(m);return m;
+      };
+      const h=platform.thickness*.55;
+      if(def.key==="sunGate"){
+        if(role!=="beat"){
+          add(geo.support,solid,[-.9,1.05,0],[.09,1.02,.09]);add(geo.support,solid,[.9,1.05,0],[.09,1.02,.09]);
+          add(geo.support,solid,[0,2.04,0],[1.0,.09,.09]);
+        }else add(geo.ring,soft,[0,h+.03,0],[.72,.72,1],[-Math.PI/2,0,0]);
+      }else if(def.key==="grandOrrery"){
+        add(geo.platformRim,soft,[0,.92,0],[1.6,1.6,1.6],[Math.PI/2,0,role==="finish"?.35:-.28]);
+        if(role!=="beat")add(geo.platformRim,soft,[0,.92,0],[1.05,1.05,1.05],[0,Math.PI/2,.25]);
+      }else if(def.key==="prismCauseway"){
+        for(const side of [-1,1])add(geo.crystal,solid,[side*.92,.86,.05],[.32,1.25,.32],[0,side*.35,side*.18]);
+        if(role==="finish")add(geo.ring,soft,[0,h+.04,0],[.9,.9,1],[-Math.PI/2,0,0]);
+      }else if(def.key==="bellwalk"){
+        if(role!=="beat")for(const side of [-1,1])add(geo.cylinder,solid,[side*.9,1.12,0],[.08,1.08,.08]);
+        add(geo.ring,soft,[0,role==="finish"?1.4:h+.04,0],[role==="finish"?1.3:.72,role==="finish"?1.3:.72,1],[role==="finish"?0:-Math.PI/2,0,0]);
+      }else if(def.key==="stormNeedles"){
+        for(const side of [-1,1])add(geo.support,solid,[side*.82,.78,.06],[.08,.74,.12],[0,0,side*.28]);
+        if(role==="finish")add(geo.platformRim,soft,[0,1.02,0],[1.45,1.45,1.45],[Math.PI/2,0,.2]);
+      }else if(def.key==="hammerfall"){
+        add(geo.platformRim,soft,[0,.82,0],[1.28,1.28,1.28],[Math.PI/2,0,role==="finish"?.45:-.2]);
+        if(role!=="beat"){add(geo.support,solid,[-.92,.7,0],[.12,.65,.12],[0,0,.18]);add(geo.support,solid,[.92,.7,0],[.12,.65,.12],[0,0,-.18]);}
+      }else{
+        add(geo.platformRim,soft,[0,1.0,0],[1.55,1.55,1.55],[Math.PI/2,0,.22]);
+        if(role!=="beat")for(const side of [-1,1])add(geo.crystal,solid,[side*.9,.78,0],[.26,1.05,.26],[0,side*.5,side*.18]);
+      }
+      platform.group.add(root);
+      platform.v137Visual=root;
+    }
+
+    function platformSpec(gen,previous,def,index,count,target){
+      const types=def.types,baseType=types[index%types.length];
+      const sign=(index%2?1:-1)*(Math.floor(target/50)%2?1:-1);
+      const remaining=Math.max(1.25,target-previous.topY);
+      const beatsLeft=Math.max(1,count-index);
+      const rise=Math.min(1.92,Math.max(1.28,remaining/beatsLeft));
+      const tier=def.tier||1;
+      let angleStep=.22;
+      if(def.key==="sunGate")angleStep=index%2?.18:.23;
+      else if(def.key==="grandOrrery")angleStep=.27;
+      else if(def.key==="prismCauseway")angleStep=.30;
+      else if(def.key==="bellwalk")angleStep=.20;
+      else if(def.key==="stormNeedles")angleStep=.31;
+      else if(def.key==="hammerfall")angleStep=.32;
+      else angleStep=.30+Math.min(.04,(tier-1)*.01);
+      let width=def.key==="prismCauseway"?2.48:def.key==="hammerfall"?2.5:def.key==="stormNeedles"?2.58:2.78;
+      width=Math.max(2.28,width-Math.min(.16,(tier-1)*.025));
+      const type=index===0?"static":baseType;
+      const spec={
+        angle:previous.angle+sign*angleStep,radius:previous.radius,topY:Math.min(target-1.72,previous.topY+rise),
+        width,depth:2.25,type,boostLevel:type==="bounce"?clamp(1+Math.floor(target/650),1,3):0,
+        speed:.76+Math.min(.48,target/2200),amplitude:type==="elevator"?.42:type==="moving"?.22:type==="rotating"?.26:0,
+        motionAxis:"angle",primaryRoute:true,routeType:"secret",shapeFamily:def.key==="prismCauseway"?"circle":"slab"
+      };
+      if(def.key==="prismCauseway"&&(index===2||index===count-2)){spec.v1212PulsePad=true;spec.v1212PulseTier=clamp(1+Math.floor(target/650),1,3);}
+      return spec;
+    }
+
+    function safePlatform(gen,chunk,previous,spec,def,index){
+      let candidate={...spec},tries=0;
+      while(!gen.transitionReachable(previous,candidate)&&tries<7){
+        candidate={...candidate,angle:previous.angle+(candidate.angle-previous.angle)*.82,topY:previous.topY+Math.max(1.28,(candidate.topY-previous.topY)*.88),width:Math.max(candidate.width,2.78),amplitude:(candidate.amplitude||0)*.72};tries++;
+      }
+      if(!gen.transitionReachable(previous,candidate)){
+        candidate={...candidate,angle:previous.angle+Math.sign(candidate.angle-previous.angle||1)*.2,topY:previous.topY+1.34,width:3.15,depth:2.35,type:"static",boostLevel:0,amplitude:0};
+      }
+      const p=gen.addPlatform(chunk,candidate);p.v137Landmark=def.key;p.v137LandmarkName=def.name;p.v137Beat=index;p.v137Tier=def.tier||1;
+      return p;
+    }
+
+    GenProto.spawnV137Landmark=function(target,def){
+      const chunk=this.createChunk(`v137-${def.key}`);let previous=this.lastPrimaryPlatform;
+      if(!previous)return oldSpawnChunk.call(this);
+      const remaining=Math.max(2,target-previous.topY),count=clamp(Math.ceil(remaining/1.62),6,12);
+      const platforms=[];
+      for(let i=0;i<count-1;i++){
+        const spec=platformSpec(this,previous,def,i,count,target),p=safePlatform(this,chunk,previous,spec,def,i);platforms.push(p);previous=p;
+        if(def.key==="prismCauseway"&&i%2===1)this.addCrystal(chunk,p,false,i%4===1?"left":"right");
+        if(def.key==="grandOrrery"&&i===Math.floor((count-1)/2))this.addCrystal(chunk,p,false,"center");
+        if(def.key==="stormNeedles"&&p.v136Trait!==undefined)p.v136Trait="gust";
+      }
+      let finishSpec={angle:previous.angle+(Math.floor(target/50)%2?.18:-.18),radius:previous.radius,topY:target,width:4.25,depth:2.7,type:"static",checkpoint:true,primaryRoute:true,routeType:"secret"};
+      if(!this.transitionReachable(previous,finishSpec))finishSpec={...finishSpec,angle:previous.angle,topY:target,width:4.7};
+      const finish=this.addPlatform(chunk,finishSpec);finish.v137Landmark=def.key;finish.v137LandmarkName=def.name;finish.v137Finish=true;finish.v137Tier=def.tier||1;platforms.push(finish);
+      this.addCrystal(chunk,finish,false,"left");
+      if(def.key==="crownObservatory")this.addCrystal(chunk,finish,false,"right");
+      const entry=platforms[0],middle=platforms[Math.floor(platforms.length/2)];
+      addLandmarkVisual(entry,def,"entry");if(middle&&middle!==entry&&middle!==finish)addLandmarkVisual(middle,def,"beat");addLandmarkVisual(finish,def,"finish");
+      this.nextCheckpoint=target+50;chunk.exitY=Math.max(chunk.exitY,target);chunk.v137Landmark=def.key;chunk.v137LandmarkName=def.name;chunk.v137Target=target;this.chunks.push(chunk);
+      return chunk;
+    };
+
+    GenProto.spawnChunk=function(...args){
+      const special=this.game.mode==="practice"||Boolean(this.game.v9TrialActive)||Boolean(this.v12TrialActive);
+      if(!special){
+        const target=this.nextCheckpoint,def=landmarkAtCheckpoint(target);
+        if(def&&this.highest+18>=target)return this.spawnV137Landmark(target,def);
+      }
+      return oldSpawnChunk.apply(this,args);
+    };
+
+    function landmarkReward(game,platform){
+      const s=game.v137;if(!s||!platform?.v137Finish)return;
+      const id=`${platform.v137Landmark}:${Math.round(platform.topY)}`;if(s.cleared.has(id))return;s.cleared.add(id);s.landmarks++;s.last=platform.v137LandmarkName;s.highest=platform.v137LandmarkName;
+      if(platform.v137Landmark==="crownObservatory")s.observatories++;
+      const tier=platform.v137Tier||1;game.landingScore+=90+Math.round((platform.topY||0)*.035)+tier*15;game.addFlow?.(7+Math.min(5,tier),"Landmark clear");
+      if(platform.v137Landmark==="sunGate")game.power.shield=Math.max(1,game.power.shield||0);
+      else if(platform.v137Landmark==="grandOrrery"&&game.v135){game.v135.flowcraftJumps=Math.max(game.v135.flowcraftJumps,3);game.v135.flowcraftStrength=Math.max(game.v135.flowcraftStrength,.04);}
+      else if(platform.v137Landmark==="prismCauseway"&&game.v131){game.v131.precisionFocus=Math.max(game.v131.precisionFocus,4);game.v131.precisionBonus=Math.max(game.v131.precisionBonus,.045);}
+      else if(platform.v137Landmark==="bellwalk"){game.player.angularVelocity*=.5;if(game.v132)game.v132.calmJumps=Math.max(game.v132.calmJumps,3);}
+      else if(platform.v137Landmark==="stormNeedles"&&game.v132){game.v132.burstJumps=Math.max(game.v132.burstJumps,3);game.v132.burstTarget=Math.max(game.v132.burstTarget,11.55);}
+      else if(platform.v137Landmark==="hammerfall"&&game.v134){game.v134.agilityJumps=Math.max(game.v134.agilityJumps,4);game.v134.agilityBonus=Math.max(game.v134.agilityBonus,.042);}
+      else if(platform.v137Landmark==="crownObservatory"){game.runCrystals+=1;game.crystalScore+=24;if(game.v132)game.v132.crownJumps=Math.max(game.v132.crownJumps,4);}
+      game.audio?.tone?.(720+Math.min(260,tier*45),.16,{volume:.035,endFrequency:980+Math.min(240,tier*35)});
+      game.particles?.emit?.(game.player.centerPosition,"crystal",18,{lifeMin:.3,lifeMax:.7,sizeMin:4,sizeMax:8,spread:.7,up:.65});
+    }
+
+    GameProto.landPlayer=function(player,platform){
+      const result=oldLand.call(this,player,platform);landmarkReward(this,platform);return result;
+    };
+
+    GameProto.resetRun=function(...args){
+      this.v137=null;initRun(this);const result=oldReset.apply(this,args);if(!this.v137)initRun(this);return result;
+    };
+
+    GameProto.setState=function(next,...rest){
+      const result=oldSetState.call(this,next,...rest);
+      if(next==="gameover")setTimeout(()=>{
+        const summary=document.getElementById("v13-run-summary"),s=this.v137;if(!summary||!s)return;
+        summary.querySelectorAll?.(".v137-result")?.forEach?.(n=>n.remove());
+        const extra=document.createElement("span");extra.className="v137-result";extra.innerHTML=` · Landmarks: <strong>${s.landmarks}</strong>${s.highest?` · Last landmark: <strong>${s.highest}</strong>`:""}`;summary.appendChild(extra);
+      },130);
+      return result;
+    };
+
+    const applyLabels=()=>{
+      document.title=`Skyspire v${VERSION} — Landmarks of the Spire`;
+      const brand=document.querySelector("#v126-home .v126-brand p");if(brand)brand.textContent="Climb through evolving strata punctuated by rare authored landmarks and memorable traversal set pieces.";
+      const chip=document.getElementById("v11-release-chip");if(chip)chip.textContent=`v${VERSION}`;
+      const eyebrow=document.querySelector("#menu-overlay>.panel>.eyebrow");if(eyebrow)eyebrow.textContent=`v${VERSION} · Landmarks of the Spire`;
+      for(const key of ["SkyspireV13","SkyspireV131","SkyspireV132","SkyspireV133","SkyspireV134","SkyspireV135","SkyspireV136"])if(window[key])window[key].version=VERSION;
+    };
+    applyLabels();const guard=setInterval(applyLabels,90);setTimeout(()=>{clearInterval(guard);applyLabels();},4500);
+    window.SkyspireV137={version:VERSION,landmarks:Object.values(LANDMARKS).map(x=>({key:x.key,name:x.name})),landmarkAtCheckpoint};
+  }
+  if(document.readyState==="loading")window.addEventListener("DOMContentLoaded",()=>setTimeout(setup,0),{once:true});else setTimeout(setup,0);
+})();
+</script>
+
+
+<style id="v13-8-living-journey-style">
+/* Skyspire v13.8 — Living Journey. World-space variation only; no gameplay HUD additions. */
+#gameover-overlay.v13-results #v13-run-summary .v138-result{color:#c9d8ce}
+</style>
+<script id="v13-8-living-journey">
+(() => {
+  "use strict";
+  const VERSION="13.8.0";
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const PROFILES=Object.freeze({
+    balanced:{name:"Balanced",templates:["gentleSpiral","alternate","staircase","bridge","movingLesson"]},
+    momentum:{name:"Momentum",templates:["movingLesson","alternate","elevatorSequence","rotatingSequence","bridge"]},
+    precision:{name:"Precision",templates:["alternate","rotatingSequence","collapseRun","staircase","movingLesson"]},
+    explorer:{name:"Explorer",templates:["staircase","bridge","elevatorSequence","gentleSpiral","alternate"]},
+    tempest:{name:"Tempest",templates:["movingLesson","rotatingSequence","alternate","elevatorSequence","collapseRun"]}
+  });
+  const PROFILE_KEYS=Object.keys(PROFILES);
+  const PHASES=["release","build","peak","recover"];
+  const EVENTS=Object.freeze({
+    tailwind:{name:"Tailwind Run",color:0xe5c779},
+    crystalVein:{name:"Crystal Vein",color:0x80ded7},
+    stillReach:{name:"Still Reach",color:0xd8e2d8},
+    crosswind:{name:"Crosswind Passage",color:0x8ed8cd},
+    resonance:{name:"Resonance Line",color:0xc3a9df},
+    relay:{name:"Kinetic Relay",color:0xd6a16f}
+  });
+  const FIXED_LANDMARKS=[150,350,550,850,1150,1550,2150];
+
+  function setup(){
+    const g=window.skyspireGame;
+    if(!g?.v137Installed||!window.SkyspireV137){setTimeout(setup,30);return;}
+    if(g.v138Installed)return;
+    g.v138Installed=true;
+    const GameProto=g.constructor.prototype;
+    const GenProto=g.generator.constructor.prototype;
+    const oldChooseTemplate=GenProto.chooseTemplate;
+    const oldSpawnChunk=GenProto.spawnChunk;
+    const oldSpawnFork=GenProto.spawnV13Fork;
+    const oldSpawnLandmark=GenProto.spawnV137Landmark;
+    const oldLand=GameProto.landPlayer;
+    const oldReset=GameProto.resetRun;
+    const oldSetState=GameProto.setState;
+
+    function shuffleWith(game,list){
+      if(game.rng?.shuffle)return game.rng.shuffle(list);
+      const out=list.slice();for(let i=out.length-1;i>0;i--){const j=Math.floor((game.rng?.next?.()??Math.random())*(i+1));[out[i],out[j]]=[out[j],out[i]];}return out;
+    }
+    function initRun(game){
+      const order=shuffleWith(game,PROFILE_KEYS);
+      game.v138={
+        profileOrder:order,profilesSeen:new Set(),profileChanges:0,currentProfile:"",currentPhase:"release",phaseChanges:0,
+        phaseOffset:game.rng?.range?.(0,110)??47,phaseSpan:game.rng?.range?.(155,195)??175,
+        nextEventY:game.rng?.range?.(105,150)??128,events:0,eventCounts:{},lastEvent:"",eventClears:0,
+        landmarkVariants:0,lastLandmarkVariant:"",lastTemplate:"",journeyTier:1
+      };
+    }
+    initRun(g);
+
+    function profileAt(game,height){
+      const s=game.v138||{},order=s.profileOrder?.length?s.profileOrder:PROFILE_KEYS;
+      const block=Math.max(0,Math.floor(height/520)),key=order[block%order.length]||"balanced",tier=1+Math.floor(block/order.length);
+      return {key,tier,...PROFILES[key]};
+    }
+    function phaseAt(game,height){
+      const s=game.v138||{},span=Math.max(140,s.phaseSpan||175),idx=Math.floor((Math.max(0,height)+(s.phaseOffset||0))/span)%PHASES.length;
+      return PHASES[(idx+PHASES.length)%PHASES.length];
+    }
+    function dominantRoute(game){
+      const counts=game.v13?.routeCounts||{};let best="safe",n=-1;
+      for(const route of ["safe","velocity","treasure","precision","chaos"]){const v=counts[route]||0;if(v>n){n=v;best=route;}}
+      return best;
+    }
+    function trackJourney(game,height){
+      const s=game.v138;if(!s)return;
+      const p=profileAt(game,height),phase=phaseAt(game,height),profileKey=`${p.key}:${p.tier}`;
+      if(s.currentProfile!==profileKey){if(s.currentProfile)s.profileChanges++;s.currentProfile=profileKey;s.profilesSeen.add(p.key);s.journeyTier=p.tier;}
+      if(s.currentPhase!==phase){if(s.currentPhase)s.phaseChanges++;s.currentPhase=phase;}
+    }
+    function nearMajor(height){
+      for(const y of FIXED_LANDMARKS)if(Math.abs(height-y)<42)return true;
+      if(height>2150){const y=2150+Math.round((height-2150)/700)*700;if(Math.abs(height-y)<42)return true;}
+      const boss=Math.round(height/250)*250;if(boss>=250&&Math.abs(height-boss)<36)return true;
+      const breakthrough=Math.round(height/100)*100;return breakthrough>=100&&Math.abs(height-breakthrough)<28;
+    }
+    function validTemplates(gen,pool){
+      const allowed=Array.isArray(gen.templates)?new Set(gen.templates):null;
+      return allowed?pool.filter(x=>allowed.has(x)):pool.slice();
+    }
+
+    GenProto.chooseTemplate=function(){
+      const base=oldChooseTemplate.call(this);
+      if(this.game.mode==="practice"||this.game.v9TrialActive||this.v12TrialActive)return base;
+      const h=this.highest||0,s=this.game.v138;if(!s)return base;
+      trackJourney(this.game,h);
+      const profile=profileAt(this.game,h),phase=phaseAt(this.game,h);
+      let pool=profile.templates.slice();
+      if(phase==="release")pool=["gentleSpiral","staircase","bridge",...pool];
+      else if(phase==="peak")pool=["movingLesson","rotatingSequence",h>300?"collapseRun":"alternate",...pool];
+      else if(phase==="recover")pool=["staircase","bridge","elevatorSequence","gentleSpiral",...pool];
+      pool=[...new Set(validTemplates(this,pool))];
+      if(!pool.length)return base;
+      let choices=pool.filter(x=>x!==s.lastTemplate);if(!choices.length)choices=pool;
+      const useJourney=(this.game.rng?.chance?.(phase==="peak"?.86:.72))??true;
+      const chosen=useJourney?(this.game.rng?.pick?.(choices,choices[0])||choices[0]):base;
+      s.lastTemplate=chosen;return chosen;
+    };
+
+    function eventPool(game,height){
+      const profile=profileAt(game,height).key,phase=phaseAt(game,height),route=game.v13?.lastRoute||dominantRoute(game);
+      let pool=[];
+      if(profile==="momentum")pool=["tailwind","relay","resonance","crosswind"];
+      else if(profile==="precision")pool=["stillReach","resonance","crystalVein","relay"];
+      else if(profile==="explorer")pool=["crystalVein","stillReach","resonance","tailwind"];
+      else if(profile==="tempest")pool=["crosswind","tailwind","relay","resonance"];
+      else pool=["tailwind","crystalVein","stillReach","resonance","relay","crosswind"];
+      if(phase==="recover")pool=["stillReach","crystalVein","resonance",...pool];
+      else if(phase==="peak")pool=["crosswind","relay","tailwind",...pool];
+      if(route==="treasure")pool=["crystalVein",...pool];
+      if(route==="velocity")pool=["tailwind","relay",...pool];
+      if(route==="precision")pool=["stillReach","resonance",...pool];
+      if(route==="chaos"&&height>500)pool=["crosswind","relay",...pool];
+      return [...new Set(pool)];
+    }
+    function nextEventGap(game,height){
+      const phase=phaseAt(game,height),profile=profileAt(game,height).key;
+      let lo=132,hi=184;if(phase==="peak"){lo=112;hi=160;}else if(phase==="recover"){lo=156;hi=205;}
+      if(profile==="explorer"){lo-=8;hi-=7;}if(profile==="tempest"){lo-=5;hi-=4;}
+      return game.rng?.range?.(lo,hi)??((lo+hi)/2);
+    }
+    function eventMaterial(game,event){
+      return game.resources.basic(`v138-event-${event}`,{color:EVENTS[event].color,transparent:true,opacity:.22,depthWrite:false,side:THREE.DoubleSide});
+    }
+    function addEventMarker(platform,event,role){
+      if(!platform?.group||platform.v138Marker)return;
+      const game=platform.game,root=new THREE.Group();root.name="v138-event-marker";root.userData.v138=true;
+      const ring=new THREE.Mesh(game.resources.geometries.platformRim,eventMaterial(game,event));ring.rotation.x=Math.PI/2;ring.position.y=platform.thickness*.67+.025;ring.scale.setScalar(role==="entry"?.78:.66);ring.castShadow=false;ring.receiveShadow=false;root.add(ring);
+      if(role==="entry")for(const side of [-1,1]){const post=new THREE.Mesh(game.resources.geometries.support,eventMaterial(game,event));post.position.set(side*Math.min(.8,platform.width*.3),.45,0);post.scale.set(.035,.38,.035);root.add(post);}
+      platform.group.add(root);platform.v138Marker=root;
+    }
+    function decorateEvent(gen,chunk,event){
+      const prim=(chunk.platforms||[]).filter(p=>p.primaryRoute&&!p.checkpoint&&!p.recovery&&!p.v13SegmentId&&!p.v13Boss&&!p.v137Landmark);
+      if(prim.length<3)return false;
+      const game=gen.game,s=game.v138;chunk.v138Event=event;chunk.v138EventName=EVENTS[event].name;
+      prim.forEach((p,i)=>{p.v138Event=event;p.v138EventIndex=i;p.v138EventCount=prim.length;if(i===prim.length-1)p.v138EventEnd=true;});
+      addEventMarker(prim[0],event,"entry");addEventMarker(prim.at(-1),event,"exit");
+      if(event==="crystalVein"){
+        const picks=[prim[Math.min(1,prim.length-1)],prim[Math.max(1,prim.length-2)]].filter((p,i,a)=>p&&a.indexOf(p)===i);
+        picks.forEach((p,i)=>{try{gen.addCrystal(chunk,p,false,i%2?"right":"left");}catch{}});
+      }else if(event==="crosswind"){
+        prim.forEach((p,i)=>{if(i>0&&i%2===1)p.v136Trait="gust";});
+      }
+      s.events++;s.eventCounts[event]=(s.eventCounts[event]||0)+1;s.lastEvent=EVENTS[event].name;
+      const h=chunk.exitY||prim.at(-1)?.topY||gen.highest||0;s.nextEventY=h+nextEventGap(game,h);
+      return true;
+    }
+
+    GenProto.spawnChunk=function(...args){
+      const before=this.chunks.length,result=oldSpawnChunk.apply(this,args),s=this.game.v138;
+      if(!s||this.game.mode==="practice"||this.game.v9TrialActive||this.v12TrialActive)return result;
+      const added=this.chunks.slice(before);if(!added.length)return result;
+      for(const chunk of added){
+        const h=chunk.exitY||this.highest||0;trackJourney(this.game,h);
+        if(h+2<(s.nextEventY||Infinity))continue;
+        if(nearMajor(h)||String(chunk.name||"").startsWith("v13")||String(chunk.name||"").startsWith("v137")||chunk.v137Landmark||(chunk.platforms||[]).some(p=>p.checkpoint)){s.nextEventY=Math.max(s.nextEventY,h+48);continue;}
+        const pool=eventPool(this.game,h),event=this.game.rng?.pick?.(pool,pool[0])||pool[0];if(event&&decorateEvent(this,chunk,event))break;
+      }
+      return result;
+    };
+
+    GenProto.spawnV13Fork=function(...args){
+      const before=this.game.v13?.segmentCounter||0,result=oldSpawnFork.apply(this,args),after=this.game.v13?.segmentCounter||0,s=this.game.v138;
+      if(s&&after>before){
+        const h=this.highest||0;trackJourney(this.game,h);const phase=phaseAt(this.game,h),profile=profileAt(this.game,h).key;
+        const current=Math.max(22,(this.v13NextForkY||h+30)-h);let adjust=phase==="release"?5:phase==="peak"?-3:phase==="recover"?8:0;
+        if(profile==="momentum")adjust-=1.5;else if(profile==="explorer")adjust+=1.5;else if(profile==="tempest")adjust-=1;
+        const gap=clamp(current+adjust,22,44);let target=h+gap;if(this.game.v134?.restUntil>h)target=Math.max(target,this.game.v134.restUntil);this.v13NextForkY=target;
+      }
+      return result;
+    };
+
+    function variantFor(game,target,def){
+      const route=dominantRoute(game),profile=profileAt(game,target).key,base=def.types.slice();let types=base,label="Pilgrim";
+      if(route==="velocity"||profile==="momentum"){label="Ascendant";types=base.map((t,i)=>i===2||i===base.length-1?"bounce":t==="static"&&i%2?"conveyor":t);}
+      else if(route==="precision"||profile==="precision"){label="Needle";types=base.map((t,i)=>i%3===1?"slippery":t);}
+      else if(route==="treasure"||profile==="explorer"){label="Gilded";types=base.map((t,i)=>i%3===1&&t==="static"?"moving":t);}
+      else if(route==="chaos"||profile==="tempest"){label="Tempest";types=base.map((t,i)=>i%3===1?"rotating":i%4===2?"conveyor":t);}
+      else {label="Sanctuary";types=base.map((t,i)=>i%3===1?"elevator":t);}
+      /* Keep the first beat readable and the finish handled by v13.7 itself. */
+      types[0]="static";
+      return {...def,types,name:`${def.name} · ${label}`,v138Variant:label,v138Route:route};
+    }
+    GenProto.spawnV137Landmark=function(target,def){
+      if(!def)return oldSpawnLandmark.call(this,target,def);
+      const variant=variantFor(this.game,target,def),s=this.game.v138;if(s){s.landmarkVariants++;s.lastLandmarkVariant=variant.name;}
+      return oldSpawnLandmark.call(this,target,variant);
+    };
+
+    GameProto.landPlayer=function(player,platform){
+      const event=platform?.v138Event||"",quality=event?this.landingQuality(player,platform):0,result=oldLand.call(this,player,platform),s=this.v138;
+      if(!s||!event)return result;
+      if(event==="tailwind"&&quality>=.45&&this.v136){this.v136.controlJumps=Math.max(this.v136.controlJumps,2);this.v136.controlBonus=Math.max(this.v136.controlBonus,.025);this.landingScore+=4;}
+      else if(event==="stillReach"){player.angularVelocity*=.62;if(quality>=.7)this.addFlow?.(.55,"Still Reach");}
+      else if(event==="resonance"){if(quality>=.72){this.landingScore+=7;this.addFlow?.(1.0,"Resonance");}else if(quality>=.45)this.landingScore+=3;}
+      else if(event==="relay"&&quality>=.5&&this.v134){this.v134.agilityJumps=Math.max(this.v134.agilityJumps,2);this.v134.agilityBonus=Math.max(this.v134.agilityBonus,.027);this.landingScore+=4;}
+      else if(event==="crosswind"&&quality>=.62)this.landingScore+=5;
+      else if(event==="crystalVein"&&quality>=.5)this.landingScore+=2;
+      if(platform.v138EventEnd){s.eventClears++;this.landingScore+=12+Math.floor(quality*12);this.addFlow?.(1.6+quality,"Journey stretch");this.audio?.tone?.(610+Math.floor(quality*140),.10,{volume:.025,endFrequency:760+Math.floor(quality*160)});}
+      return result;
+    };
+
+    GameProto.resetRun=function(...args){
+      this.v138=null;initRun(this);const result=oldReset.apply(this,args);if(!this.v138)initRun(this);return result;
+    };
+
+    GameProto.setState=function(next,...rest){
+      const result=oldSetState.call(this,next,...rest);
+      if(next==="gameover")setTimeout(()=>{
+        const summary=document.getElementById("v13-run-summary"),s=this.v138;if(!summary||!s)return;
+        summary.querySelectorAll?.(".v138-result")?.forEach?.(n=>n.remove());
+        const profiles=[...(s.profilesSeen||[])].map(k=>PROFILES[k]?.name||k),extra=document.createElement("span");extra.className="v138-result";
+        extra.innerHTML=` · Journey: <strong>${profiles.join(" → ")||"Balanced"}</strong> · Event stretches: <strong>${s.eventClears}</strong>${s.lastLandmarkVariant?` · Landmark: <strong>${s.lastLandmarkVariant}</strong>`:""}`;summary.appendChild(extra);
+      },170);
+      return result;
+    };
+
+    const applyLabels=()=>{
+      document.title=`Skyspire v${VERSION} — Living Journey`;
+      const brand=document.querySelector("#v126-home .v126-brand p");if(brand)brand.textContent="Every climb develops its own rhythm through changing journey profiles, rare event stretches, strategic forks, and evolving landmarks.";
+      const chip=document.getElementById("v11-release-chip");if(chip)chip.textContent=`v${VERSION}`;
+      const eyebrow=document.querySelector("#menu-overlay>.panel>.eyebrow");if(eyebrow)eyebrow.textContent=`v${VERSION} · Living Journey`;
+      for(const key of ["SkyspireV13","SkyspireV131","SkyspireV132","SkyspireV133","SkyspireV134","SkyspireV135","SkyspireV136","SkyspireV137"])if(window[key])window[key].version=VERSION;
+    };
+    applyLabels();const guard=setInterval(applyLabels,90);setTimeout(()=>{clearInterval(guard);applyLabels();},4700);
+    window.SkyspireV138={version:VERSION,profiles:PROFILE_KEYS.slice(),events:Object.keys(EVENTS),profileAt:(h)=>profileAt(g,h),phaseAt:(h)=>phaseAt(g,h)};
+  }
+  if(document.readyState==="loading")window.addEventListener("DOMContentLoaded",()=>setTimeout(setup,0),{once:true});else setTimeout(setup,0);
+})();
+</script>
+
+<style id="v13-9-crown-contracts-style">
+/* Skyspire v13.9 — Crown Contracts. Gameplay stakes live in the world, not the HUD. */
+#gameover-overlay.v13-results #v13-run-summary .v139-result{color:#d9cfb0}
+</style>
+<script id="v13-9-crown-contracts">
+(() => {
+  "use strict";
+  const VERSION="13.9.0";
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const ROUTE_COLORS={safe:0x9bded6,velocity:0xe8c777,treasure:0x79dfc4,precision:0xe8f5f4,chaos:0xc3a3e5};
+  const CONTRACTS=Object.freeze({
+    safe:{name:"Sanctuary Oath",mark:"ward"},
+    velocity:{name:"Golden Line",mark:"arrow"},
+    treasure:{name:"Crown Cache",mark:"gem"},
+    precision:{name:"Needle Oath",mark:"needle"},
+    chaos:{name:"Black Crown",mark:"crown"}
+  });
+
+  function setup(){
+    const g=window.skyspireGame;
+    if(!g?.v138Installed||!window.SkyspireV138){setTimeout(setup,30);return;}
+    if(g.v139Installed)return;
+    g.v139Installed=true;
+    const GameProto=g.constructor.prototype;
+    const GenProto=g.generator.constructor.prototype;
+    const oldSpawnFork=GenProto.spawnV13Fork;
+    const oldSpawnLandmark=GenProto.spawnV137Landmark;
+    const oldLand=GameProto.landPlayer;
+    const oldReset=GameProto.resetRun;
+    const oldSetState=GameProto.setState;
+
+    function initRun(game){
+      const first=game.rng?.range?.(620,760)??690;
+      game.v139={
+        nextContractY:first,generated:0,doubleOffers:0,attempted:0,completed:0,failed:0,
+        streak:0,bestStreak:0,crownSurges:0,pendingLandmarkFavor:0,favoredLandmarks:0,
+        lastContract:"",lastOutcome:"",lastHeight:0
+      };
+    }
+    initRun(g);
+
+    function snapshot(game){
+      return {
+        shieldHits:game.stats?.shieldHits||0,
+        recoveries:game.stats?.recoveries||0,
+        crystals:game.runCrystals||0,
+        techniques:game.v135?.techniques||0,
+        runTime:game.runTime||0
+      };
+    }
+    function tierAt(height){return clamp(1+Math.floor(Math.max(0,height-600)/650),1,4);}
+    function nextGap(game,height){
+      let lo=275,hi=355;
+      if(height>=1200){lo=245;hi=320;}
+      if(height>=2200){lo=215;hi=285;}
+      return game.rng?.range?.(lo,hi)??((lo+hi)/2);
+    }
+    function contractFor(route,height){return {route,id:route,name:CONTRACTS[route]?.name||"Crown Oath",tier:tierAt(height),height};}
+
+    function crownMaterial(game,key,color,opacity=.48){
+      return game.resources.basic(`v139-${key}-${color.toString(16)}`,{color,transparent:true,opacity,depthWrite:false,side:THREE.DoubleSide});
+    }
+    function addContractSeal(platform,contract){
+      if(!platform?.group||!contract||platform.v139ContractSeal)return;
+      const game=platform.game,color=ROUTE_COLORS[contract.route]||0xe8ce89;
+      const gold=crownMaterial(game,"gold",0xe8ce89,.52),routeMat=crownMaterial(game,`route-${contract.route}`,color,.5);
+      const root=new THREE.Group();root.name="v139-contract-seal";root.userData.v139=true;
+      const support=game.resources.geometries.support;
+      for(const side of [-1,1]){
+        const post=new THREE.Mesh(support,gold);post.scale.set(.028,.34,.028);post.position.set(side*.48,.42,-.38);root.add(post);
+      }
+      const ring=new THREE.Mesh(game.resources.geometries.platformRim,routeMat);ring.position.set(0,.82,-.38);ring.scale.set(.44,.44,.44);root.add(ring);
+      for(let i=-1;i<=1;i++){
+        const tooth=new THREE.Mesh(support,gold);tooth.scale.set(.024,.105+(i===0?.045:0),.024);tooth.position.set(i*.15,1.04+(i===0?.035:0),-.38);root.add(tooth);
+      }
+      platform.group.add(root);platform.v139ContractSeal=root;platform.v139Contract=contract;
+    }
+    function addFavoredSeal(platform){
+      if(!platform?.group||platform.v139FavoredSeal)return;
+      const game=platform.game,mat=crownMaterial(game,"favor",0xf1d88f,.44),root=new THREE.Group();root.name="v139-favored-landmark";
+      const ring=new THREE.Mesh(game.resources.geometries.platformRim,mat);ring.rotation.x=Math.PI/2;ring.position.y=platform.thickness*.72+.04;ring.scale.set(1.05,1.05,1.05);root.add(ring);
+      platform.group.add(root);platform.v139FavoredSeal=root;
+    }
+
+    function chooseContractBranches(game,segment,height){
+      const state=game.v139;if(!state||height<(state.nextContractY||Infinity))return [];
+      const options=["a","b"];
+      let chosen=[];
+      const doubleChance=height>=1500?clamp(.18+(height-1500)/5000,.18,.38):0;
+      if(doubleChance>0&&(game.rng?.chance?.(doubleChance)??false))chosen=options.slice();
+      else {
+        const aRoute=segment.routeA,bRoute=segment.routeB;
+        let branch;
+        if(height<1200){
+          const aMod=Boolean(segment.modifierA),bMod=Boolean(segment.modifierB);
+          if(aMod!==bMod)branch=aMod?"b":"a";
+        }
+        if(!branch&&aRoute==="safe"&&bRoute!=="safe"&&(game.rng?.chance?.(.72)??true))branch="b";
+        if(!branch&&bRoute==="safe"&&aRoute!=="safe"&&(game.rng?.chance?.(.72)??true))branch="a";
+        if(!branch)branch=game.rng?.chance?.(.5)?"a":"b";
+        chosen=[branch];
+      }
+      state.nextContractY=height+nextGap(game,height);
+      return chosen;
+    }
+
+    GenProto.spawnV13Fork=function(...args){
+      const before=this.game.v13?.segmentCounter||0,result=oldSpawnFork.apply(this,args),after=this.game.v13?.segmentCounter||0;
+      if(after<=before||!this.game.v139||this.game.mode==="practice"||this.game.v9TrialActive||this.v12TrialActive)return result;
+      const segment=this.v13Segments?.get(after);if(!segment)return result;
+      const height=segment.entry?.topY||this.highest||0,branches=chooseContractBranches(this.game,segment,height);
+      if(!branches.length)return result;
+      segment.v139Contracts={};
+      for(const branch of branches){
+        const route=branch==="a"?segment.routeA:segment.routeB,contract=contractFor(route,height);
+        segment.v139Contracts[branch]=contract;addContractSeal(segment[branch]?.[0],contract);this.game.v139.generated++;
+      }
+      if(branches.length>1)this.game.v139.doubleOffers++;
+      return result;
+    };
+
+    function contractContext(game,segment,contract){
+      const baseline=segment.v139Baseline||snapshot(game),qualities=(game.v13?.routeQualities||[]).slice();
+      const avg=qualities.length?qualities.reduce((a,b)=>a+b,0)/qualities.length:.5;
+      const min=qualities.length?Math.min(...qualities):.5;
+      const current=snapshot(game),techniques=game.v135?.routeTechniqueCounts?.get?.(segment.id)||0;
+      return {
+        contract,avg,min,clean:Boolean(game.v13?.cleanRoute),techniques,
+        shieldHits:Math.max(0,current.shieldHits-baseline.shieldHits),
+        recoveries:Math.max(0,current.recoveries-baseline.recoveries),
+        crystals:Math.max(0,current.crystals-baseline.crystals),
+        time:Math.max(0,current.runTime-baseline.runTime)
+      };
+    }
+    function contractSuccess(ctx){
+      const {route,tier}=ctx.contract;
+      if(route==="safe")return ctx.clean&&ctx.recoveries===0&&ctx.shieldHits===0&&ctx.avg>=.46;
+      if(route==="velocity")return ctx.clean&&ctx.avg>=.54+tier*.012&&ctx.min>=.27;
+      if(route==="treasure")return ctx.clean&&ctx.crystals>=Math.min(2,1+Math.floor(tier/3))&&ctx.avg>=.4;
+      if(route==="precision")return ctx.avg>=.68+tier*.018&&ctx.min>=.44+(tier-1)*.015;
+      if(route==="chaos")return ctx.clean&&ctx.recoveries===0&&ctx.avg>=.5+tier*.015;
+      return false;
+    }
+    function rewardContract(game,ctx,success){
+      const state=game.v139,route=ctx.contract.route,tier=ctx.contract.tier;state.attempted++;state.lastContract=ctx.contract.name;state.lastHeight=ctx.contract.height;
+      if(!success){state.failed++;state.streak=0;state.lastOutcome="Failed";game.audio?.tone?.(260,.08,{volume:.018,endFrequency:220});return;}
+      state.completed++;state.streak++;state.bestStreak=Math.max(state.bestStreak,state.streak);state.lastOutcome="Fulfilled";
+      let score=44+tier*18+ctx.techniques*5,flow=4.5+tier*.8;
+      if(route==="safe"){
+        if((game.power.shield||0)<3)game.power.shield+=1;else if(game.v132)game.v132.calmJumps=Math.max(game.v132.calmJumps,3+tier);
+      }else if(route==="velocity"){
+        if(game.v132){game.v132.burstJumps=Math.max(game.v132.burstJumps,3+tier);game.v132.burstTarget=Math.max(game.v132.burstTarget,11.5+tier*.05);}
+      }else if(route==="treasure"){
+        const bonus=1+Math.floor(tier/2);game.runCrystals+=bonus;game.crystalScore+=bonus*22;game.power.magnet=Math.max(game.power.magnet||0,4+tier*.35);
+      }else if(route==="precision"){
+        if(game.v132){game.v132.focusJumps=Math.max(game.v132.focusJumps,3+tier);game.v132.focusBonus=Math.max(game.v132.focusBonus,.038+tier*.006);}
+        if(game.v135){game.v135.flowcraftJumps=Math.max(game.v135.flowcraftJumps,2+tier);game.v135.flowcraftStrength=Math.max(game.v135.flowcraftStrength,.045);}
+      }else if(route==="chaos"){
+        if(game.v132)game.v132.gambitJumps=Math.max(game.v132.gambitJumps,3+tier);
+        if(game.v134){game.v134.agilityJumps=Math.max(game.v134.agilityJumps,3+tier);game.v134.agilityBonus=Math.max(game.v134.agilityBonus,.035+tier*.004);}
+        score+=24;flow+=2;
+      }
+      if(ctx.techniques>=2){score+=18;flow+=1.5;}
+      if(state.streak>=2){
+        state.crownSurges++;score+=24+state.streak*8;flow+=2.5;
+        if(game.v134){game.v134.agilityJumps=Math.max(game.v134.agilityJumps,4+Math.min(3,state.streak));game.v134.agilityBonus=Math.max(game.v134.agilityBonus,.042);}
+        if(game.v135){game.v135.flowcraftJumps=Math.max(game.v135.flowcraftJumps,3);game.v135.flowcraftStrength=Math.max(game.v135.flowcraftStrength,.05);}
+      }
+      if(state.streak>=3){
+        state.pendingLandmarkFavor=Math.max(state.pendingLandmarkFavor,1);
+        if(state.streak%3===0){game.runCrystals+=1;game.crystalScore+=24;if((game.power.shield||0)<3)game.power.shield+=1;}
+      }
+      game.landingScore+=score;game.addFlow?.(flow,"Crown contract");
+      game.audio?.tone?.(820+tier*45,.12,{volume:.035,endFrequency:1040+tier*55});
+      game.particles?.emit?.(game.player.centerPosition,route==="chaos"?"void":route==="velocity"?"bounce":"crystal",10+tier*2,{spread:.55,up:.8,sizeMin:3,sizeMax:6});
+    }
+
+    GenProto.spawnV137Landmark=function(target,def){
+      const chunk=oldSpawnLandmark.call(this,target,def),state=this.game.v139;if(!chunk||!state?.pendingLandmarkFavor)return chunk;
+      state.pendingLandmarkFavor=Math.max(0,state.pendingLandmarkFavor-1);state.favoredLandmarks++;chunk.v139Favored=true;
+      const platforms=(chunk.platforms||[]).filter(p=>p.v137Landmark),finish=platforms.find(p=>p.v137Finish);
+      const beats=platforms.filter(p=>!p.v137Finish&&!p.checkpoint);
+      if(beats.length){try{this.addCrystal(chunk,beats[Math.floor(beats.length*.35)],false,"center");}catch{}}
+      if(beats.length>3){try{this.addCrystal(chunk,beats[Math.floor(beats.length*.68)],false,"opposite");}catch{}}
+      if(finish){finish.v139FavoredLandmark=true;addFavoredSeal(finish);}
+      return chunk;
+    };
+
+    GameProto.landPlayer=function(player,platform){
+      const segId=platform?.v13SegmentId,segment=segId?this.generator?.v13Segments?.get(segId):null;
+      const firstContractBeat=Boolean(segment&&platform?.v13Branch&&!segment.committed&&segment.v139Contracts?.[platform.v13Branch]);
+      const pre=firstContractBeat?snapshot(this):null;
+      let completion=null;
+      if(segment&&platform?.v13Convergence&&segment.committed){
+        const contract=segment.v139Contracts?.[segment.committed];if(contract)completion={segment,ctx:contractContext(this,segment,contract)};
+      }
+      const favored=Boolean(platform?.v139FavoredLandmark&&platform?.v137Finish);
+      const result=oldLand.call(this,player,platform);
+      if(firstContractBeat&&segment.committed&&!segment.v139Baseline)segment.v139Baseline=pre||snapshot(this);
+      if(completion&&!completion.segment.v139Resolved){completion.segment.v139Resolved=true;rewardContract(this,completion.ctx,contractSuccess(completion.ctx));}
+      if(favored){
+        this.landingScore+=70;this.addFlow?.(5,"Crowned landmark");this.runCrystals+=1;this.crystalScore+=26;
+        if(this.v132)this.v132.crownJumps=Math.max(this.v132.crownJumps,4);
+        this.audio?.tone?.(1080,.13,{volume:.03,endFrequency:1320});
+      }
+      return result;
+    };
+
+    GameProto.resetRun=function(...args){
+      this.v139=null;initRun(this);const result=oldReset.apply(this,args);if(!this.v139)initRun(this);return result;
+    };
+
+    GameProto.setState=function(next,...rest){
+      const result=oldSetState.call(this,next,...rest);
+      if(next==="gameover")setTimeout(()=>{
+        const summary=document.getElementById("v13-run-summary"),s=this.v139;if(!summary||!s)return;
+        summary.querySelectorAll?.(".v139-result")?.forEach?.(n=>n.remove());
+        const extra=document.createElement("span");extra.className="v139-result";
+        extra.innerHTML=` · Contracts: <strong>${s.completed}/${s.attempted}</strong>${s.bestStreak>1?` · Best oath chain: <strong>${s.bestStreak}</strong>`:""}${s.favoredLandmarks?` · Crowned landmarks: <strong>${s.favoredLandmarks}</strong>`:""}`;
+        summary.appendChild(extra);
+      },190);
+      return result;
+    };
+
+    const applyLabels=()=>{
+      document.title=`Skyspire v${VERSION} — Crown Contracts`;
+      const brand=document.querySelector("#v126-home .v126-brand p");if(brand)brand.textContent="Take optional Crown oaths on rare route branches, chain clean clears, and carry their consequences into later landmarks.";
+      const chip=document.getElementById("v11-release-chip");if(chip)chip.textContent=`v${VERSION}`;
+      const eyebrow=document.querySelector("#menu-overlay>.panel>.eyebrow");if(eyebrow)eyebrow.textContent=`v${VERSION} · Crown Contracts`;
+      for(const key of ["SkyspireV13","SkyspireV131","SkyspireV132","SkyspireV133","SkyspireV134","SkyspireV135","SkyspireV136","SkyspireV137","SkyspireV138"])if(window[key])window[key].version=VERSION;
+    };
+    applyLabels();const guard=setInterval(applyLabels,90);setTimeout(()=>{clearInterval(guard);applyLabels();},5000);
+    window.SkyspireV139={version:VERSION,contracts:CONTRACTS};
+  }
+  if(document.readyState==="loading")window.addEventListener("DOMContentLoaded",()=>setTimeout(setup,0),{once:true});else setTimeout(setup,0);
+})();
+</script>
+
+<style id="v13-10-crown-convergence-style">
+/* Skyspire v13.10 — Crown Convergence. Final v13 consolidation layer. */
+#gameover-overlay.v13-results #v13-run-summary.v1310-summary{display:grid;gap:4px;line-height:1.45}
+#gameover-overlay.v13-results #v13-run-summary.v1310-summary .v1310-sub{color:#aebbb8;font-size:.72rem}
+body.v11-playing #v9-sequence-banner,
+body.v11-playing #v10-caption,
+body.v11-playing #v12-event-hud,
+body.v11-playing #v12-build-hud,
+body.v11-playing #v11-feedback,
+body.v11-playing .toast-stack{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+</style>
+<script id="v13-10-crown-convergence">
+(() => {
+  "use strict";
+  const VERSION="13.10.0";
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const ROUTES=["safe","velocity","treasure","precision","chaos"];
+  const HIGH_RISK=new Set(["velocity","precision","chaos"]);
+
+  function setup(){
+    const g=window.skyspireGame;
+    if(!g?.v139Installed||!window.SkyspireV139){setTimeout(setup,35);return;}
+    if(g.v1310Installed)return;
+    g.v1310Installed=true;
+    const GameProto=g.constructor.prototype;
+    const GenProto=g.generator.constructor.prototype;
+    const oldSpawnFork=GenProto.spawnV13Fork;
+    const oldSpawnChunk=GenProto.spawnChunk;
+    const oldChooseTemplate=GenProto.chooseTemplate;
+    const oldSpawnBoss=GenProto.spawnV13Boss;
+    const oldSpawnLandmark=GenProto.spawnV137Landmark;
+    const oldLand=GameProto.landPlayer;
+    const oldReset=GameProto.resetRun;
+    const oldSetState=GameProto.setState;
+
+    function initRun(game){
+      game.v1310={
+        pressure:0,restChunks:0,forcedRecoveryChunks:0,lastMajorY:-999,lastForkY:-999,lastBossY:-999,lastLandmarkY:-999,
+        forkCount:0,highRiskForks:0,recoveryWindows:0,buffCaps:0,lastHudWrite:0,summaryRuns:0
+      };
+    }
+    initRun(g);
+
+    function capField(obj,key,max,state){
+      if(!obj||!Number.isFinite(Number(obj[key])))return;
+      if(obj[key]>max){obj[key]=max;if(state)state.buffCaps++;}
+      if(obj[key]<0)obj[key]=0;
+    }
+    function normalizeTemporary(game){
+      const s=game.v1310;
+      capField(game.power,"shield",3,s);
+      if(game.v131){
+        capField(game.v131,"surgeJumps",5,s);capField(game.v131,"surgeStrength",.28,s);
+        capField(game.v131,"precisionFocus",5,s);capField(game.v131,"precisionBonus",.085,s);capField(game.v131,"chaosCharge",5,s);
+      }
+      if(game.v132){
+        capField(game.v132,"burstJumps",6,s);capField(game.v132,"burstTarget",12.0,s);capField(game.v132,"focusJumps",6,s);
+        capField(game.v132,"focusBonus",.082,s);capField(game.v132,"gambitJumps",6,s);capField(game.v132,"calmJumps",6,s);capField(game.v132,"crownJumps",6,s);
+      }
+      if(game.v134){capField(game.v134,"agilityJumps",6,s);capField(game.v134,"agilityBonus",.065,s);}
+      if(game.v135){capField(game.v135,"flowcraftJumps",6,s);capField(game.v135,"flowcraftStrength",.075,s);}
+      if(game.v136){capField(game.v136,"controlJumps",6,s);capField(game.v136,"controlBonus",.065,s);capField(game.v136,"gustJumps",4,s);}
+      if(game.v139)capField(game.v139,"streak",8,s);
+    }
+
+    function pushQuietWindow(game,height,amount=1){
+      const s=game.v1310;if(!s)return;
+      s.restChunks=Math.max(s.restChunks,amount);s.recoveryWindows++;
+      if(game.generator)game.generator.v13NextForkY=Math.max(game.generator.v13NextForkY||0,height+34+amount*5);
+      if(game.v138)game.v138.nextEventY=Math.max(game.v138.nextEventY||0,height+70+amount*12);
+      if(game.v139)game.v139.nextContractY=Math.max(game.v139.nextContractY||0,height+82+amount*12);
+    }
+    function routeRisk(route,modifier,contract){
+      let risk=route==="chaos"?2.2:route==="precision"?1.45:route==="velocity"?1.15:route==="treasure"?.65:-1.25;
+      if(modifier)risk+=.7;if(contract)risk+=.8;return risk;
+    }
+
+    GenProto.chooseTemplate=function(...args){
+      const state=this.game.v1310;
+      if(state?.restChunks>0&&this.game.mode!=="practice"&&!this.game.v9TrialActive&&!this.v12TrialActive){
+        const pool=["bridge","staircase","gentleSpiral","alternate"];
+        const allowed=Array.isArray(this.templates)?new Set(this.templates):null;
+        const valid=allowed?pool.filter(x=>allowed.has(x)):pool;
+        if(valid.length)return this.game.rng?.pick?.(valid,valid[0])||valid[0];
+      }
+      return oldChooseTemplate.apply(this,args);
+    };
+
+    GenProto.spawnChunk=function(...args){
+      const state=this.game.v1310,before=this.chunks?.length||0;
+      if(state?.restChunks>0&&this.game.v138)this.game.v138.nextEventY=Math.max(this.game.v138.nextEventY||0,(this.highest||0)+95);
+      const result=oldSpawnChunk.apply(this,args);
+      if(state?.restChunks>0){
+        const added=(this.chunks||[]).slice(before);
+        const ordinary=added.some(chunk=>!chunk?.v137Landmark&&!String(chunk?.name||"").startsWith("v13")&&!(chunk?.platforms||[]).some(p=>p.v13Boss));
+        if(ordinary){state.restChunks=Math.max(0,state.restChunks-1);state.forcedRecoveryChunks++;}
+      }
+      return result;
+    };
+
+    GenProto.spawnV13Fork=function(...args){
+      const state=this.game.v1310,before=this.game.v13?.segmentCounter||0,result=oldSpawnFork.apply(this,args),after=this.game.v13?.segmentCounter||0;
+      if(!state||after<=before)return result;
+      const seg=this.v13Segments?.get(after);if(!seg)return result;
+      const y=seg.entry?.topY||this.highest||0;state.lastForkY=y;state.forkCount++;
+      const contractA=Boolean(seg.v139Contracts?.a),contractB=Boolean(seg.v139Contracts?.b);
+      const riskA=routeRisk(seg.routeA,seg.modifierA,contractA),riskB=routeRisk(seg.routeB,seg.modifierB,contractB);
+      const forkRisk=Math.min(riskA,riskB)*.45+Math.max(riskA,riskB)*.55;
+      if(riskA>1&&riskB>1)state.highRiskForks++;
+      state.pressure=clamp(state.pressure+forkRisk*.32,0,6);
+      const dense=Boolean(seg.modifierA)+Boolean(seg.modifierB)+(contractA?1:0)+(contractB?1:0)+(seg.routeA==="chaos"?1:0)+(seg.routeB==="chaos"?1:0);
+      if(state.pressure>=4.1||dense>=4){pushQuietWindow(this.game,y,2);state.pressure=Math.max(1.8,state.pressure-1.4);}
+      else if(state.pressure>=2.8||dense>=3){pushQuietWindow(this.game,y,1);state.pressure=Math.max(1.4,state.pressure-.7);}
+      return result;
+    };
+
+    if(typeof oldSpawnBoss==="function")GenProto.spawnV13Boss=function(target,boss,...rest){
+      const result=oldSpawnBoss.call(this,target,boss,...rest),state=this.game.v1310;if(state){state.lastBossY=target;state.lastMajorY=target;state.pressure=Math.max(0,state.pressure-1.4);pushQuietWindow(this.game,target,2);}return result;
+    };
+    if(typeof oldSpawnLandmark==="function")GenProto.spawnV137Landmark=function(target,def,...rest){
+      const result=oldSpawnLandmark.call(this,target,def,...rest),state=this.game.v1310;if(state){state.lastLandmarkY=target;state.lastMajorY=target;state.pressure=Math.max(0,state.pressure-1.0);pushQuietWindow(this.game,target,2);}return result;
+    };
+
+    GameProto.landPlayer=function(player,platform){
+      let resolved=null;
+      if(platform?.v13Convergence){
+        const seg=this.generator?.v13Segments?.get(platform.v13SegmentId);
+        if(seg?.committed){const branch=seg.committed;resolved={route:branch==="a"?seg.routeA:seg.routeB,modifier:branch==="a"?seg.modifierA:seg.modifierB,contract:Boolean(seg.v139Contracts?.[branch]),height:platform.topY||0};}
+      }
+      const result=oldLand.call(this,player,platform);
+      const state=this.v1310;
+      if(state&&resolved){
+        state.pressure=clamp(state.pressure+routeRisk(resolved.route,resolved.modifier,resolved.contract)*.38,0,6);
+        if(resolved.route==="safe"){state.pressure=Math.max(0,state.pressure-1.5);}
+        else if(resolved.route==="treasure")state.pressure=Math.max(0,state.pressure-.35);
+        if(state.pressure>=4.6){pushQuietWindow(this,resolved.height,2);state.pressure=2.4;}
+      }
+      normalizeTemporary(this);
+      return result;
+    };
+
+    GameProto.resetRun=function(...args){
+      this.v1310=null;const result=oldReset.apply(this,args);initRun(this);normalizeTemporary(this);return result;
+    };
+
+    function dominantRoute(game){
+      const counts=game.v13?.routeCounts||{};let best="",n=0;for(const route of ROUTES){const v=counts[route]||0;if(v>n){best=route;n=v;}}return best;
+    }
+    function topBuild(game){
+      const defs=[
+        ["vectorControl","Vector Control"],["deepCut","Deep Cut"],["perfectFlight","Perfect Flight"],
+        ["launchAmplifier","Launch Amplifier"],["chainReactor","Chain Reactor"],["terminalVelocity","Terminal Velocity"],
+        ["treasureSense","Treasure Sense"],["calculatedRisk","Calculated Risk"],["adaptation","Adaptation"],
+        ["secondWind","Second Wind"],["stableFooting","Stable Footing"],["sanctuary","Sanctuary"]
+      ];
+      const build=game.v13?.build||{};return defs.filter(([id])=>(build[id]||0)>0).sort((a,b)=>(build[b[0]]||0)-(build[a[0]]||0)).slice(0,2).map(([id,name])=>`${name} ${build[id]}`).join(" · ")||"Unshaped";
+    }
+    function compactResults(game){
+      const summary=document.getElementById("v13-run-summary");if(!summary)return;
+      const h=Math.floor(game.player?.maxHeight||0),route=dominantRoute(game),mastery=route?(game.v131?.mastery?.[route]||0):0;
+      const roman=["","I","II","III"][mastery]||"";
+      const contracts=game.v139?.completed||0,trials=game.v132?.bossClears||0,landmarks=(game.v137?.cleared?.size||0)+(game.v139?.favoredLandmarks||0);
+      summary.className="v1310-summary";
+      summary.innerHTML=`<div><strong>${h} m</strong>${route?` · ${route[0].toUpperCase()+route.slice(1)}${roman?` ${roman}`:""}`:""} · Contracts <strong>${contracts}</strong> · Trials <strong>${trials}</strong></div><div class="v1310-sub">Build: ${topBuild(game)}${landmarks?` · Landmarks ${landmarks}`:""}</div>`;
+    }
+    GameProto.setState=function(next,...rest){
+      const result=oldSetState.call(this,next,...rest);
+      if(next==="playing")normalizeTemporary(this);
+      if(next==="gameover")setTimeout(()=>{compactResults(this);if(this.v1310)this.v1310.summaryRuns++;},430);
+      return result;
+    };
+
+    /* Consolidate the three historical v13 HUD writers. Their callbacks still exist, but run at low frequency; this is the sole fast writer. */
+    const nativeRAF=window.requestAnimationFrame?.bind(window);
+    if(nativeRAF&&!window.__skyspireV1310RAFPatched){
+      window.__skyspireV1310RAFPatched=true;
+      const nativeSetTimeout=window.setTimeout.bind(window);
+      window.requestAnimationFrame=function(callback){
+        try{
+          if(callback?.name==="hudLoop"&&String(callback).includes("v1210-height"))return nativeSetTimeout(()=>callback(performance.now()),240);
+        }catch{}
+        return nativeRAF(callback);
+      };
+      let last=0;
+      const hud=(ts)=>{
+        try{
+          const game=window.skyspireGame,el=document.getElementById("v1210-height");
+          if(game&&el&&(game.state==="playing"||game.state==="dying")&&ts-last>=90){
+            last=ts;const h=Math.floor(Math.max(0,game.player?.maxHeight||0)),route=game.v13?.currentRoute||"",level=route?(game.v131?.mastery?.[route]||0):0;
+            el.textContent=route?`${h} m · ${route.toUpperCase()}${level?` ${["","I","II","III"][level]||""}`:""}`:`${h} m · ASCENT`;
+          }
+        }catch{}
+        nativeRAF(hud);
+      };
+      nativeRAF(hud);
+    }
+
+    const applyLabels=()=>{
+      document.title=`Skyspire v${VERSION} — Crown Convergence`;
+      const brand=document.querySelector("#v126-home .v126-brand p");if(brand)brand.textContent="A refined ascent: strategic routes, landmarks, contracts, Flowcraft, and controlled pacing without gameplay clutter.";
+      const chip=document.getElementById("v11-release-chip");if(chip)chip.textContent=`v${VERSION}`;
+      const eyebrow=document.querySelector("#menu-overlay>.panel>.eyebrow");if(eyebrow)eyebrow.textContent=`v${VERSION} · Crown Convergence`;
+      for(const key of ["SkyspireV13","SkyspireV131","SkyspireV132","SkyspireV133","SkyspireV134","SkyspireV135","SkyspireV136","SkyspireV137","SkyspireV138","SkyspireV139"])if(window[key])window[key].version=VERSION;
+    };
+    applyLabels();setTimeout(applyLabels,5500);
+    window.SkyspireV1310={version:VERSION,normalize:()=>normalizeTemporary(g)};
+  }
+  if(document.readyState==="loading")window.addEventListener("DOMContentLoaded",()=>setTimeout(setup,0),{once:true});else setTimeout(setup,0);
+})();
+</script>
+
+<style id="v13-10-1-run-integrity-style">
+/* v13.10.1: make finite modes explicit even when compact mobile copy is hidden. */
+#v126-mode-select option[value="ascension"],#v123-mode-select option[value="ascension"]{font-weight:800}
+</style>
+<script id="v13-10-1-run-integrity-hotfix">
+(() => {
+  "use strict";
+  const VERSION="13.10.1";
+  function setup(){
+    const game=window.skyspireGame;
+    if(!game?.v1310Installed){setTimeout(setup,35);return;}
+    if(game.v13101Installed)return;
+    game.v13101Installed=true;
+    const P=game.constructor.prototype;
+    const oldStart=P.startRun;
+    const oldFinish=P.finishRun;
+    const oldDeath=P.triggerDeath;
+    const oldSetState=P.setState;
+    const oldToMenu=P.toMenu;
+
+    game.v13101={suppressedEnds:0,suppressedCameraDeaths:0,lastSuppressedEnd:null,lastEnd:null};
+
+    function finite(n){return Number.isFinite(Number(n));}
+    function height(g){return Math.max(0,Number(g.player?.maxHeight)||0);}
+    function objectiveState(g){
+      const h=height(g);
+      if(g.v9TrialActive&&finite(g.v9TrialActive.goal))return {kind:"trial",ready:h>=Number(g.v9TrialActive.goal)-.001};
+      if(g.mode==="time")return {kind:"time",ready:h>=200-.001};
+      if(g.mode==="crystal")return {kind:"crystal",ready:(Number(g.runCrystals)||0)>=30};
+      if(g.mode==="ascension")return {kind:"ascension",ready:h>=250-.001};
+      if(g.mode==="custom"){
+        const goal=Math.max(0,Number(g.customRules?.victoryHeight)||0);
+        return {kind:"custom",ready:goal>0&&h>=goal-.001};
+      }
+      if(g.mode==="practice"&&g.v6BossPractice)return {kind:"boss-practice",ready:true};
+      return {kind:"none",ready:false};
+    }
+    function validFailure(g){
+      if(g.state!=="dying")return false;
+      return Boolean(String(g.deathReason||"").trim());
+    }
+    function updateModeLabels(){
+      for(const id of ["v126-mode-select","v123-mode-select"]){
+        const select=document.getElementById(id);if(!select)continue;
+        const asc=[...select.options].find(o=>o.value==="ascension");if(asc)asc.textContent="Ascension Campaign · 250 m";
+        const end=[...select.options].find(o=>o.value==="endless");if(end)end.textContent="Endless Climb";
+      }
+      const v126=document.getElementById("v126-mode-select"),copy=document.getElementById("v126-mode-copy");
+      if(v126&&copy){
+        if(v126.value==="ascension")copy.textContent="250 m campaign. Reaching 250 m completes this mode; choose Endless Climb for an unrestricted ascent.";
+        else if(v126.value==="endless")copy.textContent="Unrestricted ascent with the full route, landmark, contract, stratum, and late-game progression systems.";
+      }
+      const v123=document.getElementById("v123-mode-select"),copy2=document.getElementById("v123-mode-copy");
+      if(v123&&copy2){
+        if(v123.value==="ascension")copy2.textContent="250 m campaign. Reaching 250 m completes this mode; choose Endless Climb for an unrestricted ascent.";
+        else if(v123.value==="endless")copy2.textContent="Unrestricted ascent with indefinite scaling.";
+      }
+    }
+
+    /* One-time migration: v12.6 made Ascension the apparent default even though
+       the original game default is Endless. The compact mobile menu hides the
+       250 m description, so players can unknowingly enter a finite campaign. */
+    try{
+      const migration="skyspireV13101DefaultModeMigration";
+      if(!localStorage.getItem(migration)){
+        const a=localStorage.getItem("skyspireLastModeV126");
+        const b=localStorage.getItem("skyspireLastModeV123");
+        if(!a||a==="ascension")localStorage.setItem("skyspireLastModeV126","endless");
+        if(!b||b==="ascension")localStorage.setItem("skyspireLastModeV123","endless");
+        if(game.state==="menu"&&(!a||a==="ascension")&&(!b||b==="ascension")){
+          game.mode="endless";game.renderModes?.();
+          for(const id of ["v126-mode-select","v123-mode-select"]){const el=document.getElementById(id);if(el&&[...el.options].some(o=>o.value==="endless"))el.value="endless";}
+        }
+        localStorage.setItem(migration,"1");
+      }
+    }catch{}
+
+    P.startRun=function(...args){
+      /* Trials are valid only as Practice runs. A stale trial object attached to
+         any normal climb used to make v9's old update layer finish the run at
+         the trial goal. Clear impossible cross-mode state before generation. */
+      if(this.mode!=="practice"){
+        this.v9TrialActive=null;
+        this.v12TrialActive=null;
+        this.v12WeeklyActive=null;
+        this.v9ForcedSequence=null;
+        this.v10TrialRemixActive="standard";
+      }
+      this.deathReason="";
+      this.deathTimer=0;
+      this.v13101.lastEnd=null;
+      const result=oldStart.apply(this,args);
+      return result;
+    };
+
+    P.triggerDeath=function(reason="fall"){
+      if(reason==="fall"&&this.state==="playing"){
+        const h=height(this),foot=Number(this.player?.footY)||0;
+        const hardFall=foot<h-18.001;
+        const explicitPressure=this.mode==="rush"||(this.mode==="custom"&&(Number(this.customRules?.pressureScale)||0)>.01);
+        /* The old camera boundary is invisible in the modern minimal HUD. It may
+           no longer kill a healthy normal climb. A real 18 m fall still does. */
+        if(!hardFall&&!explicitPressure){
+          this.v13101.suppressedCameraDeaths++;
+          this.cameraPressureY=Math.min(Number(this.cameraPressureY)||foot-7,foot-7);
+          return false;
+        }
+      }
+      return oldDeath.call(this,reason);
+    };
+
+    P.finishRun=function(success=false){
+      if(this.state==="gameover")return;
+      const obj=objectiveState(this);
+      const allowed=success?obj.ready:validFailure(this);
+      if(!allowed){
+        this.v13101.suppressedEnds++;
+        this.v13101.lastSuppressedEnd={success:Boolean(success),mode:this.mode,height:+height(this).toFixed(2),state:this.state,objective:obj.kind,time:+(Number(this.runTime)||0).toFixed(2)};
+        if(this.state==="dying"&&!this.deathReason)this.setState("playing");
+        return false;
+      }
+      this.v13101.lastEnd={success:Boolean(success),mode:this.mode,height:+height(this).toFixed(2),reason:success?obj.kind:String(this.deathReason||"death")};
+      return oldFinish.call(this,success);
+    };
+
+    P.setState=function(next,...rest){
+      /* No unrelated layer may jump directly from a healthy active run to the
+         game-over overlay. All valid endings flow through finishRun(). */
+      if(next==="gameover"&&this.state==="playing"){
+        const obj=objectiveState(this);
+        if(!obj.ready){
+          this.v13101.suppressedEnds++;
+          this.v13101.lastSuppressedEnd={success:false,mode:this.mode,height:+height(this).toFixed(2),state:this.state,objective:"direct-state",time:+(Number(this.runTime)||0).toFixed(2)};
+          return false;
+        }
+      }
+      return oldSetState.call(this,next,...rest);
+    };
+
+    P.toMenu=function(...args){
+      const result=oldToMenu.apply(this,args);
+      this.deathReason="";this.deathTimer=0;
+      updateModeLabels();
+      return result;
+    };
+
+    for(const id of ["v126-mode-select","v123-mode-select"]){
+      document.getElementById(id)?.addEventListener("change",()=>setTimeout(updateModeLabels,0));
+    }
+    updateModeLabels();
+
+    const applyLabels=()=>{
+      document.title=`Skyspire v${VERSION} — Run Integrity Hotfix`;
+      const chip=document.getElementById("v11-release-chip");if(chip)chip.textContent=`v${VERSION}`;
+      const eyebrow=document.querySelector("#menu-overlay>.panel>.eyebrow");if(eyebrow)eyebrow.textContent=`v${VERSION} · Run Integrity Hotfix`;
+      updateModeLabels();
+    };
+    applyLabels();const guard=setInterval(applyLabels,120);setTimeout(()=>{clearInterval(guard);applyLabels();},7200);
+    window.SkyspireV13101={version:VERSION,objectiveState:()=>objectiveState(game)};
+  }
+  if(document.readyState==="loading")window.addEventListener("DOMContentLoaded",()=>setTimeout(setup,0),{once:true});else setTimeout(setup,0);
+})();
+</script>
+
+
+<style id="v13-10-2-stability-style">
+/* v13.10.2: final release metadata and mandatory checkpoint integrity. */
+</style>
+<script id="v13-10-2-stability-audit">
+(() => {
+  "use strict";
+  const VERSION="13.10.2";
+  function setup(){
+    const game=window.skyspireGame;
+    if(!game?.v13101Installed){setTimeout(setup,40);return;}
+    if(game.v13102Installed)return;
+    game.v13102Installed=true;
+    game.v13102={checkpointRescues:0,generationErrors:0,lastGenerationError:null};
+
+    const GenProto=game.generator?.constructor?.prototype;
+    if(GenProto?.ensureAhead){
+      const oldEnsureAhead=GenProto.ensureAhead;
+      GenProto.ensureAhead=function(...args){
+        try{return oldEnsureAhead.apply(this,args);}
+        catch(error){
+          if(this.game?.v13102){
+            this.game.v13102.generationErrors++;
+            this.game.v13102.lastGenerationError=String(error?.message||error);
+          }
+          throw error;
+        }
+      };
+    }
+
+    /* Older version layers still schedule late label writes. Observe only the
+       three release-label nodes instead of running another polling timer. */
+    const titleNode=document.querySelector("title");
+    const chip=document.getElementById("v11-release-chip");
+    const eyebrow=document.querySelector("#menu-overlay>.panel>.eyebrow");
+    const applyLabels=()=>{
+      const title=`Skyspire v${VERSION} — Stability Audit`;
+      if(document.title!==title)document.title=title;
+      if(chip&&chip.textContent!==`v${VERSION}`)chip.textContent=`v${VERSION}`;
+      if(eyebrow&&eyebrow.textContent!==`v${VERSION} · Stability Audit`)eyebrow.textContent=`v${VERSION} · Stability Audit`;
+      for(const key of ["SkyspireV13","SkyspireV131","SkyspireV132","SkyspireV133","SkyspireV134","SkyspireV135","SkyspireV136","SkyspireV137","SkyspireV138","SkyspireV139","SkyspireV1310","SkyspireV13101"]){
+        try{if(window[key])window[key].version=VERSION;}catch{}
+      }
+    };
+    applyLabels();
+    const observer=new MutationObserver(applyLabels);
+    for(const node of [titleNode,chip,eyebrow])if(node)observer.observe(node,{childList:true,characterData:true,subtree:true});
+    game.v13102.labelObserver=observer;
+
+    /* Defensive input release for app/background transitions. Pointer capture
+       already handles normal releases; visibilitychange covers mobile OS
+       interruptions that can otherwise leave a steering side logically held. */
+    const releaseTouch=()=>{
+      if(game.input?.touch){game.input.touch.left=false;game.input.touch.right=false;}
+      document.querySelectorAll("#v1210-steering .v1210-steer.active").forEach(n=>n.classList.remove("active"));
+    };
+    document.addEventListener("visibilitychange",()=>{if(document.hidden)releaseTouch();},{passive:true});
+    window.addEventListener("pagehide",releaseTouch,{passive:true});
+
+    window.SkyspireV13102={version:VERSION};
+  }
+  if(document.readyState==="loading")window.addEventListener("DOMContentLoaded",()=>setTimeout(setup,0),{once:true});else setTimeout(setup,0);
 })();
 </script>
 
