@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
 <meta content="#081523" name="theme-color"/>
-<title>Skyspire v13.10.2 — Stability Audit</title>
+<title>Skyspire v13.10.3 — UI Integrity Hotfix</title>
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#081426">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -9855,7 +9855,7 @@ body[data-v11-state="playing"] .hud-item strong{font-size:.82rem!important;color
       this.renderer.render(this.scene,this.camera);
     };
 
-    function v121ApplyLabels(){
+    function v121ApplyLabels(){return;/* v13.10.3: legacy menu/version writer disabled */
       document.title="Skyspire v12.1.1 — Stable Camera & Mobile Controls";
       const eyebrow=document.querySelector("#menu-overlay .eyebrow");
       if(eyebrow)eyebrow.textContent="v12.1.1 · Stable camera and mobile control overhaul";
@@ -10431,7 +10431,7 @@ body[data-v11-state="playing"] .hud-item strong{font-size:.82rem!important;color
       document.head.appendChild(style);
     }
 
-    function v123ApplyLabels(){
+    function v123ApplyLabels(){return;/* v13.10.3: legacy menu/version writer disabled */
       document.title="Skyspire v12.3.0 — Skybound Redesign";
       const eyebrow=document.querySelector("#menu-overlay .eyebrow");
       if(eyebrow)eyebrow.textContent="Crown of the Living Spire";
@@ -11117,7 +11117,7 @@ body[data-v11-state="playing"] .hud-item strong{font-size:.82rem!important;color
       return result;
     };
 
-    function v124ApplyVersionLabel(){
+    function v124ApplyVersionLabel(){return;/* v13.10.3: legacy menu/version writer disabled */
       document.title="Skyspire v12.4.0 — Structured Ascent";
       const eyebrow=document.querySelector("#menu-overlay>.panel>.eyebrow");if(eyebrow)eyebrow.textContent="v12.4 · Structured Ascent";
     }
@@ -11747,7 +11747,7 @@ body[data-v11-state="playing"] .hud-item strong{font-size:.82rem!important;color
       }
     };
 
-    function v125ApplyLabels(){
+    function v125ApplyLabels(){return;/* v13.10.3: legacy menu/version writer disabled */
       v125RepairLegacyGameplayCopy();
       document.title="Skyspire v12.5.0 — Gameplay Integrity";
       const eyebrow=document.querySelector("#menu-overlay>.panel>.eyebrow");if(eyebrow)eyebrow.textContent="v12.5 · Gameplay Integrity";
@@ -12130,7 +12130,7 @@ body[data-v11-state="playing"] .hud-item strong{font-size:.82rem!important;color
       return result;
     };
 
-    function v126ApplyLabels(){
+    function v126ApplyLabels(){return;/* v13.10.3: legacy menu/version writer disabled */
       document.title="Skyspire v12.6.0 — Smooth Ascent";
       const eyebrow=document.querySelector("#menu-overlay>.panel>.eyebrow");if(eyebrow)eyebrow.textContent="v12.6 · Smooth Ascent";
     }
@@ -12272,7 +12272,7 @@ body[data-v11-state="playing"] .hud-item strong{font-size:.82rem!important;color
       return result;
     };
 
-    function v1261ApplyLabels(){
+    function v1261ApplyLabels(){return;/* v13.10.3: legacy menu/version writer disabled */
       document.title="Skyspire v12.6.1 — Collision Integrity";
       const eyebrow=document.querySelector("#menu-overlay>.panel>.eyebrow");
       if(eyebrow)eyebrow.textContent="v12.6.1 · Collision Integrity";
@@ -12452,7 +12452,7 @@ body[data-v11-state="playing"] .hud-item strong{font-size:.82rem!important;color
       return result;
     };
 
-    function v127ApplyLabels(){
+    function v127ApplyLabels(){return;/* v13.10.3: legacy menu/version writer disabled */
       document.title="Skyspire v12.7.0 — Stability Audit";
       const eyebrow=document.querySelector("#menu-overlay>.panel>.eyebrow");
       if(eyebrow)eyebrow.textContent="v12.7.0 · Stability Audit";
@@ -12717,7 +12717,7 @@ body[data-v11-state="playing"] .hud-item strong{font-size:.82rem!important;color
       return result;
     };
 
-    function v128ApplyLabels(){
+    function v128ApplyLabels(){return;/* v13.10.3: legacy menu/version writer disabled */
       document.title="Skyspire v12.8.0 — Persistent HUD & Escalating Ascent";
       const eyebrow=document.querySelector("#menu-overlay>.panel>.eyebrow");
       if(eyebrow)eyebrow.textContent="v12.8.0 · Persistent HUD · Escalating Ascent";
@@ -13020,7 +13020,7 @@ body[data-v11-state="playing"] .hud-item strong{font-size:.82rem!important;color
       return result;
     };
 
-    function v129ApplyLabels(){
+    function v129ApplyLabels(){return;/* v13.10.3: legacy menu/version writer disabled */
       document.title="Skyspire v12.9.0 — Evolving Ascent";
       const eyebrow=document.querySelector("#menu-overlay>.panel>.eyebrow");if(eyebrow)eyebrow.textContent="v12.9.0 · Evolving Ascent";
       const release=document.getElementById("v11-release-chip");if(release)release.textContent="v12.9.0";
@@ -13303,7 +13303,7 @@ body[data-v11-state="playing"] .hud-item strong{font-size:.82rem!important;color
     const v1210AnimateBase=Game.prototype.animate;
     Game.prototype.animate=function(timestampMs){const result=v1210AnimateBase.call(this,timestampMs);v1210EnsureCriticalUI(this);return result;};
 
-    function v1210ApplyLabels(){
+    function v1210ApplyLabels(){return;/* v13.10.3: legacy menu/version writer disabled */
       document.title="Skyspire v12.10.0 — Persistent UI & Skill Curve";
       const eyebrow=document.querySelector("#menu-overlay>.panel>.eyebrow");if(eyebrow)eyebrow.textContent="v12.10.0 · Persistent UI · Skill Curve";
       const release=document.getElementById("v11-release-chip");if(release)release.textContent="v12.10.0";
@@ -13459,7 +13459,7 @@ body[data-v11-state="playing"] .hud-item strong{font-size:.82rem!important;color
       return result;
     };
 
-    function v12101ApplyLabels(){
+    function v12101ApplyLabels(){return;/* v13.10.3: legacy menu/version writer disabled */
       document.title="Skyspire v12.10.1 — Clean Onboarding";
       const eyebrow=document.querySelector("#menu-overlay>.panel>.eyebrow");
       if(eyebrow)eyebrow.textContent="v12.10.1 · Clean Onboarding · No Ghosts";
@@ -13725,7 +13725,7 @@ body[data-v11-state="playing"] .hud-item strong{font-size:.82rem!important;color
       return result;
     };
 
-    function v1211kApplyLabels(){
+    function v1211kApplyLabels(){return;/* v13.10.3: legacy menu/version writer disabled */
       document.title="Skyspire v12.11.0 — Kinetic Ascent";
       const eyebrow=document.querySelector("#menu-overlay>.panel>.eyebrow");if(eyebrow)eyebrow.textContent="v12.11.0 · Kinetic Ascent";
       const release=document.getElementById("v11-release-chip");if(release)release.textContent="v12.11.0";
@@ -14002,7 +14002,7 @@ body[data-v11-state="playing"] .hud-item strong{font-size:.82rem!important;color
       return result;
     };
 
-    function v1212ApplyLabels(){
+    function v1212ApplyLabels(){return;/* v13.10.3: legacy menu/version writer disabled */
       document.title="Skyspire v12.12.0 — Arcade Flow";
       const eyebrow=document.querySelector("#menu-overlay>.panel>.eyebrow");if(eyebrow)eyebrow.textContent="v12.12.0 · Arcade Flow";
       const release=document.getElementById("v11-release-chip");if(release)release.textContent="v12.12.0";
@@ -14303,7 +14303,7 @@ window.addEventListener("DOMContentLoaded", () => {
 `;
   document.head.appendChild(style);
 
-  const labelled=()=>{
+  const labelled=()=>{return;/* v13.10.3: legacy menu/version writer disabled */
     document.title=`Skyspire v${VERSION} — Visual Integrity`;
     const chip=document.getElementById("v11-release-chip");if(chip)chip.textContent=`v${VERSION}`;
   };
@@ -14845,7 +14845,7 @@ body[data-v11-state="dying"] #v13-route-banner{display:none!important}
     }
 
     /* Keep the tiny existing line useful: height + committed route, no new HUD. */
-    function hudLoop(){
+    function hudLoop(){return;/* v13.10.3: superseded HUD writer disabled */
       try{
         const g=window.skyspireGame,el=document.getElementById("v1210-height");if(g&&el&&(g.state==="playing"||g.state==="dying")){
           const h=Math.floor(Math.max(0,g.player?.maxHeight||0)),route=g.v13?.currentRoute;el.textContent=route?`${h} m · ${ROUTES[route].name.toUpperCase()}`:`${h} m · ASCENT`;
@@ -14855,7 +14855,7 @@ body[data-v11-state="dying"] #v13-route-banner{display:none!important}
     requestAnimationFrame(hudLoop);
 
     /* Menu/version copy */
-    const applyLabels=()=>{
+    const applyLabels=()=>{return;/* v13.10.3: superseded label writer disabled */
       document.title=`Skyspire v${VERSION} — Paths of Ascension`;
       const brand=document.querySelector("#v126-home .v126-brand p");if(brand)brand.textContent="Choose a path. Master its challenge. Shape a different ascent every run.";
       const chip=document.getElementById("v11-release-chip");if(chip)chip.textContent=`v${VERSION}`;
@@ -15105,7 +15105,7 @@ body[data-v11-state="dying"] #v13-route-banner{display:none!important}
       return result;
     };
 
-    function hudLoop(){
+    function hudLoop(){return;/* v13.10.3: superseded HUD writer disabled */
       try{
         const game=window.skyspireGame,el=document.getElementById("v1210-height");
         if(game&&el&&(game.state==="playing"||game.state==="dying")){
@@ -15116,7 +15116,7 @@ body[data-v11-state="dying"] #v13-route-banner{display:none!important}
     }
     requestAnimationFrame(hudLoop);
 
-    const applyLabels=()=>{
+    const applyLabels=()=>{return;/* v13.10.3: superseded label writer disabled */
       document.title=`Skyspire v${VERSION} — Route Depth`;
       const brand=document.querySelector("#v126-home .v126-brand p");if(brand)brand.textContent="Choose a route, build mastery, carry its momentum into what comes next.";
       const chip=document.getElementById("v11-release-chip");if(chip)chip.textContent=`v${VERSION}`;
@@ -15374,7 +15374,7 @@ body[data-v11-state="dying"] #v13-route-banner{display:none!important}
       return result;
     };
 
-    function hudLoop(){
+    function hudLoop(){return;/* v13.10.3: superseded HUD writer disabled */
       try{
         const game=window.skyspireGame,el=document.getElementById("v1210-height"),state=game?.v132;
         if(game&&el&&state&&(game.state==="playing"||game.state==="dying")&&state.linkUntil>performance.now()){
@@ -15384,7 +15384,7 @@ body[data-v11-state="dying"] #v13-route-banner{display:none!important}
     }
     requestAnimationFrame(hudLoop);
 
-    const applyLabels=()=>{
+    const applyLabels=()=>{return;/* v13.10.3: superseded label writer disabled */
       document.title=`Skyspire v${VERSION} — Ascendant Links`;
       const brand=document.querySelector("#v126-home .v126-brand p");if(brand)brand.textContent="Chain routes, unlock signature mechanics, and break through distinct traversal trials.";
       const chip=document.getElementById("v11-release-chip");if(chip)chip.textContent=`v${VERSION}`;
@@ -15576,7 +15576,7 @@ body[data-v11-state="dying"] #v13-route-banner{display:none!important}
       return result;
     };
 
-    const applyLabels=()=>{
+    const applyLabels=()=>{return;/* v13.10.3: superseded label writer disabled */
       document.title=`Skyspire v${VERSION} — Strategic Crossroads`;
       const brand=document.querySelector("#v126-home .v126-brand p");if(brand)brand.textContent="Choose between mastery, route links, and high-stakes modifiers as the ascent evolves.";
       const chip=document.getElementById("v11-release-chip");if(chip)chip.textContent=`v${VERSION}`;
@@ -15801,7 +15801,7 @@ body[data-v11-state="dying"] #v13-route-banner{display:none!important}
       return result;
     };
 
-    const applyLabels=()=>{
+    const applyLabels=()=>{return;/* v13.10.3: superseded label writer disabled */
       document.title=`Skyspire v${VERSION} — Ascent Arcs`;
       const brand=document.querySelector("#v126-home .v126-brand p");if(brand)brand.textContent="Build route patterns, earn ascent crests, and face traversal trials shaped by the run you created.";
       const chip=document.getElementById("v11-release-chip");if(chip)chip.textContent=`v${VERSION}`;
@@ -16057,7 +16057,7 @@ body[data-v11-state="dying"] #v13-route-banner{display:none!important}
       return result;
     };
 
-    const applyLabels=()=>{
+    const applyLabels=()=>{return;/* v13.10.3: superseded label writer disabled */
       document.title=`Skyspire v${VERSION} — Flowcraft`;
       const brand=document.querySelector("#v126-home .v126-brand p");if(brand)brand.textContent="Express the climb through apex cuts, counter-steering, moving catches, and clean route technique.";
       const chip=document.getElementById("v11-release-chip");if(chip)chip.textContent=`v${VERSION}`;
@@ -16356,7 +16356,7 @@ body[data-v11-state="dying"] #v13-route-banner{display:none!important}
     };
 
     createArchitecture(g);applyAtmosphere(g,0);g.updateTowerSegments?.(0);
-    const applyLabels=()=>{
+    const applyLabels=()=>{return;/* v13.10.3: superseded label writer disabled */
       document.title=`Skyspire v${VERSION} — Strata of the Spire`;
       const brand=document.querySelector("#v126-home .v126-brand p");if(brand)brand.textContent="Climb through physically distinct strata where architecture, atmosphere, platform language, and traversal rules evolve with altitude.";
       const chip=document.getElementById("v11-release-chip");if(chip)chip.textContent=`v${VERSION}`;
@@ -16562,7 +16562,7 @@ body[data-v11-state="dying"] #v13-route-banner{display:none!important}
       return result;
     };
 
-    const applyLabels=()=>{
+    const applyLabels=()=>{return;/* v13.10.3: superseded label writer disabled */
       document.title=`Skyspire v${VERSION} — Landmarks of the Spire`;
       const brand=document.querySelector("#v126-home .v126-brand p");if(brand)brand.textContent="Climb through evolving strata punctuated by rare authored landmarks and memorable traversal set pieces.";
       const chip=document.getElementById("v11-release-chip");if(chip)chip.textContent=`v${VERSION}`;
@@ -16802,7 +16802,7 @@ body[data-v11-state="dying"] #v13-route-banner{display:none!important}
       return result;
     };
 
-    const applyLabels=()=>{
+    const applyLabels=()=>{return;/* v13.10.3: superseded label writer disabled */
       document.title=`Skyspire v${VERSION} — Living Journey`;
       const brand=document.querySelector("#v126-home .v126-brand p");if(brand)brand.textContent="Every climb develops its own rhythm through changing journey profiles, rare event stretches, strategic forks, and evolving landmarks.";
       const chip=document.getElementById("v11-release-chip");if(chip)chip.textContent=`v${VERSION}`;
@@ -17040,7 +17040,7 @@ body[data-v11-state="dying"] #v13-route-banner{display:none!important}
       return result;
     };
 
-    const applyLabels=()=>{
+    const applyLabels=()=>{return;/* v13.10.3: superseded label writer disabled */
       document.title=`Skyspire v${VERSION} — Crown Contracts`;
       const brand=document.querySelector("#v126-home .v126-brand p");if(brand)brand.textContent="Take optional Crown oaths on rare route branches, chain clean clears, and carry their consequences into later landmarks.";
       const chip=document.getElementById("v11-release-chip");if(chip)chip.textContent=`v${VERSION}`;
@@ -17231,12 +17231,7 @@ body.v11-playing .toast-stack{display:none!important;visibility:hidden!important
     if(nativeRAF&&!window.__skyspireV1310RAFPatched){
       window.__skyspireV1310RAFPatched=true;
       const nativeSetTimeout=window.setTimeout.bind(window);
-      window.requestAnimationFrame=function(callback){
-        try{
-          if(callback?.name==="hudLoop"&&String(callback).includes("v1210-height"))return nativeSetTimeout(()=>callback(performance.now()),240);
-        }catch{}
-        return nativeRAF(callback);
-      };
+      /* v13.10.3: global RAF monkey-patch removed. */
       let last=0;
       const hud=(ts)=>{
         try{
@@ -17251,7 +17246,7 @@ body.v11-playing .toast-stack{display:none!important;visibility:hidden!important
       nativeRAF(hud);
     }
 
-    const applyLabels=()=>{
+    const applyLabels=()=>{return;/* v13.10.3: superseded label writer disabled */
       document.title=`Skyspire v${VERSION} — Crown Convergence`;
       const brand=document.querySelector("#v126-home .v126-brand p");if(brand)brand.textContent="A refined ascent: strategic routes, landmarks, contracts, Flowcraft, and controlled pacing without gameplay clutter.";
       const chip=document.getElementById("v11-release-chip");if(chip)chip.textContent=`v${VERSION}`;
@@ -17416,7 +17411,7 @@ body.v11-playing .toast-stack{display:none!important;visibility:hidden!important
     }
     updateModeLabels();
 
-    const applyLabels=()=>{
+    const applyLabels=()=>{return;/* v13.10.3: superseded label writer disabled */
       document.title=`Skyspire v${VERSION} — Run Integrity Hotfix`;
       const chip=document.getElementById("v11-release-chip");if(chip)chip.textContent=`v${VERSION}`;
       const eyebrow=document.querySelector("#menu-overlay>.panel>.eyebrow");if(eyebrow)eyebrow.textContent=`v${VERSION} · Run Integrity Hotfix`;
@@ -17494,5 +17489,68 @@ body.v11-playing .toast-stack{display:none!important;visibility:hidden!important
 })();
 </script>
 
+
+<style id="v13-10-3-ui-integrity-style">
+/* v13.10.3: menu has one visual owner; no legacy release layer may animate copy. */
+#v126-home .v126-brand p{transition:none!important}
+#v11-release-chip,#menu-overlay>.panel>.eyebrow{transition:none!important}
+</style>
+<script id="v13-10-3-ui-integrity-hotfix">
+(() => {
+  "use strict";
+  const VERSION="13.10.3";
+  function setup(){
+    const game=window.skyspireGame;
+    if(!game?.v13102Installed){setTimeout(setup,40);return;}
+    if(game.v13103Installed)return;
+    game.v13103Installed=true;
+    game.v13103={menuMutations:0};
+
+    /* v13.10.2 needed an observer only because older release layers kept
+       rewriting the same nodes. v13.10.3 disables those writers at source. */
+    try{game.v13102?.labelObserver?.disconnect?.();}catch{}
+
+    const applyStableMenu=()=>{
+      document.title=`Skyspire v${VERSION} — UI Integrity Hotfix`;
+      const chip=document.getElementById("v11-release-chip");
+      if(chip)chip.textContent=`v${VERSION}`;
+      const eyebrow=document.querySelector("#menu-overlay>.panel>.eyebrow");
+      if(eyebrow)eyebrow.textContent=`v${VERSION} · UI Integrity Hotfix`;
+      const brand=document.querySelector("#v126-home .v126-brand p");
+      if(brand)brand.textContent="A refined ascent with strategic routes, landmarks, contracts, Flowcraft, and controlled pacing.";
+      for(const key of ["SkyspireV13","SkyspireV131","SkyspireV132","SkyspireV133","SkyspireV134","SkyspireV135","SkyspireV136","SkyspireV137","SkyspireV138","SkyspireV139","SkyspireV1310","SkyspireV13101","SkyspireV13102"]){
+        try{if(window[key])window[key].version=VERSION;}catch{}
+      }
+    };
+    applyStableMenu();
+    requestAnimationFrame(applyStableMenu);
+    setTimeout(applyStableMenu,250);
+
+    /* v12.6 rebuilds the home shell when returning from gameplay and still
+       writes its historical title during that rebuild. Restore final copy once
+       after the rebuild rather than polling continuously. */
+    const P=game.constructor?.prototype;
+    if(P&&!P.v13103MenuOwnerPatched){
+      P.v13103MenuOwnerPatched=true;
+      const oldToMenu=P.toMenu;
+      if(typeof oldToMenu==="function")P.toMenu=function(...args){
+        const result=oldToMenu.apply(this,args);
+        queueMicrotask(applyStableMenu);
+        requestAnimationFrame(applyStableMenu);
+        return result;
+      };
+    }
+
+    /* Keep a diagnostic count only. This observer never writes to the DOM,
+       so it cannot participate in a feedback loop. */
+    const targets=[document.querySelector("title"),document.getElementById("v11-release-chip"),document.querySelector("#menu-overlay>.panel>.eyebrow"),document.querySelector("#v126-home .v126-brand p")].filter(Boolean);
+    const observer=new MutationObserver(()=>{game.v13103.menuMutations++;});
+    for(const node of targets)observer.observe(node,{childList:true,characterData:true,subtree:true});
+    game.v13103.menuObserver=observer;
+    window.SkyspireV13103={version:VERSION};
+  }
+  if(document.readyState==="loading")window.addEventListener("DOMContentLoaded",()=>setTimeout(setup,0),{once:true});else setTimeout(setup,0);
+})();
+</script>
 </body>
 </html>
